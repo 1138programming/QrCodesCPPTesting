@@ -1,0 +1,10 @@
+#ifndef EXPANSIONTYPE_HPP
+#define EXPANSIONTYPE_HPP
+
+enum EXPANSIONTYPE {
+    VERTICAL,
+    HORIZONTAL,
+    NONE
+};
+
+#endif
