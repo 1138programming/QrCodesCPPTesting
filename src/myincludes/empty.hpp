@@ -13,8 +13,9 @@ class Empty {
             this->emptySize = size;
         }
 
-        void add(Drawable* ref) {
-            this->thingsToDraw.push_back(ref);
+        void add(void* ref) {
+            Drawable* refAsDrawable = (Drawable*)ref;
+            this->thingsToDraw.push_back(refAsDrawable);
         }
 
         void drawAll() {
@@ -29,32 +30,40 @@ class Empty {
                 
                 switch(current->getDisplayPos()) {
                     case BOTTOMCENTERED:
-
+                        xPos = this->emptySize.x + ((this->emptySize.width/2.0)-(current->getWidth()/2.0));
+                        yPos = this->emptySize.height - current->getHeight();
                         break;
                     case BOTTOMLEFT:
-
+                        xPos = this->emptySize.x;
+                        yPos = this->emptySize.height - current->getHeight();
                         break;
                     case BOTTOMRIGHT:
-
+                        xPos = this->emptySize.width - current->getWidth();
+                        yPos = this->emptySize.height - current->getHeight();
                         break;
                     case CENTERED:
-
+                        xPos = this->emptySize.x + ((this->emptySize.width/2.0)-(current->getWidth()/2.0));
+                        yPos = (this->emptySize.y + (this->emptySize.height/2.0)) - current->getHeight()/2.0;
                         break;
                     case CENTERLEFT:
-
+                        xPos = this->emptySize.x;
+                        yPos = (this->emptySize.y + (this->emptySize.height/2.0)) - current->getHeight()/2.0;
                         break;
                     case CENTERRIGHT:
-
+                        xPos = (this->emptySize.x + this->emptySize.width) - current->getWidth();
+                        yPos = (this->emptySize.y + (this->emptySize.height/2.0)) - current->getHeight()/2.0;
                         break;
                     case TOPCENTERED:
-
+                        xPos = this->emptySize.x + ((this->emptySize.width/2.0) + (current->getWidth()/2.0));
+                        yPos = this->emptySize.y;
                         break;
                     case TOPLEFT:
-                        xPos = (int) this->emptySize.x;
-                        yPos = (int) this->emptySize.y;
+                        xPos = this->emptySize.x;
+                        yPos = this->emptySize.y;
                         break;
                     case TOPRIGHT:
-
+                        xPos = (this->emptySize.x + this->emptySize.width) - current->getWidth();
+                        yPos = this->emptySize.y;
                         break;
                     default:
                         break;

@@ -6,7 +6,7 @@
 #include "expansionType.hpp"
 #include <iostream>
 
-class DrawableList : Drawable {
+class DrawableList : public Drawable {
     private:
         std::vector<Drawable*> thingsToDraw;
         EXPANSIONTYPE expansionType = NONE;
