@@ -13,6 +13,7 @@
 #include "shouldScale.hpp"
 #include "shouldScaleDependencies.hpp"
 #include "sizeScaling.hpp"
+#include "tabHandler.hpp"
 #include "textBox.hpp"
 
 

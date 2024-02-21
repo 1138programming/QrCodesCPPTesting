@@ -13,6 +13,9 @@ class Drawable {
         // meant to be overwritten
         virtual void draw(int x, int y) {}
 
+        raylib::Vector2 getSize() {
+            return raylib::Vector2(getWidth(), getHeight());
+        }
         DISPLAYPOS getDisplayPos() {
             return this->wantedPos;
         }
@@ -26,7 +29,11 @@ class Drawable {
             this->customTransformation = transformation;
         }
 
-        // meant to be overwritten
+        // __meant to be overwritten__
+        //mutators
+        virtual void setWidth(float width) { }
+        virtual void setHeight(float height) { }
+        // accessors
         virtual float getWidth() { return 0.0f; }
         virtual float getHeight() { return 0.0f; }
 };

@@ -87,6 +87,13 @@ class Button : public Drawable {
         float getHeight() override {
             return (float)(this->height.getData());
         }
+
+        void setWidth(float width) override {
+            this->width = ShouldScale(width, false, NODEPENDENCY);
+        }
+        void setHeight(float height) override {
+            this->height = ShouldScale(height, false, NODEPENDENCY);
+        }
 };
 
 #endif
