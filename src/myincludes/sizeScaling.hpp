@@ -51,18 +51,23 @@ raylib::Vector2 SizeScaling::tileSizePx = raylib::Vector2(0.0, 0.0);
 raylib::Vector2 SizeScaling::numOfTiles = raylib::Vector2(0.0, 0.0);
 
 // custom user literals (https://en.cppreference.com/w/cpp/language/user_literal)
-ShouldScale operator"" _spX(long double num) {
-    return num;
+const char* operator"" _spX(long double num) {
+    bool* data = (bool*)malloc(sizeof(bool) + sizeof(SHOULDSCALEDEPENDENCIES) + sizeof(long double));
+    *data = true;
+    SHOULDSCALEDEPENDENCIES* dataShouldScale = ((SHOULDSCALEDEPENDENCIES*)&(data[1]));
+    *dataShouldScale = XDEPENDENT;
+    *((long double*)&(dataShouldScale[1])) = num;
+    return (char*)data;
 }
-ShouldScale operator"" _spY(long double num) {
-    return mult_y(num);
+const char* operator"" _spY(long double num) {
+    bool* data = (bool*)malloc(sizeof(bool) + sizeof(SHOULDSCALEDEPENDENCIES) + sizeof(long double));
+    *data = true;
+    SHOULDSCALEDEPENDENCIES* dataShouldScale = ((SHOULDSCALEDEPENDENCIES*)&(data[1]));
+    *dataShouldScale = YDEPENDENT;
+    *((long double*)&(dataShouldScale[1])) = num;
+    return (char*)data;
 }
 
-unsigned long long int operator"" _spX(unsigned long long int num) {
-    return mult_x(num);
-}
-unsigned long long int operator"" _spY(unsigned long long int num) {
-    return mult_y(num);
-}
+
 
 #endif

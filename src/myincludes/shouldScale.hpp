@@ -1,8 +1,8 @@
 #ifndef SHOULDSCALE_HPP
 #define SHOULDSCALE_HPP
 
-#include "sizeScaling.hpp"
 #include "shouldScaleDependencies.hpp"
+#include "sizeScaling.hpp"
 
 class ShouldScale {
     private:
@@ -14,6 +14,11 @@ class ShouldScale {
             this->data = 0.0;
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
+        }
+        ShouldScale(float data, bool shouldScale, SHOULDSCALEDEPENDENCIES dependency) {
+            this->shouldScale = shouldScale;
+            this->data = data;
+            this->dependency = dependency;
         }
         ShouldScale(int& a) {
             this->data = a;
@@ -40,16 +45,26 @@ class ShouldScale {
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
         }
+        ShouldScale(const char* a) {
+            bool* dataBool = (bool*)a;
+            SHOULDSCALEDEPENDENCIES* dataEnum = (SHOULDSCALEDEPENDENCIES*)(&(dataBool[1]));
+            long double* dataNum = ((long double*)&(dataEnum[1]));
+
+            this->shouldScale = *dataBool;
+            this->dependency = *dataEnum;
+            this->data = *dataNum;
+            free((void*)a);
+        }
 
         long double getData() {
             if (this->shouldScale) {
                 switch (this->dependency)
                 {
                     case XDEPENDENT:
-                        return SizeScaling::round(this->data * SizeScaling::xMult());
+                        return this->data * SizeScaling::xMult();
                     break;
                     case YDEPENDENT:
-                        return SizeScaling::round(this->data * SizeScaling::yMult());
+                        return this->data * SizeScaling::yMult();
                     break;
                     default:
                         return this->data;

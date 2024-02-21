@@ -5,15 +5,16 @@
 #include "../include/raylib-cpp.hpp"
 #include "../myincludes/ezText.hpp"
 #include "../myincludes/shouldScale.hpp"
+#include <iostream>
 
 class Button : public Drawable {
     private:
         EzText text;
         ShouldScale width, height;
-        ShouldScale lastX, lastY;
+        float lastX, lastY;
         raylib::Color borderColor, hoverColor, backgroundColor;
     public:
-        Button(int width, int height, raylib::Color borderColor, raylib::Color backgroundColor, raylib::Color hoverColor, EzText text) {
+        Button(ShouldScale width, ShouldScale height, raylib::Color borderColor, raylib::Color backgroundColor, raylib::Color hoverColor, EzText text) {
             this->width = width;
             this->height = height;
             this->borderColor = borderColor;
@@ -45,18 +46,19 @@ class Button : public Drawable {
 
         //functions
         bool isHovering() {
-            raylib::Rectangle rect(this->lastX.getData(), this->lastY.getData(), this->width.getData(), this->height.getData());
+            raylib::Rectangle rect(this->lastX, this->lastY, this->width.getData(), this->height.getData());
             return CheckCollisionPointRec(GetMousePosition(), rect);
         }
 
         //overriden functions
         void draw(int x, int y) override {
+            std::cout << this->getWidth() << ", " <<  this->getHeight() << std::endl;
             // update vars to use for collision detection
             this->lastX = x;
             this->lastY = y;
 
             // drawing
-            raylib::Rectangle rect(x, y, this->width.getData(), this->height.getData());
+            raylib::Rectangle rect(x, y, this->getWidth(), this->getHeight());
             // draw BG
             if (isHovering()) {
                 rect.Draw(this->hoverColor);
@@ -67,18 +69,18 @@ class Button : public Drawable {
             // draw border
             rect.DrawLines(this->borderColor);
             // draw text
-            float textX = (this->width.getData()/2.0)-(this->text.getWidth()/2.0);
-            float textY = (this->height.getData()/2.0)-(this->text.getHeight()/2.0);
+            float textX = (this->getWidth()/2.0)-(this->text.getWidth()/2.0);
+            float textY = (this->getHeight()/2.0)-(this->text.getHeight()/2.0);
             textX += x;
             textY += y;
 
             this->text.draw(textX, textY);
         }
         float getWidth() override {
-            return (float)this->width.getData();
+            return (float)(this->width.getData());
         }
         float getHeight() override {
-            return (float)this->height.getData();
+            return (float)(this->height.getData());
         }
 };
 

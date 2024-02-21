@@ -7,13 +7,13 @@
 
 
 int main() {
-    raylib::Window window(640,480,"I am mentally dumb", FLAG_WINDOW_RESIZABLE);
+    raylib::Window window(1280,720,"I am mentally dumb", FLAG_WINDOW_RESIZABLE);
     QrCodeScanner qrScanner;
 
     // set up display stuff
     SizeScaling::init();
     Empty screen(raylib::Rectangle(0,0, GetScreenWidth(), GetScreenHeight()));
-    Button gaming(200_spX, 100_spY, WHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit", 20.0_spX), WHITE));
+    Button gaming(400.0_spX, 200.0_spY, WHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), WHITE, 40.0_spX, 0.0_spX));
     gaming.setDisplayPos(BOTTOMCENTERED);
     screen.add(&gaming);
 
@@ -22,7 +22,6 @@ int main() {
         qrScanner.scan();
 
         window.BeginDrawing();
-            std::cout << SizeScaling::xMult() << ", " << SizeScaling::yMult() << std::endl;
             screen.updateAndDrawAll(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight()));
             window.ClearBackground(BLACK);
         window.EndDrawing();

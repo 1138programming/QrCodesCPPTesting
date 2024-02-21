@@ -10,7 +10,10 @@
 #include "expansionType.hpp"
 #include "ezText.hpp"
 #include "qrcodeScanner.hpp"
+#include "shouldScale.hpp"
+#include "shouldScaleDependencies.hpp"
 #include "sizeScaling.hpp"
 #include "textBox.hpp"
+
 
 #endif
