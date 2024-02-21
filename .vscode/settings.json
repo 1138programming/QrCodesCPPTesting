@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "C:/Users/eeuser/Documents/FRC_development/QrCodesCPPTesting/src/include"
+    "cmake.sourceDirectory": "C:/Users/eeuser/Documents/FRC_development/QrCodesCPPTesting/src/include",
+    "files.associations": {
+        "cmath": "cpp"
+    }
 }

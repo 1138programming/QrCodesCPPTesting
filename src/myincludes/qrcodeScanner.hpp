@@ -19,7 +19,6 @@ class QrCodeScanner {
             counter = 0;
         }
 
-        // no memory leak 🥳🎊🎈🎉💃
 
         void scan () {
            key = GetCharPressed();
@@ -30,7 +29,6 @@ class QrCodeScanner {
                     text[counter+1] = '\0';
                     counter++;
                 }                   
-                std::cout << key << std::endl;
                 key = GetCharPressed();
             }
         
@@ -38,20 +36,20 @@ class QrCodeScanner {
         }
 
         void update () {
-           std::cout << "helkejkekkedk" << std::endl;
-                    std::ofstream file("gaming.json");
-                    int i = 0;
-                    while(text[i] != '\0') {
-                        file << text[i];
-                        text[i] = '\0';
-                        i++;
-                    }
-                    file << '\n';
-                    counter = 0;
-                    file.close(); 
+            std::cout << "helkejkekkedk" << std::endl;
 
+            std::ofstream file("gaming.json");
+            int i = 0;
+            while(text[i] != '\0') {
+                file << text[i];
+                text[i] = '\0';
+                i++;
+            }
+            counter = 0;
+            file.close(); 
         }
 
+        // no memory leak 🥳🎊🎈🎉💃
         ~QrCodeScanner() {
             free(this->text);
         }

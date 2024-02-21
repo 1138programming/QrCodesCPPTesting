@@ -9,6 +9,7 @@ class ShouldScale {
         long double data;
         bool shouldScale;
         SHOULDSCALEDEPENDENCIES dependency;
+        float scalingMult = 1.0;
     public:
         ShouldScale() {
             this->data = 0.0;
@@ -19,6 +20,12 @@ class ShouldScale {
             this->shouldScale = shouldScale;
             this->data = data;
             this->dependency = dependency;
+        }
+        ShouldScale(float data, bool shouldScale, SHOULDSCALEDEPENDENCIES dependency, float scalingMult) {
+            this->shouldScale = shouldScale;
+            this->data = data;
+            this->dependency = dependency;
+            this->scalingMult = scalingMult;
         }
         ShouldScale(int& a) {
             this->data = a;
@@ -61,11 +68,13 @@ class ShouldScale {
                 switch (this->dependency)
                 {
                     case XDEPENDENT:
-                        return this->data * SizeScaling::xMult();
+                        return this->data * (SizeScaling::xMult() * this->scalingMult);
                     break;
                     case YDEPENDENT:
-                        return this->data * SizeScaling::yMult();
+                        return this->data * (SizeScaling::yMult() * this->scalingMult);
                     break;
+                    case DIAGDEPENDENT:
+                        return this->data * (SizeScaling::diagMult() * this->scalingMult);
                     default:
                         return this->data;
                     break;

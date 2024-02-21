@@ -5,7 +5,6 @@
 #include "../include/raylib-cpp.hpp"
 #include "../myincludes/ezText.hpp"
 #include "../myincludes/shouldScale.hpp"
-#include <iostream>
 
 class Button : public Drawable {
     private:
@@ -13,7 +12,8 @@ class Button : public Drawable {
         ShouldScale width, height;
         float lastX, lastY;
         raylib::Color borderColor, hoverColor, backgroundColor;
-    public:
+        bool lastClickState = false;
+        public:
         Button(ShouldScale width, ShouldScale height, raylib::Color borderColor, raylib::Color backgroundColor, raylib::Color hoverColor, EzText text) {
             this->width = width;
             this->height = height;
@@ -49,10 +49,15 @@ class Button : public Drawable {
             raylib::Rectangle rect(this->lastX, this->lastY, this->width.getData(), this->height.getData());
             return CheckCollisionPointRec(GetMousePosition(), rect);
         }
+        bool isPressed() {
+            bool clickState = (isHovering() && IsMouseButtonDown(MOUSE_BUTTON_LEFT));
+            bool retval = (clickState == true && this->lastClickState == false);
+            this->lastClickState = clickState;
+            return retval;
+        }
 
         //overriden functions
         void draw(int x, int y) override {
-            std::cout << this->getWidth() << ", " <<  this->getHeight() << std::endl;
             // update vars to use for collision detection
             this->lastX = x;
             this->lastY = y;

@@ -13,14 +13,19 @@ int main() {
     // set up display stuff
     SizeScaling::init();
     Empty screen(raylib::Rectangle(0,0, GetScreenWidth(), GetScreenHeight()));
-    Button gaming(400.0_spX, 200.0_spY, WHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), WHITE, 40.0_spX, 0.0_spX));
+    Button gaming(400.0_spX, 200.0_spY, WHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), WHITE, 40.0_spD, 0.0_spX));
     gaming.setDisplayPos(BOTTOMCENTERED);
     screen.add(&gaming);
 
 
     while(!window.ShouldClose()) {
+        // calculating
         qrScanner.scan();
+        if (gaming.isPressed()) {
+            qrScanner.update();
+        }
 
+        // drawing
         window.BeginDrawing();
             screen.updateAndDrawAll(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight()));
             window.ClearBackground(BLACK);
