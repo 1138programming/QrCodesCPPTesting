@@ -2,9 +2,11 @@
 #define QRCODE_SCANNER_HPP
 
 #include "../include/raylib-cpp.hpp"
+#include "../include/json.hpp"
 #include <iostream>
 #include <fstream>
 
+using json = nlohmann::json;
 
 #define MAX_CHARS 8192
 
@@ -36,9 +38,18 @@ class QrCodeScanner {
         }
 
         void update () {
+            std::string fileName;
             std::cout << "helkejkekkedk" << std::endl;
+            json data = json::parse(this->text);
+            if (data.contains("scouterName")) {
+                fileName = data.find("scouterName").value();
+                fileName += ".json";
+            }
+            else {
+                fileName = "gaming.json";
+            }
 
-            std::ofstream file("gaming.json");
+            std::ofstream file(fileName);
             int i = 0;
             while(text[i] != '\0') {
                 file << text[i];

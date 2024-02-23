@@ -3,6 +3,7 @@
 #include "myincludes/allincludes.hpp"
 #include "../myincludes/button.hpp"
 #include "../myincludes/scenes.hpp"
+#include "../include/json_fwd.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -29,9 +30,9 @@ int main() {
 
     // __ Scanner Scene __
     Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-    Button gaming(400.0_spX, 200.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), RAYWHITE, 40.0_spD, 0.0_spX));
-    gaming.setDisplayPos(BOTTOMCENTERED);
-    scannerScreen.add(&gaming);
+    Button goated(400.0_spX, 200.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), RAYWHITE, 40.0_spD, 0.0_spX));
+    goated.setDisplayPos(BOTTOMCENTERED);
+    scannerScreen.add(&goated);
 
 
     while(!window.ShouldClose()) {
@@ -49,7 +50,7 @@ int main() {
             case SCANNING:
                 // calculating
                 qrScanner.scan();
-                if (gaming.isPressed()) {
+                if (goated.isPressed()) {
                     qrScanner.update();
                 }
 
