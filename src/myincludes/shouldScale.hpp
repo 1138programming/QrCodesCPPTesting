@@ -11,6 +11,9 @@ class ShouldScale {
         SHOULDSCALEDEPENDENCIES dependency;
         float scalingMult = 1.0;
     public:
+        operator long double() const {
+            return this->getData();
+        }
         ShouldScale() {
             this->data = 0.0;
             this->shouldScale = false;
@@ -27,27 +30,27 @@ class ShouldScale {
             this->dependency = dependency;
             this->scalingMult = scalingMult;
         }
-        ShouldScale(int& a) {
+        ShouldScale(int a) {
             this->data = a;
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
         }
-        ShouldScale(long& a) {
+        ShouldScale(long a) {
             this->data = a;
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
         }
-        ShouldScale(float& a) {
+        ShouldScale(float a) {
             this->data = a;
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
         }
-        ShouldScale(double& a) {
+        ShouldScale(double a) {
             this->data = a;
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
         }
-        ShouldScale(long double& a) {
+        ShouldScale(long double a) {
             this->data = a;
             this->shouldScale = false;
             this->dependency = NODEPENDENCY;
@@ -63,7 +66,10 @@ class ShouldScale {
             free((void*)a);
         }
 
-        long double getData() {
+        void setData(long double data) {
+            this->data = data;
+        }
+        long double getData() const {
             if (this->shouldScale) {
                 switch (this->dependency)
                 {

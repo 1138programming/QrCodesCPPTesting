@@ -3,22 +3,48 @@
 
 #include <vector>
 #include "drawable.hpp"
+#include "shouldScale.hpp"
 
-class Empty {
+class Empty : public Drawable{
     private:
         std::vector<Drawable*> thingsToDraw;
-        Rectangle emptySize;
+        ShouldScale x, y, width, height;
     public:
         Empty(Rectangle size) {
-            this->emptySize = size;
+            this->x = size.x;
+            this->y = size.y;
+            this->width = size.width;
+            this->height = size.height;
+        }
+        Empty(ShouldScale x, ShouldScale y, ShouldScale width, ShouldScale height) {
+            this->x = x;
+            this->y = y;
+            this->width = width;
+            this->height = height;
         }
 
-        void add(void* ref) {
+        Empty& add(void* ref) {
             Drawable* refAsDrawable = (Drawable*)ref;
             this->thingsToDraw.push_back(refAsDrawable);
+            return *this;
         }
 
-        void drawAll() {
+        void updateAndDraw(Rectangle size) {
+            this->width = size.width;
+            this->height = size.height;
+            draw(size.x, size.y);
+        }
+        void updateAndDraw(ShouldScale x, ShouldScale y, ShouldScale width, ShouldScale height) {
+            this->width = width;
+            this->height = height;
+            draw(x, x);
+        }
+        void draw() {
+            this->draw(this->x, this->y);
+        }
+        void draw(int x, int y) override {
+            this->x = x;
+            this->y = y;
             if (this->thingsToDraw.size() == 0) {
                 return;
             }
@@ -30,51 +56,47 @@ class Empty {
                 
                 switch(current->getDisplayPos()) {
                     case BOTTOMCENTERED:
-                        xPos = this->emptySize.x + ((this->emptySize.width/2.0)-(current->getWidth()/2.0));
-                        yPos = this->emptySize.height - current->getHeight();
+                        xPos = this->x + ((this->width/2.0)-(current->getWidth()/2.0));
+                        yPos = this->height - current->getHeight();
                         break;
                     case BOTTOMLEFT:
-                        xPos = this->emptySize.x;
-                        yPos = this->emptySize.height - current->getHeight();
+                        xPos = this->x;
+                        yPos = this->height - current->getHeight();
                         break;
                     case BOTTOMRIGHT:
-                        xPos = this->emptySize.width - current->getWidth();
-                        yPos = this->emptySize.height - current->getHeight();
+                        xPos = this->width - current->getWidth();
+                        yPos = this->height - current->getHeight();
                         break;
                     case CENTERED:
-                        xPos = this->emptySize.x + ((this->emptySize.width/2.0)-(current->getWidth()/2.0));
-                        yPos = (this->emptySize.y + (this->emptySize.height/2.0)) - current->getHeight()/2.0;
+                        xPos = this->x + ((this->width/2.0)-(current->getWidth()/2.0));
+                        yPos = (this->y + (this->height/2.0)) - current->getHeight()/2.0;
                         break;
                     case CENTERLEFT:
-                        xPos = this->emptySize.x;
-                        yPos = (this->emptySize.y + (this->emptySize.height/2.0)) - current->getHeight()/2.0;
+                        xPos = this->x;
+                        yPos = (this->y + (this->height/2.0)) - current->getHeight()/2.0;
                         break;
                     case CENTERRIGHT:
-                        xPos = (this->emptySize.x + this->emptySize.width) - current->getWidth();
-                        yPos = (this->emptySize.y + (this->emptySize.height/2.0)) - current->getHeight()/2.0;
+                        xPos = (this->x + this->width) - current->getWidth();
+                        yPos = (this->y + (this->height/2.0)) - current->getHeight()/2.0;
                         break;
                     case TOPCENTERED:
-                        xPos = this->emptySize.x + ((this->emptySize.width/2.0) + (current->getWidth()/2.0));
-                        yPos = this->emptySize.y;
+                        xPos = this->x + ((this->width/2.0) + (current->getWidth()/2.0));
+                        yPos = this->y;
                         break;
                     case TOPLEFT:
-                        xPos = this->emptySize.x;
-                        yPos = this->emptySize.y;
+                        xPos = this->x;
+                        yPos = this->y;
                         break;
                     case TOPRIGHT:
-                        xPos = (this->emptySize.x + this->emptySize.width) - current->getWidth();
-                        yPos = this->emptySize.y;
+                        xPos = (this->x + this->width) - current->getWidth();
+                        yPos = this->y;
                         break;
                     default:
                         break;
                 }
                 current->draw(xPos, yPos);
             }
-        }
-        void updateAndDrawAll(Rectangle size) {
-            this->emptySize = size;
-            drawAll();
-        }
+        };
 };
 
 #endif

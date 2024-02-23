@@ -59,7 +59,7 @@ class DrawableList : public Drawable {
             }
         }
 
-        float getWidth() override {
+        ShouldScale getWidth() override {
             switch(this->expansionType) {
                 case VERTICAL:
                     // if vertical, width is just width of largest element
@@ -98,7 +98,7 @@ class DrawableList : public Drawable {
                     return 0.0f;
             }
         }
-        float getHeight() override {
+        ShouldScale getHeight() override {
             switch(this->expansionType) {
                 case VERTICAL:
                     // all added

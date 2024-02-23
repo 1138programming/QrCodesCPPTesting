@@ -23,8 +23,8 @@ class QrCodeScanner {
         void scan () {
            key = GetCharPressed();
            while (key != 0) {
-                std::cout << key << std::endl;
                 if (counter < (MAX_CHARS-1)) {
+                    std::cout << key << std::endl;
                     text[counter] = key;
                     text[counter+1] = '\0';
                     counter++;

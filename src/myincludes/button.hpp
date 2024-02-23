@@ -46,7 +46,7 @@ class Button : public Drawable {
 
         //functions
         bool isHovering() {
-            raylib::Rectangle rect(this->lastX, this->lastY, this->width.getData(), this->height.getData());
+            raylib::Rectangle rect(this->lastX, this->lastY, this->width, this->height);
             return CheckCollisionPointRec(GetMousePosition(), rect);
         }
         bool isPressed() {
@@ -81,17 +81,17 @@ class Button : public Drawable {
 
             this->text.draw(textX, textY);
         }
-        float getWidth() override {
-            return (float)(this->width.getData());
+        ShouldScale getWidth() override {
+            return (this->width);
         }
-        float getHeight() override {
-            return (float)(this->height.getData());
+        ShouldScale getHeight() override {
+            return (this->height);
         }
 
-        void setWidth(float width) override {
+        void setWidth(ShouldScale width) override {
             this->width = ShouldScale(width, false, NODEPENDENCY);
         }
-        void setHeight(float height) override {
+        void setHeight(ShouldScale height) override {
             this->height = ShouldScale(height, false, NODEPENDENCY);
         }
 };

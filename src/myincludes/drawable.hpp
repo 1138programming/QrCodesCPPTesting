@@ -3,6 +3,7 @@
 
 #include "displayPos.hpp"
 #include "../include/raylib-cpp.hpp"
+#include "shouldScale.hpp"
 
 class Drawable {
     protected:
@@ -31,11 +32,11 @@ class Drawable {
 
         // __meant to be overwritten__
         //mutators
-        virtual void setWidth(float width) { }
-        virtual void setHeight(float height) { }
+        virtual void setWidth(ShouldScale width) { }
+        virtual void setHeight(ShouldScale height) { }
         // accessors
-        virtual float getWidth() { return 0.0f; }
-        virtual float getHeight() { return 0.0f; }
+        virtual ShouldScale getWidth() { return 0.0; }
+        virtual ShouldScale getHeight() { return 0.0; }
 };
 
 #endif

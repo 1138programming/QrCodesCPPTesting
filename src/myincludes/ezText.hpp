@@ -36,13 +36,13 @@ class EzText : public Drawable {
             this->text.Draw(this->text.GetText(), raylib::Vector2(x, y), text.GetFontSize(), this->drawColor);
         }
 
-        float getWidth() override {
+        ShouldScale getWidth() override {
             this->text.fontSize = this->textSize.getData();
             this->text.spacing = this->spacing.getData();
 
             return this->text.MeasureEx().x;
         } 
-        float getHeight() override {
+        ShouldScale getHeight() override {
             this->text.fontSize = this->textSize.getData();
             this->text.spacing = this->spacing.getData();
             
