@@ -10,7 +10,7 @@ class SizeScaling {
     public:
         static raylib::Vector3 tileSizePx;
         static raylib::Vector3 numOfTiles;
-
+        static raylib::Vector2 lastScreenSize;
         // constructor-ish
         inline static void init() {
             SizeScaling::tileSizePx.x = 1.0;
@@ -20,12 +20,19 @@ class SizeScaling {
             SizeScaling::numOfTiles.x = GetScreenWidth()/SizeScaling::tileSizePx.x;
             SizeScaling::numOfTiles.y = GetScreenHeight()/SizeScaling::tileSizePx.y;
             SizeScaling::numOfTiles.z = (sqrt((GetScreenWidth() * GetScreenWidth()) + (GetScreenHeight() * GetScreenHeight()))/SizeScaling::tileSizePx.z); //pythag. thrm
+            SizeScaling::lastScreenSize = raylib::Vector2(GetScreenWidth(), GetScreenHeight());
         }
 
         inline static void update() {
+            raylib::Vector2 currentScreenSize(GetScreenWidth(), GetScreenHeight());
+            if (currentScreenSize == SizeScaling::lastScreenSize) {
+                SizeScaling::lastScreenSize = currentScreenSize;
+                return;
+            }
             SizeScaling::tileSizePx.x = GetScreenWidth()/SizeScaling::numOfTiles.x;
             SizeScaling::tileSizePx.y = GetScreenHeight()/SizeScaling::numOfTiles.y;
             SizeScaling::tileSizePx.z = (sqrt((GetScreenWidth() * GetScreenWidth()) + (GetScreenHeight() * GetScreenHeight()))/SizeScaling::numOfTiles.z);
+            SizeScaling::lastScreenSize = currentScreenSize;
         }
         // this should be constant
         inline static Vector3 getTileSize() {
@@ -65,6 +72,7 @@ class SizeScaling {
 
 raylib::Vector3 SizeScaling::tileSizePx = raylib::Vector3(0.0, 0.0, 0.0);
 raylib::Vector3 SizeScaling::numOfTiles = raylib::Vector3(0.0, 0.0, 0.0);
+raylib::Vector2 SizeScaling::lastScreenSize = raylib::Vector2(0.0, 0.0);
 
 // custom user literals (https://en.cppreference.com/w/cpp/language/user_literal)
 const char* operator"" _spX(long double num) {
@@ -76,7 +84,5 @@ const char* operator"" _spY(long double num) {
 const char* operator"" _spD(long double num) {
     return SizeScaling::shouldScaleToCharPtr(true, DIAGDEPENDENT, num);
 }
-
-
 
 #endif

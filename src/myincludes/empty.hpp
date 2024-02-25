@@ -57,15 +57,15 @@ class Empty : public Drawable{
                 switch(current->getDisplayPos()) {
                     case BOTTOMCENTERED:
                         xPos = this->x + ((this->width/2.0)-(current->getWidth()/2.0));
-                        yPos = this->height - current->getHeight();
+                        yPos = (this->y + this->height) - current->getHeight();
                         break;
                     case BOTTOMLEFT:
                         xPos = this->x;
-                        yPos = this->height - current->getHeight();
+                        yPos = (this->y + this->height) - current->getHeight();
                         break;
                     case BOTTOMRIGHT:
                         xPos = this->width - current->getWidth();
-                        yPos = this->height - current->getHeight();
+                        yPos = (this->y + this->height) - current->getHeight();
                         break;
                     case CENTERED:
                         xPos = this->x + ((this->width/2.0)-(current->getWidth()/2.0));

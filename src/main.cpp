@@ -4,6 +4,7 @@
 #include "../myincludes/button.hpp"
 #include "../myincludes/scenes.hpp"
 #include "../include/json_fwd.hpp"
+#include "myincludes/texturedButton.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -31,6 +32,8 @@ int main() {
     // __ Scanner Scene __
     Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
     Button goated(400.0_spX, 200.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), RAYWHITE, 40.0_spD, 0.0_spX));
+    //std::string fileName = "resources/submit.png";
+   // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
     goated.setDisplayPos(BOTTOMCENTERED);
     scannerScreen.add(&goated);
 
@@ -53,12 +56,10 @@ int main() {
                 if (goated.isPressed()) {
                     qrScanner.update();
                 }
-
                 // drawing
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
                     scannerScreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-                    window.DrawFPS();
                 // calling endDrawing later
             break;
 
@@ -74,6 +75,7 @@ int main() {
 
         }
         tabs.updateAndDraw(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));
+        window.DrawFPS();
         window.EndDrawing();
     }
     return 1;

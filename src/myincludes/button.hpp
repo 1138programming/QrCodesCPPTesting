@@ -89,10 +89,10 @@ class Button : public Drawable {
         }
 
         void setWidth(ShouldScale width) override {
-            this->width = ShouldScale(width, false, NODEPENDENCY);
+            this->width = width;
         }
         void setHeight(ShouldScale height) override {
-            this->height = ShouldScale(height, false, NODEPENDENCY);
+            this->height = height;
         }
 };
 
