@@ -3,6 +3,7 @@
 
 #include "../include/raylib-cpp.hpp"
 #include "../include/json.hpp"
+#include "toastHandler.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -38,26 +39,30 @@ class QrCodeScanner {
         }
 
         void update () {
-            std::string fileName;
-            std::cout << "helkejkekkedk" << std::endl;
-            json data = json::parse(this->text);
-            if (data.contains("scouterName")) {
-                fileName = data.find("scouterName").value();
-                fileName += ".json";
+            try {
+                std::string fileName;
+                std::cout << "helkejkekkedk" << std::endl;
+                json data = json::parse(this->text);
+                if (data.contains("scouterName")) {
+                    fileName = data.find("scouterName").value();
+                    fileName += ".json";
+                }
+                else {
+                    fileName = "gaming.json";
+                }
+                std::ofstream file(fileName);
+                int i = 0;
+                while(text[i] != '\0') {
+                    file << text[i];
+                    text[i] = '\0';
+                    i++;
+                }
+                counter = 0;
+                file.close(); 
             }
-            else {
-                fileName = "gaming.json";
+            catch(...) {
+                toastHandler::add(Toast("Failed to write to JSON you dumb bozo", LENGTH_NORMAL));
             }
-
-            std::ofstream file(fileName);
-            int i = 0;
-            while(text[i] != '\0') {
-                file << text[i];
-                text[i] = '\0';
-                i++;
-            }
-            counter = 0;
-            file.close(); 
         }
 
         // no memory leak 🥳🎊🎈🎉💃

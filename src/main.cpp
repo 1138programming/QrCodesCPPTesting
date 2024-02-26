@@ -5,6 +5,7 @@
 #include "../myincludes/scenes.hpp"
 #include "../include/json_fwd.hpp"
 #include "myincludes/texturedButton.hpp"
+#include "myincludes/toastHandler.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -76,6 +77,7 @@ int main() {
         }
         tabs.updateAndDraw(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));
         window.DrawFPS();
+        toastHandler::update();
         window.EndDrawing();
     }
     return 1;

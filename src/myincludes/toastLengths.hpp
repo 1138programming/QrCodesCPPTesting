@@ -1,0 +1,11 @@
+#ifndef TOASTLENGTHS_HPP
+#define TOASTLENGTHS_HPP
+
+enum TOASTLENGTHS {
+    LENGTH_NULL,
+    LENGTH_SHORT,
+    LENGTH_NORMAL,
+    LENGTH_LONG
+};
+
+#endif
