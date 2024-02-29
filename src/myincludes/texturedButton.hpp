@@ -13,7 +13,7 @@ class TexturedButton : public Drawable{
         float lastX, lastY;
         bool lastClickState = false;
     public:
-        TexturedButton(ShouldScale width, ShouldScale height, raylib::Image mainTexture, raylib::Image hoverTexture) {
+        TexturedButton(ShouldScale width, ShouldScale height, raylib::Texture mainTexture, raylib::Texture hoverTexture) {
             this->width = width;
             this->height = height;
             this->mainTexture = mainTexture;

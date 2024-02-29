@@ -33,8 +33,8 @@ int main() {
     // __ Scanner Scene __
     Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
     Button goated(400.0_spX, 200.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), RAYWHITE, 40.0_spD, 0.0_spX));
-    //std::string fileName = "resources/submit.png";
-   // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
+    std::string fileName = "resources/submit.png";
+    TexturedButton goated(400.0_spX, 200.0_spY, LoadTexture(fileName), LoadTexture(fileName));
     goated.setDisplayPos(BOTTOMCENTERED);
     scannerScreen.add(&goated);
 
