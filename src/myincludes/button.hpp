@@ -13,6 +13,7 @@ class Button : public Drawable {
         float lastX, lastY;
         raylib::Color borderColor, hoverColor, backgroundColor;
         bool lastClickState = false;
+        bool disabled = false;
         public:
         Button(ShouldScale width, ShouldScale height, raylib::Color borderColor, raylib::Color backgroundColor, raylib::Color hoverColor, EzText text) {
             this->width = width;
@@ -51,10 +52,26 @@ class Button : public Drawable {
             return CheckCollisionPointRec(GetMousePosition(), rect);
         }
         bool isPressed() {
+            if (isDisabled()) {
+                return false;
+            }
             bool clickState = (isHovering() && IsMouseButtonDown(MOUSE_BUTTON_LEFT));
             bool retval = (clickState == true && this->lastClickState == false);
             this->lastClickState = clickState;
             return retval;
+        }
+
+        void setDisabled(bool state) {
+            this->disabled = state;
+        }
+        void disable() {
+            this->disabled = true;
+        }
+        void enable() {
+            this->disabled = false;
+        }
+        bool isDisabled() {
+            return this->disabled;
         }
 
         //overriden functions
@@ -66,7 +83,7 @@ class Button : public Drawable {
             // drawing
             raylib::Rectangle rect(x, y, this->getWidth(), this->getHeight());
             // draw BG
-            if (isHovering()) {
+            if (isHovering() && !isDisabled()) {
                 rect.Draw(this->hoverColor);
             }
             else {
