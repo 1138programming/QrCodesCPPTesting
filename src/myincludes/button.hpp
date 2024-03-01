@@ -19,6 +19,7 @@ class Button : public Drawable {
             this->height = height;
             this->borderColor = borderColor;
             this->hoverColor = hoverColor;
+            this->backgroundColor = backgroundColor;
             this->text = text;
         }
 

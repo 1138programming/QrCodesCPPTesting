@@ -11,7 +11,7 @@ class DrawableTexture : public Drawable {
         float lastWidth, lastHeight;
         Color tint = WHITE;
     public:
-        DrawableTexture(ShouldScale width, ShouldScale height, raylib::Image texture, raylib::Color tint = raylib::Color(255, 255, 255, 255)) {
+        DrawableTexture(ShouldScale width, ShouldScale height, raylib::Image texture, raylib::Color tint = WHITE) {
             this->internalTexture = texture;
             this->width = width;
             this->height = height;
