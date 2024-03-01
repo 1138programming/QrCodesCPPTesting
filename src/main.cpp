@@ -12,7 +12,7 @@
 
 int main() {
     // _____ Constant Things _____
-    raylib::Window window(1280,720,"I am mentally dumb", FLAG_WINDOW_RESIZABLE);
+    raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);
     window.SetConfigFlags(FLAG_MSAA_4X_HINT);
     window.SetTargetFPS(480);
     
