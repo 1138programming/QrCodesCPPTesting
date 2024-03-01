@@ -19,3 +19,7 @@ nowarn:
 	$(CC) $(NOWARN)
 o3:
 	$(CC) $(O3)
+nowrun:
+	$(CC) $(NOWARN)
+	cls
+	game.exe

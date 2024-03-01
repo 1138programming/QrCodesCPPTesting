@@ -7,13 +7,14 @@
 
 class TexturedButton : public Drawable{
     private:
-        raylib::Texture2D mainTexture = GetShapesTexture();
-        raylib::Texture2D hoverTexture = GetShapesTexture();
+        raylib::Texture2D mainTexture;
+        raylib::Texture2D hoverTexture;
         ShouldScale width, height;
         float lastX, lastY;
+        float lastWidth, lastHeight;
         bool lastClickState = false;
     public:
-        TexturedButton(ShouldScale width, ShouldScale height, raylib::Texture mainTexture, raylib::Texture hoverTexture) {
+        TexturedButton(ShouldScale width, ShouldScale height, raylib::Image mainTexture, raylib::Image hoverTexture) {
             this->width = width;
             this->height = height;
             this->mainTexture = mainTexture;
@@ -37,12 +38,33 @@ class TexturedButton : public Drawable{
             this->lastY = y;
 
             raylib::Rectangle destinationRect(x, y, this->width, this->height);
+
+            if (this->lastWidth != (float)this->width || this->lastHeight != (float)this->height) {
+                // update textures if width or height changes (EXPENSIVE)
+                raylib::Image mainImage = this->mainTexture.GetData();
+                raylib::Image hoverImage = this->hoverTexture.GetData();
+
+                mainImage.Resize(this->width, this->height);
+                hoverImage.Resize(this->width, this->height);
+
+                this->mainTexture.Unload();
+                this->mainTexture = mainImage;
+                this->mainTexture.Unload();
+                this->mainTexture = hoverImage;
+
+                mainImage.Unload();
+                hoverImage.Unload();
+            }
+
             if (isHovering()) {
                 this->hoverTexture.Draw(x, y);
             }
             else {
                 this->mainTexture.Draw(x, y);
             }
+
+            this->lastWidth = (float)this->width;
+            this->lastHeight = (float)this->height;
         }
 
         ShouldScale getWidth() override {

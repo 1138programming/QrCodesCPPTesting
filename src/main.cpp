@@ -6,13 +6,16 @@
 #include "../include/json_fwd.hpp"
 #include "myincludes/texturedButton.hpp"
 #include "myincludes/toastHandler.hpp"
+#include "myincludes/texture.hpp"
 #include <iostream>
 #include <fstream>
 
 int main() {
     // _____ Constant Things _____
     raylib::Window window(1280,720,"I am mentally dumb", FLAG_WINDOW_RESIZABLE);
-    window.SetTargetFPS(240);
+    window.SetConfigFlags(FLAG_MSAA_4X_HINT);
+    window.SetTargetFPS(480);
+    
     QrCodeScanner qrScanner;
     SCENES currentScene = SCANNING;
 
@@ -21,22 +24,22 @@ int main() {
     // set up tabs at top of screen
     TabHandler tabs(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));    
     // tab buttons
-    Button main(0.0, 0.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
-    Button dataVisualization(0.0, 0.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
-    Button matchConfiguration(0.0,0.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
+    Button main(0.0, 0.0, RAYWHITE, raylib::Color(255,255,255,100), DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
+    Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(255,255,255,100), DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
+    Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(255,255,255,100), DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
     tabs.add(&main)
         .add(&dataVisualization)
         .add(&matchConfiguration);
 
     // _____ Setting up Scenes _____
-
+    DrawableTexture texture(1280.0_spX, 720.0_spY, raylib::Image("resources/maxresdefault.png"), raylib::Color(100, 255, 100, 100));
     // __ Scanner Scene __
     Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-    Button goated(400.0_spX, 200.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), RAYWHITE, 40.0_spD, 0.0_spX));
-    std::string fileName = "resources/submit.png";
-    TexturedButton goated(400.0_spX, 200.0_spY, LoadTexture(fileName), LoadTexture(fileName));
-    goated.setDisplayPos(BOTTOMCENTERED);
-    scannerScreen.add(&goated);
+    Button goated(400.0_spX, 200.0_spY, RAYWHITE, raylib::Color(0,0,0,0), DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Submit"), RAYWHITE, 40.0_spD, 0.0_spX));
+    // std::string fileName = "resources/submit.png";
+    TexturedButton goated2(200.0_spX, 114.0_spY, raylib::Image("resources/submit.png"), raylib::Image("resources/submit.png"));
+    goated2.setDisplayPos(BOTTOMCENTERED);
+    scannerScreen.add(&goated2);
 
 
     while(!window.ShouldClose()) {
@@ -54,12 +57,13 @@ int main() {
             case SCANNING:
                 // calculating
                 qrScanner.scan();
-                if (goated.isPressed()) {
+                if (goated2.isPressed()) {
                     qrScanner.update();
                 }
                 // drawing
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
+                    texture.draw(0,0);
                     scannerScreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
                 // calling endDrawing later
             break;
