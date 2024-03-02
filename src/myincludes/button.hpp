@@ -74,6 +74,37 @@ class Button : public Drawable {
             return this->disabled;
         }
 
+        void drawTab(int x, int y) {
+            this->lastX = x;
+            this->lastY = y;
+
+            // drawing
+            raylib::Rectangle rect(x, y, this->getWidth(), this->getHeight());
+            // draw BG
+            if (isHovering() && !isDisabled()) {
+                rect.Draw(this->hoverColor);
+            }
+            else {
+                rect.Draw(this->backgroundColor);
+            }
+            // draw border
+            if (!isDisabled()) {
+                rect.DrawLines(this->borderColor);
+            }
+            else {
+                DrawLine(rect.x, rect.y, rect.x+width, rect.y, this->borderColor);
+                DrawLine(rect.x, rect.y, rect.x, rect.y+rect.height, this->borderColor);
+                DrawLine(rect.x+width, rect.y, rect.x+width, rect.y+rect.height, this->borderColor);
+            }
+            // draw text
+            float textX = (this->getWidth()/2.0)-(this->text.getWidth()/2.0);
+            float textY = (this->getHeight()/2.0)-(this->text.getHeight()/2.0);
+            textX += x;
+            textY += y;
+
+            this->text.draw(textX, textY);
+        }
+
         //overriden functions
         void draw(int x, int y) override {
             // update vars to use for collision detection

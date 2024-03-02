@@ -8,7 +8,7 @@
 
 class TabHandler : public Drawable {
     private:
-        std::vector<Drawable*> thingsToDraw;
+        std::vector<Button*> thingsToDraw;
         ShouldScale x, y, width, height;
     public:
         TabHandler() {
@@ -31,7 +31,7 @@ class TabHandler : public Drawable {
         }
 
         TabHandler& add(void* ptr) {
-            Drawable* drawable = (Drawable*) ptr;
+            Button* drawable = (Button*) ptr;
             this->thingsToDraw.push_back(drawable);
             return *this;
         }
@@ -40,12 +40,12 @@ class TabHandler : public Drawable {
             this->y = y;
             float buttonWidth = this->width / (this->thingsToDraw.size());
             for (unsigned int i = 0; i < this->thingsToDraw.size(); i++) {
-                Drawable* current = this->thingsToDraw.at(i);
+                Button* current = this->thingsToDraw.at(i);
 
                 current->setWidth(buttonWidth);
                 current->setHeight(this->height);
 
-                current->draw(i*buttonWidth + (this->x), this->y);
+                current->drawTab(i*buttonWidth + (this->x), this->y);
             }
         }
         void updateAndDraw(Rectangle size) {

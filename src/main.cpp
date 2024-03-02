@@ -23,9 +23,9 @@ int main() {
     // set up tabs at top of screen
     TabHandler tabs(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));    
     // tab buttons
-    Button main(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 0, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
-    Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 0, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
-    Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(0, 0, 0, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
+    Button main(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
+    Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
+    Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
     tabs.add(&main)
         .add(&dataVisualization)
         .add(&matchConfiguration);
@@ -33,10 +33,11 @@ int main() {
     // _____ Setting up Scenes _____
     DrawableTexture texture(1280.0_spX, 720.0_spY, raylib::Image("resources/maxresdefault.png"), raylib::Color(100, 100, 100));
     // __ Scanner Scene __
-    Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-    TexturedButton goated(200.0_spX, 114.0_spY, raylib::Image("resources/submit.png"), raylib::Image("resources/submit.png"));
-    goated.setDisplayPos(BOTTOMCENTERED);
-    scannerScreen.add(&goated);
+        Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
+        TexturedButton goated(200.0_spX, 114.0_spY, raylib::Image("resources/submit.png"), raylib::Image("resources/submit.png"));
+        goated.setDisplayPos(BOTTOMCENTERED);
+        scannerScreen.add(&goated);
+    // __
 
 
     while(!window.ShouldClose()) {
@@ -54,12 +55,24 @@ int main() {
 
         if (main.isPressed()) {
             currentScene = SCANNING;
+
+            main.disable();
+            dataVisualization.enable();
+            matchConfiguration.enable();
         }
         else if (dataVisualization.isPressed()) {
             currentScene = DATAVISUALIZATION;
+
+            main.enable();
+            dataVisualization.disable();
+            matchConfiguration.enable();
         }
         else if (matchConfiguration.isPressed()) {
             currentScene = MATCHCONFIG;
+
+            main.enable();
+            dataVisualization.enable();
+            matchConfiguration.disable();
         }
 
         switch(currentScene) {
