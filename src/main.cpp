@@ -23,9 +23,9 @@ int main() {
     // set up tabs at top of screen
     TabHandler tabs(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));    
     // tab buttons
-    Button main(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
-    Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
-    Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
+    Button main(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
+    Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
+    Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
     main.disable();
     tabs.add(&main)
         .add(&dataVisualization)
