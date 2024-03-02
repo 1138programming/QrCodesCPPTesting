@@ -26,6 +26,7 @@ int main() {
     Button main(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Main Tab"), RAYWHITE, 20.0_spD, 0.0));
     Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Data Visualization"), RAYWHITE, 20.0_spD, 0.0));
     Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(0, 0, 20, 190), raylib::Color(0, 0, 0, 50), EzText(raylib::Text(GetFontDefault(), "Match Config"), RAYWHITE, 20.0_spD, 0.0));
+    main.disable();
     tabs.add(&main)
         .add(&dataVisualization)
         .add(&matchConfiguration);
