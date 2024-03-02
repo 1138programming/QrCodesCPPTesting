@@ -11,8 +11,7 @@ NAME = game.exe
 #	-Wall = all warnings
 CPPFLAGS = $(MAINFILE) -o $(NAME) -O1 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll
 NOWARN = $(MAINFILE) -o $(NAME) -O1 -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll
-O3 = $(MAINFILE) -o $(NAME) -O3 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll
-
+O3 = $(MAINFILE) -o $(NAME) -O3 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -mwindows
 main:
 	$(CC) $(CPPFLAGS)
 nowarn:
@@ -22,4 +21,8 @@ o3:
 nowrun:
 	$(CC) $(NOWARN)
 	cls
-	game.exe
+	$(NAME)
+runo3:
+	$(CC) $(O3)
+	cls
+	$(NAME)
