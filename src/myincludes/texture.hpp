@@ -6,6 +6,7 @@
 
 class DrawableTexture : public Drawable {
     private:
+        raylib::Image initialMainImage;
         raylib::Texture2D internalTexture;
         ShouldScale width, height;
         float lastWidth, lastHeight;
@@ -13,6 +14,7 @@ class DrawableTexture : public Drawable {
     public:
         DrawableTexture(ShouldScale width, ShouldScale height, raylib::Image texture, raylib::Color tint = WHITE) {
             this->internalTexture = texture;
+            this->initialMainImage = texture;
             this->width = width;
             this->height = height;
             this->tint = tint;
@@ -22,7 +24,7 @@ class DrawableTexture : public Drawable {
 
             if (this->lastWidth != (float)this->width || this->lastHeight != (float)this->height) {
                 // scale texture (EXPENSIVE)
-                raylib::Image textureImg = this->internalTexture.GetData();
+                raylib::Image textureImg = this->initialMainImage;
 
                 textureImg.Resize(this->width, this->height);
 

@@ -32,7 +32,7 @@ int main() {
         .add(&matchConfiguration);
 
     // _____ Setting up Scenes _____
-    DrawableTexture texture(1280.0_spX, 720.0_spY, raylib::Image("resources/maxresdefault.png"), raylib::Color(100, 100, 100));
+    DrawableTexture texture(1280.0_spX, 720.0_spY, raylib::Image("resources/bg.png"), raylib::Color(100, 100, 100));
     // __ Scanner Scene __
         Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));

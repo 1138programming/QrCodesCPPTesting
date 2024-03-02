@@ -7,8 +7,8 @@
 
 class TexturedButton : public Drawable{
     private:
-        raylib::Texture2D mainTexture;
-        raylib::Texture2D hoverTexture;
+        raylib::Image initialMainImage, initialHoverImage;
+        raylib::Texture2D mainTexture, hoverTexture;
         ShouldScale width, height;
         float lastX, lastY;
         float lastWidth, lastHeight;
@@ -19,6 +19,8 @@ class TexturedButton : public Drawable{
             this->height = height;
             this->mainTexture = mainTexture;
             this->hoverTexture = hoverTexture;
+            this->initialMainImage = mainTexture;
+            this->initialHoverImage = hoverTexture;
         }
 
         bool isHovering() {
@@ -41,8 +43,8 @@ class TexturedButton : public Drawable{
 
             if (this->lastWidth != (float)this->width || this->lastHeight != (float)this->height) {
                 // update textures if width or height changes (EXPENSIVE)
-                raylib::Image mainImage = this->mainTexture.GetData();
-                raylib::Image hoverImage = this->hoverTexture.GetData();
+                raylib::Image mainImage = this->initialMainImage;
+                raylib::Image hoverImage = this->initialHoverImage;
 
                 mainImage.Resize(this->width, this->height);
                 hoverImage.Resize(this->width, this->height);
