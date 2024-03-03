@@ -1,0 +1,283 @@
+# file      : mysql/buildfile
+# license   : LGPLv2.1; see accompanying COPYING file
+
+import imp_libs = libz%lib{z}
+
+# Windows-specific named pipe and shared memory based communication plugins.
+#
+pvio_win32 = pvio/pvio_npipe pvio/pvio_shmem
+
+lib{mariadb}: {h}{**                  -version} \
+              {h}{                     version} \
+      plugins/{c}{**            -{$pvio_win32}} \
+   libmariadb/{c}{*  -ma_tls -ma_client_plugin} \
+   libmariadb/{c}{            ma_client_plugin} \
+              $imp_libs
+
+tclass = $c.target.class
+tsys   = $c.target.system
+
+windows = ($tclass == 'windows')
+
+msvc_runtime = ($tsys == 'win32-msvc')
+
+lib{mariadb}: win-iconv/{h c}{*          } \
+                plugins/{  c}{$pvio_win32}: include = $windows
+
+# The upstream package, by default, builds without SSL on POSIX systems, and
+# with bundled SSL on Windows. However, it fails to build against MinGW API
+# that doesn't implement some "bleeding edge" features used, like the
+# SecPkgContext_CipherInfo type. So we only enable SSL for VC.
+#
+# @@ TODO: need to enable SSL by default on POSIX.
+#
+with_ssl = $msvc_runtime
+
+lib{mariadb}: libmariadb/{  c}{ma_tls} \
+       libmariadb/secure/{h c}{*     }: include = $with_ssl
+
+# Symbol exporting on Windows is done via the .def file.
+#
+lib{mariadb}: libmariadb/def{mariadbclient}: include = $windows
+
+libmariadb/def{mariadbclient}: libmariadb/in{mariadbclient_win32}
+{
+  mariadb_deinitialize_ssl = ($with_ssl ? 'mariadb_deinitialize_ssl' : '')
+}
+
+# Include the generated version header into the distribution (so that we don't
+# pick up an installed one) and don't remove it when cleaning in src (so that
+# clean results in a state identical to distributed).
+#
+# @@ We should probably allow to configure MARIADB_UNIX_ADDR (used as a last
+#    resort) via configuration variable config.libmariadb.unix_addr. Note that
+#    it is set differently for the upstream package and the major Linux
+#    distributions:
+#
+#    Debian/Ubuntu:  /var/run/mysqld/mysqld.sock
+#    Fedora/RHEL:    /var/lib/mysql/mysql.sock
+#    Source package: /tmp/mysql.sock
+#
+h{version}: in{version} $src_root/manifest
+{
+  dist  = true
+  clean = ($src_root != $out_root)
+
+  in.symbol = '@'
+
+  PROTOCOL_VERSION = $protocol_version
+  MARIADB_CLIENT_VERSION = $version.project
+  MARIADB_BASE_VERSION = "mariadb-$version.major.$version.minor"
+
+  MARIADB_VERSION_ID =                                                   \
+    "\(10000 * $version.major + 100 * $version.minor + $version.patch\)"
+
+  MYSQL_VERSION_ID = $MARIADB_VERSION_ID
+  MARIADB_PORT = 3306
+  MARIADB_UNIX_ADDR = ($windows ? '': /tmp/mysql.sock)
+  CPACK_PACKAGE_VERSION = "$client_major.$client_minor.$client_patch"
+
+  MARIADB_PACKAGE_VERSION_ID =                                        \
+    "\(10000 * $client_major + 100 * $client_minor + $client_patch\)"
+
+  CMAKE_SYSTEM_NAME = $tsys
+  CMAKE_SYSTEM_PROCESSOR = $c.target.cpu
+
+  PLUGINDIR = ($install.root != [null]                                         \
+               ? $regex.replace($install.resolve($install.lib)/mariadb/plugin, \
+                                '\\',                                          \
+                                '/')                                           \
+               : '')
+
+  default_charset = ''
+  CC_SOURCE_REVISION = ''
+}
+
+libmariadb/c{ma_client_plugin}: libmariadb/in{ma_client_plugin}
+{
+  in.symbol = '@'
+  in.substitution = lax
+
+  EXTERNAL_PLUGINS = ''
+  BUILTIN_PLUGINS = ''
+}
+
+for p: 'pvio_socket' 'native_password_client' 'old_password_client' \
+       ($windows ? 'pvio_npipe' 'pvio_shmem' : )
+{
+  libmariadb/c{ma_client_plugin}:
+  {
+    EXTERNAL_PLUGINS = "$EXTERNAL_PLUGINS
+extern struct st_mysql_client_plugin $(p)_plugin;"
+
+    BUILTIN_PLUGINS = "$BUILTIN_PLUGINS
+\(struct st_mysql_client_plugin *\)&$(p)_plugin,"
+  }
+}
+
+# Build options.
+#
+# We have dropped the macro definitions that are not used in the package code:
+#
+#   -DHAVE_AUTH_CLEARTEXT=1 -DHAVE_AUTH_DIALOG=1 -DHAVE_AUTH_NATIVE=1
+#   -DHAVE_AUTH_OLDPASSWORD=1 -DHAVE_AURORA=1 -DHAVE_REPLICATION=1
+#   -DHAVE_TRACE_EXAMPLE=1
+#
+# Here are VC-specific macros dropped:
+#
+#   /D sha256_password_EXPORTS /D HAVE_NPIPE=1 /D HAVE_SHMEM=1
+#   /D HAVE_AUTH_SHA256PW=1 /D HAVE_AUTH_GSSAPI=1
+#   /D HAVE_AUTH_GSSAPI_DYNAMIC=1 /D HAVE_DIALOG_DYNAMIC=1
+#   /D HAVE_SHA256PW_DYNAMIC=1 /D HAVE_CLEARTEXT_DYNAMIC=1 /D _WINDLL
+#
+# Note that we add "-I$src_root" for the headers auto-generating machinery to
+# work properly.
+#
+# Also note that we add -DLIBICONV_PLUG not to let the GNU's libiconv header to
+# rename iconv*() functions to libiconv*(). Not doing so breaks the linkage
+# against non-GNU libc, implementing iconv API, if GNU libiconv is installed in
+# the system and its header is picked up instead of the system one.
+#
+mariadb_poptions = "-I$out_root" "-I$src_root" "-I$src_base"              \
+                   -DHAVE_SOCKET=1 -DHAVE_COMPRESS -DENABLED_LOCAL_INFILE \
+                   -DLIBMARIADB -DTHREAD -DLIBICONV_PLUG -DDBUG_OFF
+
+switch $tclass
+{
+  case 'linux'
+    mariadb_poptions += -D_GNU_SOURCE
+
+  case 'windows'
+  {
+    # Note that the original package defines the WIN32 macro for VC only,
+    # relying on the fact that MinGW GCC defines it by default. However, the
+    # macro disappears from the default ones if to compile with -std=c9x (as
+    # we do). So we define it for both VC and MinGW GCC.
+    #
+    c.poptions += -DWIN32 -D_WINDOWS -D_MBCS
+
+    # Using CancelIoEx() in mysql/plugins/pvio/pvio_socket.c requires at least
+    # Windows Vista/Server 2008 (_WIN32_WINNT >= 0x0600). Note that Windows
+    # Kits (used by VC) default _WIN32_WINNT to the most current version.
+    #
+    c.poptions += -D_WIN32_WINNT=0x0600
+
+    # Declaration visibility attribute is not supported.
+    #
+    c.poptions += -DNO_VIZ
+
+    if $with_ssl
+      mariadb_poptions += -DHAVE_SCHANNEL -DHAVE_TLS
+  }
+}
+
+# Note that the bundled win-iconv header is included as a quoted (relative)
+# path, so no need for -I option.
+#
+   plugins/ c.poptions =+ $mariadb_poptions
+libmariadb/ c.poptions =+ $mariadb_poptions
+
+switch $c.class
+{
+  case 'gcc'
+  {
+    # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem
+    # to care about these and it is not easy to disable specific warnings in a
+    # way that works across compilers/version (some -Wno-* options are only
+    # recognized in newer versions). There are still some warnings left that
+    # appear for certain platforms/compilers. We pass them through but disable
+    # treating them as errors.
+    #
+    c.coptions += -Wno-all -Wno-extra -Wno-error
+
+    # Disable the Clang targeting MSVC warnings.
+    #
+    if ($c.id == 'clang' && $msvc_runtime)
+      c.coptions += -Wno-deprecated-declarations
+  }
+  case 'msvc'
+  {
+    # Disable warnings that pop up with /W3.
+    #
+    c.coptions += /wd4996 /wd4267
+  }
+}
+
+switch $tclass, $tsys
+{
+  case 'windows', 'mingw32'
+    cc.libs += -lws2_32 -lshlwapi -ladvapi32 -lversion # @@ secur32
+
+  case 'windows'
+    cc.libs += ws2_32.lib shlwapi.lib advapi32.lib version.lib
+
+  case 'linux'
+  {
+    # The upstream package also passes the cmake-generated mariadbclient.def
+    # version script file. The symbols it contains are hard-coded into
+    # libmariadb/libmariadb/CMakeList.txt. We drop the file for now.
+    #
+    # Make sure all symbols are resolvable.
+    #
+    c.loptions += -Wl,--no-undefined
+
+    # Drop the redundant linkage of libnsl.
+    #
+    # The upstream package looks for gethostbyname_r() in libnsl and links it
+    # even though it doesn't export the symbol (that actually is not even used
+    # in libmariadb).
+    #
+    # Note that glibc 2.26 deprecates libnsl and doesn't install it by
+    # default, so its linkage just fails.
+    #
+    c.libs += -lpthread -lm -ldl # -lnsl
+  }
+
+  case 'bsd'
+    c.libs += -lpthread -lm
+
+  case 'macos'
+  {
+    c.loptions += -compatibility_version "$abi_version.0.0" \
+                  -current_version "$abi_version.0.0"
+
+    c.libs += -lpthread -lm -ldl -liconv
+  }
+
+  default
+    c.libs += -lpthread -lm -ldl
+}
+
+# Export options.
+#
+# The library clients must include the API header as <mysql/mysql.h>.
+#
+lib{mariadb}: cc.export.poptions = "-I$out_root" "-I$src_root"
+
+# See bootstrap.build for details.
+#
+if $version.pre_release
+  lib{mariadb}: bin.lib.version = @"-$version.project_id"
+else
+  lib{mariadb}: bin.lib.version = @"-$abi_version"
+
+# Let's install the bare minimum of headers: mysql.h, errmsg.h, mysqld_error.h
+# and headers they recursively include.
+#
+# Note that we don't install dyncol and client plugin API headers. Including
+# them wouldn't work out of the box anyway, as they include prerequisite
+# headers without mysql/ prefix. These headers don't look important as seems
+# to be broken anyway for the upstream package (they reference non-installed
+# headers and non-exported functions).
+#
+h{*}: install = false
+
+# @@ Fix once LHS pair generation is implemented.
+#
+for h: mysql errmsg mysqld_error mariadb_version mariadb_com ma_list \
+       mariadb_ctype mariadb_stmt
+  h{$h}@./: install = include/mysql/
+
+# Install into the mysql/ subdirectory of, say, /usr/include.
+#
+h{version}: install = include/mysql/

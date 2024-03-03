@@ -7,6 +7,7 @@
 #include "myincludes/texturedButton.hpp"
 #include "myincludes/toastHandler.hpp"
 #include "myincludes/texture.hpp"
+#include "myincludes/database.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -17,7 +18,7 @@ int main() {
     
     QrCodeScanner qrScanner;
     SCENES currentScene = SCANNING;
-
+    Database database;
     // set up display + constant scene stuff
     SizeScaling::init();
     // set up tabs at top of screen
@@ -36,9 +37,16 @@ int main() {
     // __ Scanner Scene __
         Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));
+        Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "BD"), RAYWHITE, 20.0_spD, 0.0));
         goated.setDisplayPos(BOTTOMCENTERED);
         scannerScreen.add(&goated);
-    // __
+        scannerScreen.add(&DB);
+
+    //std::string fileName = "resources/submit.png";
+   // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
+    goated.setDisplayPos(BOTTOMCENTERED);
+    DB.setDisplayPos(BOTTOMLEFT);
+    scannerScreen.add(&goated);
 
 
     while(!window.ShouldClose()) {
@@ -82,6 +90,9 @@ int main() {
                 qrScanner.scan();
                 if (goated.isPressed()) {
                     qrScanner.update();
+                }
+                if(DB.isPressed()) {
+                    database.innit();
                 }
                 // drawing
                 window.BeginDrawing();
