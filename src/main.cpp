@@ -15,7 +15,8 @@ int main() {
     // _____ Constant Things _____
     raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);
     window.SetTargetFPS(480);
-    
+    bool highFPS = true;
+
     QrCodeScanner qrScanner;
     SCENES currentScene = SCANNING;
     Database database;
@@ -38,15 +39,20 @@ int main() {
         Empty scannerScreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "BD"), RAYWHITE, 20.0_spD, 0.0));
+        Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Low Power"), RAYWHITE, 20.0_spD, 0.0));
+        lowPowerMode.setDisplayPos(BOTTOMRIGHT);
         goated.setDisplayPos(BOTTOMCENTERED);
         scannerScreen.add(&goated);
         scannerScreen.add(&DB);
+        scannerScreen.add(&lowPowerMode);
+        //std::string fileName = "resources/submit.png";
+        // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
+        goated.setDisplayPos(BOTTOMCENTERED);
+        DB.setDisplayPos(BOTTOMLEFT);
+        scannerScreen.add(&goated);
+    // __  Data Visualization Scene __
+        Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
 
-    //std::string fileName = "resources/submit.png";
-   // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
-    goated.setDisplayPos(BOTTOMCENTERED);
-    DB.setDisplayPos(BOTTOMLEFT);
-    scannerScreen.add(&goated);
 
 
     while(!window.ShouldClose()) {
@@ -94,6 +100,15 @@ int main() {
                 if(DB.isPressed()) {
                     database.innit();
                 }
+                if (lowPowerMode.isPressed()) {
+                    highFPS = !highFPS;
+                    if (highFPS) {
+                        window.SetTargetFPS(480);
+                    }
+                    else {
+                        window.SetTargetFPS(18);
+                    }
+                }
                 // drawing
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
@@ -104,7 +119,9 @@ int main() {
 
             case DATAVISUALIZATION:
                 window.BeginDrawing();
-                    window.ClearBackground(DARKGREEN);
+                    window.ClearBackground(BLACK);
+                    texture.draw(0,0);
+                    dataVisualizationScreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
             break;
 
             case MATCHCONFIG:
