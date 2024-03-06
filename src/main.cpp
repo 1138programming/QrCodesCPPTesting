@@ -106,7 +106,7 @@ int main() {
                         window.SetTargetFPS(480);
                     }
                     else {
-                        window.SetTargetFPS(18);
+                        window.SetTargetFPS(24);
                     }
                 }
                 // drawing
