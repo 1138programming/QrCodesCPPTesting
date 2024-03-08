@@ -8,6 +8,7 @@
 #include "myincludes/toastHandler.hpp"
 #include "myincludes/texture.hpp"
 #include "myincludes/database.hpp"
+#include "myincludes/graph.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -16,6 +17,9 @@ int main() {
     //  MYSQL_ROWS sqldata;
      MYSQL_ROW row;
      std::string resultstr;
+     
+    DrawableGraph<double, double> graph(200, 200, 400.0_spX, 400.0_spY);
+
     // _____ Constant Things _____
     raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);
     window.SetTargetFPS(480);
@@ -120,7 +124,7 @@ int main() {
                         window.SetTargetFPS(480);
                     }
                     else {
-                        window.SetTargetFPS(18);
+                        window.SetTargetFPS(24);
                     }
                 }
                 // drawing
