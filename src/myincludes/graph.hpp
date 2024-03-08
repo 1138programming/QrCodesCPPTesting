@@ -17,7 +17,6 @@ template<typename X, typename Y> class DrawableGraph : public Drawable {
             this->y = y;
             this->width = width;
             this->height = height;
-            datapoints.res
         }
 
         void add(GraphPoint<X,Y> point) {
@@ -31,7 +30,7 @@ template<typename X, typename Y> class DrawableGraph : public Drawable {
                 this->datapoints.reserve(points[i]);
             }
         }
-        void addMultiple(std::vector<GraphPoint<T,Y>>& points) {
+        void addMultiple(std::vector<GraphPoint<X,Y>>& points) {
             // reserve data so adding will be quicker
             this->datapoints.reserve(this->datapoints.size + points.size());
 
@@ -39,7 +38,7 @@ template<typename X, typename Y> class DrawableGraph : public Drawable {
                 this->datapoints.push_back(point);
             }
         }
-        void addMultipleNoReserve(std::vector<GraphPoint<T,Y>>& points) {
+        void addMultipleNoReserve(std::vector<GraphPoint<X,Y>>& points) {
             for(GraphPoint<X,Y> point : points) {
                 this->datapoints.push_back(point);
             }
@@ -57,7 +56,7 @@ template<typename X, typename Y> class DrawableGraph : public Drawable {
         X maxX() {
             X max = this->datapoints.at(0).x;
             for (GraphPoint<X,Y> point : this->datapoints) {
-                if (point.x > max.x) {
+                if (point.x > max) {
                     max = point.x;
                 }
             }
@@ -65,11 +64,19 @@ template<typename X, typename Y> class DrawableGraph : public Drawable {
         }
 
         Y minY() {
-            Y max = this->datapoints.at(0);
-            for (Y point : this->datapoints)
+            Y min = this->datapoints.at(0).y;
+            for (GraphPoint<X,Y> point : this->datapoints) {
+                if (point.y < min) {
+                    min = point.y;
+                }
+            }
+            return min;
         }
         Y maxY() {
-
+            Y max = this->datapoints.at(0).y;
+            for (GraphPoint<X,Y> point : this->datapoints) {
+                if 
+            }
         }
 
         ShouldScale getWidth() override {
