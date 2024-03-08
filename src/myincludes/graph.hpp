@@ -75,7 +75,7 @@ template<typename X, typename Y> class DrawableGraph : public Drawable {
         Y maxY() {
             Y max = this->datapoints.at(0).y;
             for (GraphPoint<X,Y> point : this->datapoints) {
-                if 
+              
             }
         }
 

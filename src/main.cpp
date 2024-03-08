@@ -106,7 +106,7 @@ int main() {
                     qrScanner.update();
                 }
                 if(DB.isPressed()) {
-                    resultstr = database.execQuery("select DCValue, MatchID from matchtransaction;",1);
+                    resultstr = database.execQuery("select DCValue, MatchID from matchtransaction;",2);
                     std::cout << resultstr <<std::endl;
                     // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
                         
