@@ -36,11 +36,13 @@ class JsonParser {
         std::vector<MATCH_DATAPOINT>& parse() {                
             std::vector<MATCH_DATAPOINT> datapoints = std::vector<MATCH_DATAPOINT>();  
             try {
-               std::cout << *(this->data["scoutingData"].begin()) <<std::endl;
-                for (auto it = this->data["scoutingData"].begin(); it != this->data["scoutingData"].end()-1 ; ++it) { 
+              
+
+                for (auto it = this->data["scoutingData"].begin(); it != this->data["scoutingData"].end() ; ++it) { 
                 
-                 MATCH_DATAPOINT currentDatapoint;
-                 std::cout << "hello3" <<std::endl;
+                    MATCH_DATAPOINT currentDatapoint;
+               
+                    std::cout << "hello3" <<std::endl;
                 
                 // if (it.value() != NULL) {
                 //     std::cout << "null" <<std::endl;
@@ -49,10 +51,10 @@ class JsonParser {
                 // auto it2 = it.value().begin();  std::cout << "hello4" <<std::endl;
                     // for (auto it2 = it.value().cbegin(); it2 != it.value().cend()-1; ++it2) {
                     
-                     std::cout << *it;
-                //         if(it2.key() == "scouterID") {
-                //             currentDatapoint.scouterID = it2.value();
-                //         }
+                    std::cout << *it << std::endl;
+                    json element = *it;
+                    currentDatapoint.scouterID = element["scouterID"];
+                
                 //     else if(it2.key() == "matchID") {
                 //             currentDatapoint.matchID = it2.value();
                 //         }
@@ -69,17 +71,29 @@ class JsonParser {
                 //     else if(it2.key() == "DCTimestamp") {
                 //             currentDatapoint.DCTimestamp = it2.value();
                 //         }
-                // // }
-                datapoints.push_back(currentDatapoint);   
+                // // } 
+                
+                datapoints.push_back(currentDatapoint);  
+                
+                
                
-                throw errno;
+                
             } 
+            std::cout << "hello4" <<std::endl; 
+            throw errno;
             }
             catch (...) {
-                std::cout << "errbitch" <<std::endl;
+                std::cout << "errbitch" <<std::endl; //uh oh
                 // toastHandler::add(Toast("fuck. it no workie", LENGTH_NORMAL));
 
             }
+            MATCH_DATAPOINT temp;
+           
+            std::cout << datapoints.begin().base()->scouterID <<std::endl; 
+           
+                
+            
+             
             return datapoints;
         }
 };
