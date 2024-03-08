@@ -3,11 +3,14 @@
 
 #include "../include/raylib-cpp.hpp"
 #include "../include/json.hpp"
+#include "DatabaseMan.hpp"
 #include "jsonParser.hpp"
 #include "toastHandler.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
 
 using json = nlohmann::json;
 
@@ -18,6 +21,7 @@ class QrCodeScanner {
         char* text;
         char key;
         int counter;
+    
         
     public:
         QrCodeScanner() {
@@ -45,7 +49,9 @@ class QrCodeScanner {
 
         void update() {
             JsonParser parser(std::string(this->text));
-            parser.parse();
+            std::vector vect = parser.parse();
+            DatabaseMan database(vect);
+            database.maketh();
             this->counter = 0;
             this->text[0] = '\0';
         }

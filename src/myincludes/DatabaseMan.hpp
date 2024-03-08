@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "toastHandler.hpp"
-#include "myincludes/database.hpp"
-#include "myincludes/datapointStruct.hpp"
+#include "database.hpp"
+#include "datapointStruct.hpp"
 #include <iostream>
 #include <format>
+
 
 class DatabaseMan {
     private:
@@ -24,19 +25,19 @@ class DatabaseMan {
    
     DatabaseMan(std::vector<MATCH_DATAPOINT> datapointsn) { 
         this->datapoints = datapointsn;
-        std::cout << 
+     
 
     }
 
   
 
 
-    int maketh() {
+    void maketh() {
         for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
             temp = *i.base();
             
-            resultstr = database.execQuery(std::format("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID, AllianceID) values ({},{},{},{}, {}, {});", temp.matchID, temp.scouterID, temp.datapointID,temp.datapointValue,temp.teamID,"blue"),2);
-            
+            resultstr = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID, AllianceID) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + "," + temp.datapointValue + "," +  temp.teamID + ", blue);", 2); 
+            std::cout << resultstr <<std::endl;
         }
          
   

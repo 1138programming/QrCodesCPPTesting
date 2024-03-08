@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "toastHandler.hpp"
+#include <iostream>
+#include <format>
 
 class Database {
     private:
