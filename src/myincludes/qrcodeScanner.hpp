@@ -3,9 +3,11 @@
 
 #include "../include/raylib-cpp.hpp"
 #include "../include/json.hpp"
+#include "jsonParser.hpp"
 #include "toastHandler.hpp"
 #include <iostream>
 #include <fstream>
+#include <string>
 
 using json = nlohmann::json;
 
@@ -26,8 +28,10 @@ class QrCodeScanner {
         void scan () {
            key = GetCharPressed();
            while (key != 0) {
+                if ((counter % 100) == 0) {
+                    std::cout << this->counter << std::endl;
+                }
                 if (counter < (MAX_CHARS-1)) {
-                    std::cout << key << std::endl;
                     text[counter] = key;
                     text[counter+1] = '\0';
                     counter++;
@@ -38,31 +42,11 @@ class QrCodeScanner {
            
         }
 
-        void update () {
-            try {
-                std::string fileName;
-                std::cout << "helkejkekkedk" << std::endl;
-                json data = json::parse(this->text);
-                if (data.contains("scouterName")) {
-                    fileName = data.find("scouterName").value();
-                    fileName += ".json";
-                }
-                else {
-                    fileName = "gaming.json";
-                }
-                std::ofstream file(fileName);
-                int i = 0;
-                while(text[i] != '\0') {
-                    file << text[i];
-                    text[i] = '\0';
-                    i++;
-                }
-                counter = 0;
-                file.close(); 
-            }
-            catch(...) {
-                toastHandler::add(Toast("Failed to write to JSON you dumb bozo", LENGTH_NORMAL));
-            }
+        void update() {
+            JsonParser parser(std::string(this->text));
+            parser.parse();
+            this->counter = 0;
+            this->text[0] = '\0';
         }
 
         // no memory leak 🥳🎊🎈🎉💃
