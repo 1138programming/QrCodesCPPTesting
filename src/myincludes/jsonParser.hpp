@@ -34,7 +34,7 @@ class JsonParser {
             }
         }
         std::vector<MATCH_DATAPOINT>& parse() {
-            std::vector<MATCH_DATAPOINT> datapoints;
+            std::vector<MATCH_DATAPOINT> datapoints = std::vector<MATCH_DATAPOINT>();
             for (json::iterator it = this->data["scoutingData"].begin(); it != this->data["scoutingData"].end(); ++it) {
                 MATCH_DATAPOINT currentDatapoint;
                 for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {

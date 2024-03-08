@@ -35,9 +35,9 @@ class DatabaseMan {
     void maketh() {
         for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
             temp = *i.base();
-            
+            std::cout << "hello" <<std::endl;
             resultstr = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID, AllianceID) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + "," + temp.datapointValue + "," +  temp.teamID + ", blue);", 2); 
-            std::cout << resultstr <<std::endl;
+            
         }
          
   

@@ -49,7 +49,9 @@ class QrCodeScanner {
 
         void update() {
             JsonParser parser(std::string(this->text));
-            std::vector vect = parser.parse();
+
+            std::vector vect = parser.parse();      
+                  std::cout << "hello2" <<std::endl;
             DatabaseMan database(vect);
             database.maketh();
             this->counter = 0;
