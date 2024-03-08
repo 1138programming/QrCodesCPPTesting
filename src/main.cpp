@@ -15,6 +15,7 @@ int main() {
      MYSQL_RES res;
     //  MYSQL_ROWS sqldata;
      MYSQL_ROW row;
+     std::string resultstr;
     // _____ Constant Things _____
     raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);
     window.SetTargetFPS(480);
@@ -101,23 +102,18 @@ int main() {
                     qrScanner.update();
                 }
                 if(DB.isPressed()) {
-                    // database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");
-                    res = database.execQuery("select MatchID, TeamID from matchtransaction;");
-                    if (res.data == nullptr) {
-                        std::cout << "error null"  << std::endl;
-                    }
-                   
-                    while ((row = mysql_fetch_row(&res)) != NULL) {
-
-
-                        std::cout<< row[0] << std::endl;
-                    }
-                    std::cout << "shshs" << std::endl;
+                    resultstr = database.execQuery("select DCValue, MatchID from matchtransaction;",1);
+                    std::cout << resultstr <<std::endl;
+                    // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
+                        
+                }
+                  
+           
                 
-
+                    
                   
 
-                }
+                
                 if (lowPowerMode.isPressed()) {
                     highFPS = !highFPS;
                     if (highFPS) {

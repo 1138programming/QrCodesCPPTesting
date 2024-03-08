@@ -9,6 +9,7 @@
 class Database {
     private:
         MYSQL mysql; 
+        MYSQL_ROW row;
     public:
    
         Database() { 
@@ -37,28 +38,53 @@ class Database {
                                         
         }
 
-        MYSQL_RES& execQuery(std::string statement) {
-           
+        std::string execQuery(std::string statement, int length) {
+            std::string row2;
         
             if (mysql_query(&mysql, statement.c_str())) {
                 std::cout << "Error executing Query" << mysql_error(&mysql) << std::endl;
-                MYSQL_RES val = (MYSQL_RES){};
-                return val;
+
+
+                return "e";
             }
  
             MYSQL_RES *resptr = mysql_use_result(&mysql);
-            if (mysql.status == MYSQL_STATUS_USE_RESULT) {
+            if (mysql.status != MYSQL_STATUS_USE_RESULT) {
                  std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
             }
 
             if (resptr == 0) {
                 std::cout << "Error result is zero" << mysql_error(&mysql) << std::endl;
-                MYSQL_RES val = (MYSQL_RES){};
-                return val;
+                mysql_free_result(resptr);
+                row2 = "";
             }
-            return *resptr;
+            else {
+                int i, j;
+            
+
+            while ((row = mysql_fetch_row(resptr)) != NULL) {
+                
+                i =0;
+                j=0;
+                
+                while (i < length ) {
+                    row2 += std::string(row[i]);
+                    
+                   
+    
+                    i++;
+
+                    
+                }  
+               }  
+            }
+           
+            
+            return row2;
             
         }
+            
+        
 
         ~Database() {
             mysql_close(&mysql); 
