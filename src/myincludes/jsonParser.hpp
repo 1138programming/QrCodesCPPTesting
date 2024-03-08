@@ -6,6 +6,7 @@
 #include "datapointStruct.hpp"
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -32,10 +33,34 @@ class JsonParser {
                 }
             }
         }
-        void parse() {
-            for (json::iterator it = this->data.begin(); it != this->data.end(); ++it) {
-                std::cout << it.value() << std::endl;
+        std::vector<MATCH_DATAPOINT>& parse() {
+            std::vector<MATCH_DATAPOINT> datapoints;
+            for (json::iterator it = this->data["scoutingData"].begin(); it != this->data["scoutingData"].end(); ++it) {
+                MATCH_DATAPOINT currentDatapoint;
+                for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {
+                    if(it2.key() == "scouterID") {
+                        currentDatapoint.scouterID = it2.value();
+                    }
+                    else if(it2.key() == "matchID") {
+                        currentDatapoint.matchID = it2.value();
+                    }
+                    else if(it2.key() == "teamID") {
+                        currentDatapoint.teamID = it2.value();
+                    }
+                    else if(it2.key() == "datapointID") {
+                        int datapointIDVal = it2.value();
+                        currentDatapoint.datapointID = std::to_string(datapointIDVal);
+                    }
+                    else if(it2.key() == "datapointValue") {
+                        currentDatapoint.datapointValue = it2.value();
+                    }
+                    else if(it2.key() == "DCTimestamp") {
+                        currentDatapoint.DCTimestamp = it2.value();
+                    }
+                }
+                datapoints.push_back(currentDatapoint);
             }
+            return datapoints;
         }
 };
 
