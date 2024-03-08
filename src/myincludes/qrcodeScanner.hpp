@@ -18,6 +18,7 @@ class QrCodeScanner {
         char* text;
         char key;
         int counter;
+        
     public:
         QrCodeScanner() {
             text = (char*)malloc(sizeof(char) * MAX_CHARS);
