@@ -48,16 +48,18 @@ class QrCodeScanner {
         }
 
         void update() {
-            std::ifstream i("log.json");
+            std::ifstream i("log copy 2.json");
          
             std::ostringstream sstr;
             sstr << i.rdbuf();
            
+            // JsonParser parser(text); 
             JsonParser parser(sstr.str()); 
+             
+            std::vector<MATCH_DATAPOINT> vect = parser.parse();      
+            std::cout << "hello5" <<std::endl;
 
-            std::vector vect = parser.parse();      
-           std::cout << "hello5" <<std::endl;
-            DatabaseMan database(vect);
+            DatabaseMan database(vect); 
             database.maketh();
             this->counter = 0;
             this->text[0] = '\0';

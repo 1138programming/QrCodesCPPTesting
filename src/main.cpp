@@ -1,3 +1,4 @@
+
 #include "include/raylib-cpp.hpp"
 #include "../myincludes/qrcodeScanner.hpp"
 #include "myincludes/allincludes.hpp"
@@ -11,6 +12,9 @@
 #include "myincludes/graph.hpp"
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
+#include <time.h>
+
 
 int main() {
      MYSQL_RES res;
@@ -22,7 +26,7 @@ int main() {
 
     // _____ Constant Things _____
     raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);
-    window.SetTargetFPS(480);
+    window.SetTargetFPS(2000);
     bool highFPS = true;
 
     QrCodeScanner qrScanner;
@@ -48,16 +52,17 @@ int main() {
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "BD"), RAYWHITE, 20.0_spD, 0.0));
         Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Low Power"), RAYWHITE, 20.0_spD, 0.0));
+        Button startScanning(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(GetFontDefault(), "Start Scanning"), RAYWHITE, 20.0_spD, 0.0));
         lowPowerMode.setDisplayPos(BOTTOMRIGHT);
-        goated.setDisplayPos(BOTTOMCENTERED);
+        startScanning.setDisplayPos(BOTTOMCENTERED);
+        goated.setDisplayPos(CENTERED);
+        DB.setDisplayPos(BOTTOMLEFT);
+        scannerScreen.add(&startScanning);
         scannerScreen.add(&goated);
         scannerScreen.add(&DB);
         scannerScreen.add(&lowPowerMode);
         //std::string fileName = "resources/submit.png";
         // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
-        goated.setDisplayPos(BOTTOMCENTERED);
-        DB.setDisplayPos(BOTTOMLEFT);
-        scannerScreen.add(&goated);
     // __  Data Visualization Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
 
@@ -85,7 +90,6 @@ int main() {
         }
         else if (dataVisualization.isPressed()) {
             currentScene = DATAVISUALIZATION;
-
             main.enable();
             dataVisualization.disable();
             matchConfiguration.enable();
@@ -106,10 +110,18 @@ int main() {
                     qrScanner.update();
                 }
                 if(DB.isPressed()) {
-                    resultstr = database.execQuery("select DCValue, MatchID from matchtransaction;",2);
-                    std::cout << resultstr <<std::endl;
+                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 2);
+                    for (auto i : vector) {
+                        for (std::string j : i) {
+                            std::cout << j << std::endl;
+                        }
+                    }
+                    // std::cout << resultstr <<std::endl;
                     // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
-                        
+                    time_t t = time(NULL);
+       
+                    std::cout << (t/31536000)+1970 << std::endl;
+                    std::cout << (t/31536000)+1970 << std::endl;
                 }
                   
            
@@ -121,7 +133,7 @@ int main() {
                 if (lowPowerMode.isPressed()) {
                     highFPS = !highFPS;
                     if (highFPS) {
-                        window.SetTargetFPS(480);
+                        window.SetTargetFPS(10000);
                     }
                     else {
                         window.SetTargetFPS(24);

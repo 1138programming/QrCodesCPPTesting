@@ -40,50 +40,38 @@ class Database {
                                         
         }
 
-        std::string execQuery(std::string statement, int length) {
-            std::string row2;
-        
+        std::vector<std::vector<std::string>> execQuery(std::string statement, int length) {
+            std::string row2;        
             if (mysql_query(&mysql, statement.c_str())) {
                 std::cout << "Error executing Query" << mysql_error(&mysql) << std::endl;
 
 
-                return "e";
+                return std::vector<std::vector<std::string>>();
             }
  
             MYSQL_RES *resptr = mysql_use_result(&mysql);
-            if (mysql.status != MYSQL_STATUS_USE_RESULT) {
-                 std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
+            if (mysql.status == MYSQL_STATUS_USE_RESULT) {
+                std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
             }
 
-            if (resptr == 0) {
+            if (resptr != 0) {
                 std::cout << "Error result is zero" << mysql_error(&mysql) << std::endl;
                 mysql_free_result(resptr);
-                row2 = "";
             }
             else {
                 int i, j;
             
-
-            while ((row = mysql_fetch_row(resptr)) != NULL) {
-                
-                i =0;
-                j=0;
-                
-                while (i < length ) {
-                    row2 += std::string(row[i]);
-                    
-                   
-    
-                    i++;
-
-                    
-                }  
-               }  
+            i = 0;
+            std::vector<std::vector<std::string>> vector;
+            while ((row = mysql_fetch_row(resptr)) != NULL) {  
+                vector.push_back(std::vector<std::string>());              
+                for (int j = 0; j < length; j++) {
+                    vector.at(i).push_back(std::string(row[i]));
+                }
+                i++;
             }
-           
-            
-            return row2;
-            
+            return vector;
+            }
         }
             
         

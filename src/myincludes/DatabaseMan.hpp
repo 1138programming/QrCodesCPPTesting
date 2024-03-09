@@ -34,10 +34,17 @@ class DatabaseMan {
 
     void maketh() {
         for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
-            temp = *i.base();
-            std::cout << "hello" <<std::endl;
-            resultstr = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID, AllianceID) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + "," + temp.datapointValue + "," +  temp.teamID + ", blue);", 2); 
-            
+            if (i.base() != NULL) {
+                temp = *i.base();
+                std::cout << "working" <<std::endl;
+                
+                // std::cout << "insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");" << std::endl;
+                auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
+                
+            }
+            else {
+                std::cerr << " it doesn't work, it is null" << std::endl;
+              }   
         }
          
   
