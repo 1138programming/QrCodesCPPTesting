@@ -4,7 +4,8 @@
 enum SCENES {
     SCANNING,
     DATAVISUALIZATION,
-    MATCHCONFIG
+    MATCHCONFIG,
+    PONG
 };
 
 #endif
