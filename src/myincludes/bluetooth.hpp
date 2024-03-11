@@ -39,6 +39,17 @@ class Bluetooth {
         int cleanup() {
             return bt::WSACleanup();
         }
+
+        // useful functions
+        void printBTNameHex(bt::BTH_ADDR addr) {
+            std::cout << std::hex;
+            bt::BYTE* nameInBytes = (bt::BYTE*)&(addr);
+            for (int i = 0; i < 5; i++) {
+                std::cout << (int)(nameInBytes[i]) << ":";
+            }
+            std::cout << (int)(nameInBytes[5]) << std::endl;
+            std::cout << std::dec;
+        }
         int startAccept() {
             // initialize a windows socket in bluetooth mode
             this->listener = bt::socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
@@ -49,7 +60,7 @@ class Bluetooth {
                 // if 0 = random port
                 // setting this to 0 = work, but not great for what we want to do.
                 listenerAddr.btAddr = 0;
-                listenerAddr.port = BT_PORT_ANY;
+                listenerAddr.port = 4;
                 listenerAddr.serviceClassId = MY_GUID;
 
             std::cout << "ckpt0" << std::endl;
@@ -68,6 +79,21 @@ class Bluetooth {
             for (int i = 0; i < 6; i++) {
                 nameLol.rgBytes[i] = 0;
             }
+
+            std::cout << "ckpt-405" << std::endl;
+
+            // get socket data
+            bt::SOCKADDR_BTH socketName = {0};
+            int socketNameLen = sizeof(socketName);
+            if (bt::getsockname(listener, reinterpret_cast<bt::sockaddr*>(&socketName), &socketNameLen) != 0) {
+                std::cerr << "no name lol" << std::endl;
+                return bt::WSAGetLastError();
+            }
+            
+            // print name in hex
+            printBTNameHex(socketName.btAddr);
+            std::cout << "port: " << socketName.port << std::endl;
+
 
             std::cout << "ckpt1" << std::endl;
 
