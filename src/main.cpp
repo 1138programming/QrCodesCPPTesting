@@ -78,7 +78,6 @@ int main() {
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
         pongback.setDisplayPos(BOTTOMRIGHT);
-        scannerScreen.add(&bt);
         scannerScreen.add(&goated);
         scannerScreen.add(&DB);
         scannerScreen.add(&lowPowerMode);
