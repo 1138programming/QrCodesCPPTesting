@@ -75,7 +75,7 @@ int main() {
         goated.setDisplayPos(CENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
-        pongback.setDisplayPos(TOPRIGHT);
+        pongback.setDisplayPos(BOTTOMRIGHT);
         scannerScreen.add(&bt);
         scannerScreen.add(&goated);
         scannerScreen.add(&DB);
@@ -135,7 +135,8 @@ int main() {
                     std::cerr << btConn.startAccept() << std::endl;
                 }
                 if(DB.isPressed()) {
-                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 2);
+                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
+                     std::cout << "hhh" << std::endl;
                     for (auto i : vector) {
                         for (std::string j : i) {
                             std::cout << j << std::endl;
@@ -218,6 +219,8 @@ int main() {
   
 
         }
+//  std::cout << GetFrameTime() << std::endl;
+
         window.DrawFPS();
         toastHandler::update();
         window.EndDrawing();
