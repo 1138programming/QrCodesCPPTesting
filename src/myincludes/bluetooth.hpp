@@ -199,23 +199,25 @@ class Bluetooth {
             }
         }
         void recieveDataIfConnectionsReady() {
+            // set disconnect time to 0ms (if sockets not already ready, continue.)
             bt::TIMEVAL disconnectTime = {0};
                 disconnectTime.tv_sec = 0;
                 disconnectTime.tv_usec = 0;
                 
             bt::fd_set socketsToScan = {0};
-                memset(&socketsToScan, 0, sizeof(bt::fd_set));
+                memset(&socketsToScan, 0, sizeof(bt::fd_set)); // not necessary prob.
                 for (size_t i = 0; i < this->connections.size(); i++) {
-                    socketsToScan.fd_array[i] = this->connections.at(i);
+                    socketsToScan.fd_array[i] = this->connections.at(i); //add all my sockets to  the arr
                 }
-                socketsToScan.fd_count = this->connections.size();
+                socketsToScan.fd_count = this->connections.size(); // set the size to # of sockets inputted
 
+            // technically this returns the # of total sockets, but as we are only querying once, it should be fine.
             size_t sizeOfVals = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // first param ignored
             if (sizeOfVals == SOCKET_ERROR) {
                 std::cerr << "Failed to select connections. Err code: " << std::to_string(bt::WSAGetLastError()) << std::endl;
                 return;
             }
-            for (size_t i = 0; i < socketsToScan.fd_count; i++) {
+            for (size_t i = 0; i < sizeOfVals; i++) {
                 char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], 4);
                 for (int i = 0; i < 4; i++) {
                     std::cout << data[i];
