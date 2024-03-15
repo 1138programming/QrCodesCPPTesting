@@ -25,6 +25,8 @@ namespace bt {
 #define BT_PORT_ANY ((bt::ULONG)-1)
 #undef FIONBIO
 #define FIONBIO _IOW('f', 126, bt::u_long)
+#undef INVALID_SOCKET
+#define INVALID_SOCKET (bt::SOCKET)(~0)
 
 
 static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb}};
@@ -38,7 +40,7 @@ class Bluetooth {
         // ___ Useful (private) functions ___
         template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
             if (val != target) {
-                std::cerr << "ERROR: " << errorMessage std::endl;
+                std::cerr << "ERROR: " << errorMessage << std::endl;
                 std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
             }
         }
@@ -80,14 +82,19 @@ class Bluetooth {
         void initAccept() {
             // ___init a windows socket in (normal) bluetooth mode___
             this->listener = bt::socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+            if (this->listener == INVALID_SOCKET) {
+                std::cerr << "big bad happened" << std::endl;
+                std::cerr << bt::WSAGetLastError() << std::endl;
+            }
 
             // ___binding addr___
             // create an address for the BT socket to bind to
             bt::SOCKADDR_BTH listenerAddr = {0};
+                memset(&listenerAddr, 0, sizeof(listenerAddr)); // you can never be too sure
                 listenerAddr.addressFamily = AF_BTH; // address family bluetooth
                 listenerAddr.btAddr = 0; // if 0 = local MAC, as far as I'm aware.
-                listenerAddr.port = 3; // have a constant port for the tablets to connect to. (3 seemed not to be occupied in my (limited) testing)
-                listenerAddr.serviceClassId = MY_GUID; // will be ignored, but why not set it lol 💀
+                listenerAddr.port = BT_PORT_ANY; // have a constant port for the tablets to connect to. (3 seemed not to be occupied in my (limited) testing)
+                //listenerAddr.serviceClassId = MY_GUID; // will be ignored, but why not set it lol 💀
             // bind the listener socket to the address we created
             checkSuccessWinsock<int>(bt::bind(this->listener, reinterpret_cast<bt::sockaddr*>(&listenerAddr), sizeof(listenerAddr)), 0, "Failed to bind to address"); // check above for function definition, in prevoius ver. checking for errors could get very bloated.
 
@@ -97,6 +104,7 @@ class Bluetooth {
             checkSuccessWinsock<int>(bt::getsockname(this->listener, reinterpret_cast<bt::sockaddr*>(&localSocketName), &localSocketStructLen), 0, "Failed to get name of local socket (shouldn't be fatal?)");
             // print data (not necessary if using the same comp. all the time)
             printBTNameHex(localSocketName.btAddr);
+            std::cout << "Port: " << localSocketName.port << std::endl;
 
             //___This code advertises the BT socket to the world___
             //I do not really understand it, so dont ask (also it's very lengthy.)
@@ -137,8 +145,15 @@ class Bluetooth {
             // ___free pointers we alloc()'d___
             free(wsaQueryInfo);
         }
-        void listenForConnection() {
-            
+        void updateConnections() {
+            bt::SOCKET sock = bt::accept(this->listener, nullptr, nullptr); // get no data abt. connection
+            if (sock != INVALID_SOCKET) { 
+                // this will not get run often, as most of the time there will be nothing in the accept queue.
+                this->connections.push_back(sock);
+            }
+        }
+        void printConnections() {
+            std::cout << "Connections: " << this->connections.size() << std::endl;
         }
 };
 

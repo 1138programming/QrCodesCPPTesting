@@ -39,11 +39,8 @@ int main() {
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
     Bluetooth btConn;
     Client client;
-    int sucksess = btConn.initAll();
-    if (sucksess != 0) {
-        std::cerr << "init failed" << std::endl;
-        btConn.cleanup();
-    }
+    btConn.initAll();
+    btConn.initAccept();
 
     SCENES currentScene = SCANNING;
     Database database;
@@ -86,9 +83,9 @@ int main() {
 
         //std::string fileName = "resources/submit.png";
         // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
-    // __  Data Visualization Scene __
+    // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
-    // __ BT Testing Scene __
+    // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
         Button btServer(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT Server"), RAYWHITE, 18.0_spD, 0.0));
         Button btClient(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT Client"), RAYWHITE, 18.0_spD, 0.0));
@@ -219,9 +216,8 @@ int main() {
                 if (btClient.isPressed()) {
                     std::cerr << client.connectToServer() << std::endl;
                 }
-                if (btServer.isPressed()) {
-                    std::cerr << btConn.startAccept() << std::endl;
-                }
+                btConn.updateConnections();
+                btConn.printConnections();
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);
                 btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
