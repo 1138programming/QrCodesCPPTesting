@@ -56,11 +56,20 @@ class Bluetooth {
                 std::cerr << "cannot read: malloc() failed" << std::endl;
                 return dataPtr;
             }
+            char* usePtr = dataPtr;
 
             size_t dataRecvd = 0;
             while(dataRecvd < dataSizeExpected) {
-                bt::recv();
-            } 
+                size_t currentLengthRecvd = bt::recv((*readySocket), usePtr, dataSizeExpected-dataRecvd, 0);
+                if (currentLengthRecvd != SOCKET_ERROR) {
+                    dataRecvd += currentLengthRecvd;
+                    usePtr += currentLengthRecvd; // do this so the buffer is increased
+                } 
+                else {
+                    std::cerr << "error recieving data" << std::endl;
+                }
+            }
+            return dataPtr;
         }
     public:
         // ___ Simple BT functions ___
