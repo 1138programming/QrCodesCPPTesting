@@ -202,8 +202,11 @@ int main() {
                 }
                 if (discoveryToggle.isChecked()) {
                     btConn.updateConnections();
+                    activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
                 }
-                activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
+                if (talkingToggle.isChecked()) {
+                    
+                }
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);
                 btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));               

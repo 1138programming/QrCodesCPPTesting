@@ -30,6 +30,8 @@ namespace bt {
 #undef INVALID_SOCKET
 #define INVALID_SOCKET (bt::SOCKET)(~0)
 
+#define EXPECTED_DATA_INITIAL sizeof(int)
+
 
 static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb}};
 
@@ -47,6 +49,18 @@ class Bluetooth {
                 std::cerr << "ERROR: " << errorMessage << std::endl;
                 std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
             }
+        }
+        char* readAllExpectedDataFromSocket(bt::SOCKET* readySocket, size_t dataSizeExpected) {
+            char* dataPtr = (char*)malloc(dataSizeExpected);
+            if (dataPtr == NULL) {
+                std::cerr << "cannot read: malloc() failed" << std::endl;
+                return dataPtr;
+            }
+
+            size_t dataRecvd = 0;
+            while(dataRecvd < dataSizeExpected) {
+                bt::recv();
+            } 
         }
     public:
         // ___ Simple BT functions ___
@@ -168,13 +182,14 @@ class Bluetooth {
         void updateConnections() {
             bt::SOCKET sock = bt::accept(this->listener, nullptr, nullptr); // get no data abt. connection
             if (sock != INVALID_SOCKET) { 
-                // this will not get run often, as most of the time there will be nothing in the accept queue.
+                // _this will not get run often, as most of the time there will be nothing in the accept queue_
+                // set non-blocking mode true
+                bt::ULONG mode = 1;
+                checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking");
                 this->connections.push_back(sock);
             }
         }
-        void printConnections() {
-            std::cout << "Connections: " << this->connections.size() << std::endl;
-        }
+        
 };
 
 #endif
