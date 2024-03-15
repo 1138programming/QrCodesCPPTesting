@@ -29,9 +29,18 @@ static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 
 class Bluetooth {
     private:
         bt::SOCKET listener;
-        bt::SOCKET connection;
+        std::vector<bt::SOCKET> connections;
         bt::BLUETOOTH_ADDRESS externalAddress;
+
+        // ___ Useful (private) functions ___
+        template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
+            if (val != target) {
+                std::cerr << "ERROR: " << errorMessage std::endl;
+                std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
+            }
+        }
     public:
+        // ___ Simple BT functions ___
         int initAll() {
             bt::WSADATA wsaData;
             return bt::WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -40,7 +49,7 @@ class Bluetooth {
             return bt::WSACleanup();
         }
 
-        // useful functions
+        // ___ useful (public) functions ___
         void printBTNameHex(bt::BTH_ADDR addr) {
             std::cout << std::hex;
             bt::BYTE* nameInBytes = (bt::BYTE*)&(addr);
@@ -50,191 +59,67 @@ class Bluetooth {
             std::cout << (int)(nameInBytes[5]) << std::endl;
             std::cout << std::dec;
         }
-        int startAccept() {
-            // initialize a windows socket in bluetooth mode
+        int getHostNameStr(std::string* str) {
+            char* ptr = (char*)calloc(256, sizeof(char));
+            if (ptr == NULL) {
+                return -1;
+            }
+            if (bt::gethostname(ptr, 256) != 0) {
+                return -1;
+            }
+
+            (*str) = std::string(ptr);
+            free(ptr);
+            return 0;
+        }
+
+        // ___ Connection functions ___
+        void initAccept() {
+            // ___init a windows socket in (normal) bluetooth mode___
             this->listener = bt::socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
 
-            bt::SOCKADDR_BTH listenerAddr;
-            memset(&listenerAddr, 0, sizeof(listenerAddr));
-                listenerAddr.addressFamily = AF_BTH;
-                // if 0 = random port
-                // setting this to 0 = work, but not great for what we want to do.
-                listenerAddr.btAddr = 0;
-                listenerAddr.port = 4;
-                listenerAddr.serviceClassId = MY_GUID;
+            // ___binding addr___
+            // create an address for the BT socket to bind to
+            bt::SOCKADDR_BTH listenerAddr = {0};
+                listenerAddr.addressFamily = AF_BTH; // address family bluetooth
+                listenerAddr.btAddr = 0; // if 0 = local MAC, as far as I'm aware.
+                listenerAddr.port = 3; // have a constant port for the tablets to connect to. (3 seemed not to be occupied in my (limited) testing)
+                listenerAddr.serviceClassId = MY_GUID; // will be ignored, but why not set it lol 💀
+            // bind the listener socket to the address we created
+            checkSuccessWinsock<int>(bt::bind(this->listener, reinterpret_cast<bt::sockaddr*>(&listenerAddr), sizeof(listenerAddr)), 0, "Failed to bind to address"); // check above for function definition, in prevoius ver. checking for errors could get very bloated.
 
-            std::cout << "ckpt0" << std::endl;
+            // ___get socket data___
+            bt::SOCKADDR_BTH localSocketName = {0}; // create struct to store addr
+            int localSocketStructLen = sizeof(localSocketName); // for some reason you need this for the next function (thx windows!) (though I'm sure there's a good reason)
+            checkSuccessWinsock<int>(bt::getsockname(listener, reinterpret_cast<bt::sockaddr*>(&localSocketName), &localSocketStructLen), 0, "Failed to get name of local socket (shouldn't be fatal?)");
+            // print data (not necessary if using the same comp. all the time)
+            printBTNameHex(localSocketName.btAddr);
 
-            int success = bt::bind(this->listener, reinterpret_cast<bt::sockaddr*>(&listenerAddr), sizeof(listenerAddr));
-            if (success != 0) {
-                std::cerr << "binding to port failed" << std::endl;
-                return bt::WSAGetLastError();
-            }
-
-            bt::BLUETOOTH_ADDRESS nameLol;
-
-            size_t ushortSize = sizeof(bt::USHORT);
-            size_t byteSize = sizeof(bt::BYTE);
-            size_t whatINeedLol = 6;
-            for (int i = 0; i < 6; i++) {
-                nameLol.rgBytes[i] = 0;
-            }
-
-            std::cout << "ckpt-405" << std::endl;
-
-            // get socket data
-            bt::SOCKADDR_BTH socketName = {0};
-            int socketNameLen = sizeof(socketName);
-            if (bt::getsockname(listener, reinterpret_cast<bt::sockaddr*>(&socketName), &socketNameLen) != 0) {
-                std::cerr << "no name lol" << std::endl;
-                return bt::WSAGetLastError();
-            }
-            
-            // print name in hex
-            printBTNameHex(socketName.btAddr);
-            std::cout << "port: " << socketName.port << std::endl;
-
-
-            std::cout << "ckpt1" << std::endl;
-
-            success = bt::listen(listener, 8);
-            if (success != 0) {
-                std::cerr << "listen on port failed" << std::endl;
-                return bt::WSAGetLastError();
-            }
-
-            std::cout << "ckpt2" << std::endl;
-
-            size_t addrSize = sizeof(this->externalAddress);
-            // blocking function lol- accepts connection, but doesn't get any data about the devices
-            this->connection = bt::accept(this->listener, nullptr, nullptr);
-            if (this->connection != 0) {
-                std::cerr << "failed to accept" << std::endl;
-                return bt::WSAGetLastError();
-            }
-
-            std::cout << "ckpt3" << std::endl;
-
-            return 0;
+            //___This code advertises the BT socket to the world___
+            //I do not really understand it, so dont ask (also it's very lengthy.)
+            // create an info struct about the port(?)
+            bt::LPCSADDR_INFO wsaQueryInfo = (bt::CSADDR_INFO*)calloc(1, sizeof(bt::CSADDR_INFO)); // it is a pointer, so we have to alloc() the memory
+                wsaQueryInfo->LocalAddr.iSockaddrLength = sizeof(bt::SOCKADDR_BTH);
+                wsaQueryInfo->LocalAddr.lpSockaddr = (bt::LPSOCKADDR)&listenerAddr;
+                wsaQueryInfo->RemoteAddr.iSockaddrLength = sizeof(bt::SOCKADDR_BTH);
+                wsaQueryInfo->RemoteAddr.lpSockaddr = (bt::LPSOCKADDR)&listenerAddr;
+                wsaQueryInfo->iSocketType = SOCK_STREAM; // only socket type avail. for BT
+                wsaQueryInfo->iProtocol = BTHPROTO_RFCOMM; // Normal bluetooth, not LE (for LE use BTHPROTO_L2CAP)
+            // get host (our) name for next struct
+            std::string lpzServiceInstanceNameLocal;
+            checkSuccessWinsock<int>(getHostNameStr(&lpzServiceInstanceNameLocal), 0, "Getting Host Name Failed (shouldn't be fatal?)");
+            // create struct to actually register us as BTH thingy
+            bt::WSAQUERYSETA wsaQuery = {0};
+                wsaQuery.dwSize = sizeof(bt::WSAQUERYSETA);
+                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str();
+                wsaQuery.lp
+                
+            // ___free pointers we alloc()'d___
+            free(wsaQueryInfo);
         }
+        void listenForConnection() {
 
-};
-
-#endif
-
-
-
-/*
-static const GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb}};
-
-class DevicesManagerHostTwo {
-    private:
-    // vars
-        SOCKET listener;
-        SOCKET connection;
-        BLUETOOTH_ADDRESS externalAddress;
-    // consts
-    public:
-        static int handler() {
-            std::cout << "first try 😎" << std::endl;
-            return 0;
-        }
-        int initAll() {
-            // Start Winsock on Windows
-            WSADATA wsaData;
-            return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
-        }
-        int cleanup() {
-            return WSACleanup();
-        }
-        int startAccept() {
-            // initialize a windows socket in bluetooth mode
-            listener = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
-
-            // create a BluetoothAddress to add to the SOCKADDR_BTH (THIS MAY BE WRONG)
-            // please make sure to note that the bytes are little-endian (ask Jonathan)
-            BLUETOOTH_ADDRESS addr;
-                // addr.rgBytes[0] = 0x9C;
-                // addr.rgBytes[1] = 0x90;
-                // addr.rgBytes[2] = 0x90;
-                // addr.rgBytes[3] = 0X8A;
-                // addr.rgBytes[4] = 0x4F;
-                // addr.rgBytes[5] = 0x14;
-                // addr.ullLong = 280;
-
-            //14:4F:8A:90:90:9C
-
-            // create a bluetooth socket
-            SOCKADDR_BTH listenerAddr;
-            memset(&listenerAddr, 0, sizeof(listenerAddr));
-                listenerAddr.addressFamily = AF_BTH;
-                // if 0 = random port
-                // setting this to 0 = work, but not great for what we want to do.
-                listenerAddr.btAddr = 0;
-                listenerAddr.port = BT_PORT_ANY;
-                listenerAddr.serviceClassId = MY_GUID;
-
-            std::cout << "ckpt0" << std::endl;
-            
-            // bind to the Bluetooth Socket
-            // success checks if there is an error value...
-            int success = bind(listener, reinterpret_cast<sockaddr*>(&listenerAddr), sizeof(listenerAddr));
-            if (success != 0) {
-                return WSAGetLastError();
-            }            
-
-            // get socket data
-            BLUETOOTH_ADDRESS nameLol;
-
-            int ushortSize = sizeof(USHORT);
-            int byteSize = sizeof(BYTE);
-            int whatINeedLol = 6;
-            for (int i = 0; i < 6; i++) {
-                nameLol.rgBytes[i] = 0;
-            }
-
-            std::cout << "ckpt-1" << std::endl;
-
-            // success = getsockname(listener, reinterpret_cast<sockaddr*>(&nameLol), &whatINeedLol);
-            // if (success != 0) {
-            //     return WSAGetLastError();
-            // }
-            // std::cout << "Listening on socket: ";
-            // for (int i = 0; i < 16; i++) {
-            //     std::cout << std::hex << ((int)nameLol.rgBytes[i]) + ":";
-            // }
-            // std::cout << std::dec << std::endl;
-            
-            // all "ckpt" std::couts are just for debugging
-            std::cout << "ckpt1" << std::endl;
-
-            // set listener up for connection(?)
-            success = listen(listener, 8);
-            if (success != 0) {
-                return WSAGetLastError();
-            }
-            
-            std::cout << "ckpt2" << std::endl;
-
-
-
-            int addrSize = sizeof(externalAddress);
-            // blocking function lol- accepts connection, but doesn't get any data about the devices
-            connection = accept(listener, nullptr, nullptr);
-            if (connection != 0) {
-                return WSAGetLastError();
-            }
-
-            std::cout << "ckpt3" << std::endl;
-
-            // print address if successfully connected
-            // for (int i = 0; i < 14; i++) {
-            //     std::cout << externalAddress.sa_data[i];
-            // }
-            // std::cout << std::endl;
-            return 0;
         }
 };
 
 #endif
-*/
