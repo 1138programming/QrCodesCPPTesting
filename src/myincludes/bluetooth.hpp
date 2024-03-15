@@ -23,6 +23,9 @@ namespace bt {
 #define MAKEWORD(a,b) ((bt::WORD) (((bt::BYTE) (((bt::DWORD_PTR) (a)) & 0xff)) | ((bt::WORD) ((bt::BYTE) (((bt::DWORD_PTR) (b)) & 0xff))) << 8))
 #undef BT_PORT_ANY
 #define BT_PORT_ANY ((bt::ULONG)-1)
+#undef FIONBIO
+#define FIONBIO _IOW('f', 126, bt::u_long)
+
 
 static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb}};
 
@@ -91,7 +94,7 @@ class Bluetooth {
             // ___get socket data___
             bt::SOCKADDR_BTH localSocketName = {0}; // create struct to store addr
             int localSocketStructLen = sizeof(localSocketName); // for some reason you need this for the next function (thx windows!) (though I'm sure there's a good reason)
-            checkSuccessWinsock<int>(bt::getsockname(listener, reinterpret_cast<bt::sockaddr*>(&localSocketName), &localSocketStructLen), 0, "Failed to get name of local socket (shouldn't be fatal?)");
+            checkSuccessWinsock<int>(bt::getsockname(this->listener, reinterpret_cast<bt::sockaddr*>(&localSocketName), &localSocketStructLen), 0, "Failed to get name of local socket (shouldn't be fatal?)");
             // print data (not necessary if using the same comp. all the time)
             printBTNameHex(localSocketName.btAddr);
 
@@ -108,17 +111,34 @@ class Bluetooth {
             // get host (our) name for next struct
             std::string lpzServiceInstanceNameLocal;
             checkSuccessWinsock<int>(getHostNameStr(&lpzServiceInstanceNameLocal), 0, "Getting Host Name Failed (shouldn't be fatal?)");
-            // create struct to actually register us as BTH thingy
+            // create struct used to register us as a BTH thingy
             bt::WSAQUERYSETA wsaQuery = {0};
                 wsaQuery.dwSize = sizeof(bt::WSAQUERYSETA);
                 wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str();
-                wsaQuery.lp
-                
+                wsaQuery.lpServiceClassId = (bt::LPGUID)&MY_GUID; // p sure this one isn't ignored- how we're found + what we're being registered as.
+                wsaQuery.lpszComment = (bt::LPSTR)L"Example Service instance registered in the directory service through RnR";
+                wsaQuery.dwNameSpace = NS_BTH;
+                wsaQuery.dwNumberOfProtocols = 0; // used for an optional arg (don't think it's applicable for BT)
+                wsaQuery.dwNumberOfCsAddrs = 1; // IG always 1 for BT 🤷‍♂️
+                wsaQuery.lpcsaBuffer = wsaQueryInfo;
+            // function to actually register us
+            checkSuccessWinsock<int>(bt::WSASetServiceA(&wsaQuery, bt::RNRSERVICE_REGISTER, 0), 0, "Failed to register port to UUID");
+
+            // ___set up port to listen for connection___
+            checkSuccessWinsock<int>(bt::listen(this->listener, 8), 0, "Failed to set up port to listen"); // 8 reccomended for BTH
+
+            // ___(OPTIONAL) set up port to be non-blocking, as this is a UI___
+            // set non-blocking mode true
+            bt::ULONG mode = 1;
+            checkSuccessWinsock<int>(bt::ioctlsocket(this->listener, FIONBIO, &mode), 0, "Failed to make listener non-blocking");
+
+            /*can now accept(), but will be handled in another function.*/
+
             // ___free pointers we alloc()'d___
             free(wsaQueryInfo);
         }
         void listenForConnection() {
-
+            
         }
 };
 
