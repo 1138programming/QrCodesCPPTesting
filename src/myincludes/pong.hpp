@@ -30,7 +30,7 @@ class Pong {
         srand(time(NULL));
         this->window = window;
         Ballpos =  raylib::Vector2(640,310);
-        Ballspeed = raylib::Vector2(4,1.5);
+        Ballspeed = raylib::Vector2(8,1.5);
 
         Paddle1pos = raylib::Vector2(1080,400);
  
@@ -79,15 +79,15 @@ class Pong {
         pcol = CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle1pos.x,Paddle1pos.y,40.0f,120.0f)) || CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle2pos.x,Paddle2pos.y,40.0f,120.0f));
         if (!colast) {
             if ((xcol && ycol) || pcol)  {
-                Ballspeed.x = -(Ballspeed.x + randfr(abs(Ballspeed.x) * -0.5f, abs(Ballspeed.x) * 0.6f));
-                Ballspeed.y = -(Ballspeed.y + randfr(abs(Ballspeed.y) * -0.52f, abs(Ballspeed.y) * 0.52f));
+                Ballspeed.x = -(Ballspeed.x + randfr(abs(Ballspeed.x) * -0.3f, abs(Ballspeed.x) * 0.5f));
+                Ballspeed.y = -(Ballspeed.y + randfr(abs(Ballspeed.y) * -0.32f, abs(Ballspeed.y) * 0.42f));
 
             }
             else if (xcol) {
                 colast = true; 
                 // std::cout <<"collisionx" << std::endl;
            
-                Ballspeed.x = -(Ballspeed.x + randfr(abs(Ballspeed.x) * -0.5f, abs(Ballspeed.x) * 0.6f));
+                Ballspeed.x = -(Ballspeed.x + randfr(abs(Ballspeed.x) * -0.3f, abs(Ballspeed.x) * 0.5f));
         
             
                 Ballspeed.y += randfr(-0.05f,0.05f);
@@ -95,8 +95,8 @@ class Pong {
             else if (ycol) {
                 colast = true;
                 // std::cout <<"collisiony" << std::endl;
-                Ballspeed.y = -(Ballspeed.y + randfr(abs(Ballspeed.y) * -0.52f, abs(Ballspeed.y) * 0.52f));
-                Ballspeed.x += randfr( abs(Ballspeed.x) *-0.5f, abs(Ballspeed.x) * 1.25f);
+                Ballspeed.y = -(Ballspeed.y + randfr(abs(Ballspeed.y) * -0.32f, abs(Ballspeed.y) * 0.42f));
+                Ballspeed.x += randfr( abs(Ballspeed.x) *-0.3f, abs(Ballspeed.x) * 0.8f);
             }
             else {
                 colast = false;

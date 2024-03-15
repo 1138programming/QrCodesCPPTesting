@@ -67,24 +67,24 @@ int main() {
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BD"), RAYWHITE, 18.0_spD, 0.0));
         Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Low Power"), RAYWHITE, 14.0_spD, 0.0));
-        Button pong(10.0, 10.0, DARKBLUE, DARKBLUE, DARKGRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
+        Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
         Button pongback(100.0, 100.0, BLACK, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
         lowPowerMode.setDisplayPos(BOTTOMRIGHT);
-        goated.setDisplayPos(CENTERED);
+        goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
         pongback.setDisplayPos(BOTTOMRIGHT);
         scannerScreen.add(&goated);
-        scannerScreen.add(&DB);
         scannerScreen.add(&lowPowerMode);
-        matchConfigurationScreen.add(&pong);
         pongscreen.add(&pongback);
+
 
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
- 
+        dataVisualizationScreen.add(&DB);
     // __ BT Scene __
-        Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
+        Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
+        btTestingScene.add(&pong);
         EzText discoveryText(raylib::Text(spaceCadet, "BT Discovery Enable:"), RAYWHITE, 12.0_spD, 0.0);
         EzText talkingText(raylib::Text(spaceCadet, "BT Comms Enable:"), RAYWHITE, 12.0_spD, 0.0);
         Toggle discoveryToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
@@ -222,7 +222,7 @@ int main() {
                 databaseTab.disable();
                 bluetoothTab.disable();
                 if (pongback.isPressed()) {
-                    currentScene = SCANNING;
+                    currentScene = BLUETOOTH;
 
                     mainTab.disable();
                     databaseTab.enable();
