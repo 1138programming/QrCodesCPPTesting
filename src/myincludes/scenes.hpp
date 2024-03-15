@@ -3,10 +3,9 @@
 
 enum SCENES {
     SCANNING,
-    DATAVISUALIZATION,
-    MATCHCONFIG,
-    PONG,
-    BLUETOOTHTESTING
+    DATABASE,
+    BLUETOOTH,
+    PONG
 };
 
 #endif

@@ -36,6 +36,14 @@ class EzText : public Drawable {
             this->text.Draw(this->text.font, this->text.GetText(), raylib::Vector2(x, y), text.GetFontSize(), this->spacing, this->drawColor);
         }
 
+        // accessors / mutators
+        std::string getText() {
+            return this->text.GetText();
+        }
+        void setText(std::string str) {
+            this->text.SetText(str);
+        }
+
         ShouldScale getWidth() override {
             this->text.fontSize = this->textSize.getData();
             this->text.spacing = this->spacing.getData();

@@ -13,6 +13,7 @@
 #include "myincludes/graph.hpp"
 #include "myincludes/bluetooth.hpp"
 #include "myincludes/clientForTesting.hpp"
+#include "myincludes/toggle.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -49,15 +50,13 @@ int main() {
     // set up tabs at top of screen
     TabHandler tabs(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));    
     // tab buttons
-    Button main(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Main Tab"), RAYWHITE, 18.0_spD, 0.0));
-    Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Data Visualization"), RAYWHITE, 18.0_spD, 0.0));
-    Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Match Config"), RAYWHITE, 18.0_spD, 0.0));
-    Button BT(0.0,0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "BT"), RAYWHITE, 18.0_spD, 0.0));
-    main.disable();
-    tabs.add(&main)
-        .add(&dataVisualization)
-        .add(&matchConfiguration)
-        .add(&BT);
+    Button mainTab(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Main Tab"), RAYWHITE, 18.0_spD, 0.0));
+    Button databaseTab(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Database"), RAYWHITE, 18.0_spD, 0.0));
+    Button bluetoothTab(0.0,0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Bluetooth"), RAYWHITE, 18.0_spD, 0.0));
+    mainTab.disable();
+    tabs.add(&mainTab)
+        .add(&databaseTab)
+        .add(&bluetoothTab);
 
     // _____ Setting up Scenes _____
     DrawableTexture texture(1280.0_spX, 720.0_spY, raylib::Image("resources/bg.png"), raylib::Color(100, 100, 100));
@@ -81,18 +80,34 @@ int main() {
         matchConfigurationScreen.add(&pong);
         pongscreen.add(&pongback);
 
-        //std::string fileName = "resources/submit.png";
-        // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
+ 
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
-        Button btServer(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT Server"), RAYWHITE, 18.0_spD, 0.0));
-        Button btClient(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT Client"), RAYWHITE, 18.0_spD, 0.0));
-        btServer.setDisplayPos(BOTTOMLEFT);
-        btClient.setDisplayPos(BOTTOMRIGHT);
-        btTestingScene.add(&btServer);
-        btTestingScene.add(&btClient);
+        EzText discoveryText(raylib::Text(spaceCadet, "BT Discovery Enable:"), RAYWHITE, 12.0_spD, 0.0);
+        EzText talkingText(raylib::Text(spaceCadet, "BT Comms Enable:"), RAYWHITE, 12.0_spD, 0.0);
+        Toggle discoveryToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
+        Toggle talkingToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
+        DrawableList discoveryList(VERTICAL, 0);
+            discoveryList.add(&discoveryText);
+            discoveryList.add(&discoveryToggle);
+            discoveryList.setDisplayPos(BOTTOMLEFT);
+        DrawableList talkingList(VERTICAL, 0);
+            talkingList.add(&talkingText);
+            talkingList.add(&talkingToggle);
+            talkingList.setDisplayPos(BOTTOMRIGHT);
+        EzText macAddress(raylib::Text(spaceCadet, "Mac: " + btConn.getLocalMacStr()), RAYWHITE, 12.0_spD, 0.0);
+        EzText port(raylib::Text(spaceCadet, "Port: " + std::to_string(btConn.getLocalPort())), RAYWHITE, 12.0_spD, 0.0);
+        EzText activeConnections(raylib::Text(spaceCadet, "Connections: " + std::to_string(btConn.getNumConnections())), RAYWHITE, 12.0_spD, 0.0);
+        DrawableList serverData(VERTICAL, 0);
+            serverData.add(&macAddress);
+            serverData.add(&port);
+            serverData.add(&activeConnections);
+            serverData.setDisplayPos(CENTERED);
+        btTestingScene.add(&serverData);
+        btTestingScene.add(&discoveryList);
+        btTestingScene.add(&talkingList);
 
 
 
@@ -109,28 +124,25 @@ int main() {
             }
         }
 
-        if (main.isPressed()) {
+        if (mainTab.isPressed()) {
             currentScene = SCANNING;
 
-            main.disable();
-            dataVisualization.enable();
-            matchConfiguration.enable();
+            mainTab.disable();
+            databaseTab.enable();
+            bluetoothTab.enable();
         }
-        else if (dataVisualization.isPressed()) {
-            currentScene = DATAVISUALIZATION;
-            main.enable();
-            dataVisualization.disable();
-            matchConfiguration.enable();
+        else if (databaseTab.isPressed()) {
+            currentScene = DATABASE;
+            mainTab.enable();
+            databaseTab.disable();
+            bluetoothTab.enable();
         }
-        else if (matchConfiguration.isPressed()) {
-            currentScene = MATCHCONFIG;
+        else if (bluetoothTab.isPressed()) {
+            currentScene = BLUETOOTH;
 
-            main.enable();
-            dataVisualization.enable();
-            matchConfiguration.disable();
-        }
-        else if(BT.isPressed()) {
-            currentScene = BLUETOOTHTESTING;
+            mainTab.enable();
+            databaseTab.enable();
+            bluetoothTab.disable();
         }
 
         switch(currentScene) {
@@ -176,22 +188,25 @@ int main() {
                 // calling endDrawing later
             break;
 
-            case DATAVISUALIZATION:
+            case DATABASE:
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
                     texture.draw(0,0);
                     dataVisualizationScreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
             break;
 
-            case MATCHCONFIG:
+            case BLUETOOTH:
                 if (pong.isPressed()) {
                     std::cout << "hello" << std::endl;
                     currentScene = PONG;
                 }
+                if (discoveryToggle.isChecked()) {
+                    btConn.updateConnections();
+                }
+                activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
                 window.BeginDrawing();
-                    window.ClearBackground(DARKBLUE);
-                matchConfigurationScreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-               
+                window.ClearBackground(BLACK);
+                btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));               
             break;
             case PONG:
                 window.BeginDrawing();
@@ -200,33 +215,21 @@ int main() {
                 DrawCircle(pongame.Ballpos.x,pongame.Ballpos.y,20.0f,BLACK);
                 DrawRectangle(pongame.Paddle1pos.x,pongame.Paddle1pos.y,20.0f,80.0f,BLACK);
                 DrawRectangle(pongame.Paddle2pos.x,pongame.Paddle2pos.y,20.0f,80.0f,BLACK);
-                main.disable();
-                dataVisualization.disable();
-                matchConfiguration.disable();
+                mainTab.disable();
+                databaseTab.disable();
+                bluetoothTab.disable();
                 if (pongback.isPressed()) {
                     currentScene = SCANNING;
 
-                    main.disable();
-                    dataVisualization.enable();
-                    matchConfiguration.enable();
+                    mainTab.disable();
+                    databaseTab.enable();
+                    bluetoothTab.enable();
                 }
                 pongscreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
             break;
-            case BLUETOOTHTESTING:
-                if (btClient.isPressed()) {
-                    std::cerr << client.connectToServer() << std::endl;
-                }
-                btConn.updateConnections();
-                btConn.printConnections();
-                window.BeginDrawing();
-                window.ClearBackground(BLACK);
-                btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-            break;
         }
         if (currentScene != PONG) {
-           
             tabs.updateAndDraw(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));
-  
 
         }
 //  std::cout << GetFrameTime() << std::endl;

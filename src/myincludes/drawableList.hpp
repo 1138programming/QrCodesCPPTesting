@@ -62,37 +62,43 @@ class DrawableList : public Drawable {
         ShouldScale getWidth() override {
             switch(this->expansionType) {
                 case VERTICAL:
-                    // if vertical, width is just width of largest element
-                    float maxWidth;
-                    for (int i = 0; i < this->thingsToDraw.size(); i++) {
-                        Drawable* current = this->thingsToDraw.at(i);
-                        if (current->getWidth() > maxWidth) {
-                            maxWidth = current->getWidth();
+                    {
+                        // if vertical, width is just width of largest element
+                        float maxWidth = 0.0;
+                        for (int i = 0; i < this->thingsToDraw.size(); i++) {
+                            Drawable* current = this->thingsToDraw.at(i);
+                            if (current->getWidth() > maxWidth) {
+                                maxWidth = current->getWidth();
+                            }
                         }
+                        return maxWidth;
                     }
-                    return maxWidth;
                 break;
                 case HORIZONTAL:
-                    // if horizontal, width is the width of all elements added, plus padding
-                    float width;
-                    for (int i = 0; i < this->thingsToDraw.size(); i++) {
-                        Drawable* current = this->thingsToDraw.at(i);
-                        width += current->getWidth();
-                        // have to remember about the padding!
-                        width += (float) this->seperation;
+                    {
+                        // if horizontal, width is the width of all elements added, plus padding
+                        float width = 0.0;
+                        for (int i = 0; i < this->thingsToDraw.size(); i++) {
+                            Drawable* current = this->thingsToDraw.at(i);
+                            width += current->getWidth();
+                            // have to remember about the padding!
+                            width += (float) this->seperation;
+                        }
+                        return width;
                     }
-                    return width;
                 break;
                 case NONE:
-                    // same as vertical
-                    float width2;
-                    for (int i = 0; i < this->thingsToDraw.size(); i++) {
-                        Drawable* current = this->thingsToDraw.at(i);
-                        if (current->getWidth() > width2) {
-                            width2 = current->getWidth();
+                    {
+                        // same as vertical
+                        float width2 = 0.0;
+                        for (int i = 0; i < this->thingsToDraw.size(); i++) {
+                            Drawable* current = this->thingsToDraw.at(i);
+                            if (current->getWidth() > width2) {
+                                width2 = current->getWidth();
+                            }
                         }
+                        return width2;
                     }
-                    return width2;
                 break;
                 default:
                     return 0.0f;
@@ -101,36 +107,42 @@ class DrawableList : public Drawable {
         ShouldScale getHeight() override {
             switch(this->expansionType) {
                 case VERTICAL:
-                    // all added
-                    float height;
-                    for (int i = 0; i < this->thingsToDraw.size(); i++) {
-                        Drawable* current = this->thingsToDraw.at(i);
-                        height += current->getHeight();
-                        height += this->seperation;
+                    {
+                        // all added
+                        float height = 0.0;
+                        for (int i = 0; i < this->thingsToDraw.size(); i++) {
+                            Drawable* current = this->thingsToDraw.at(i);
+                            height += current->getHeight();
+                            height += this->seperation;
+                        }
+                        return height;
                     }
-                    return height;
                 break;
                 case HORIZONTAL:
-                    // heigest
-                    float maxHeight;
-                    for (int i = 0; i < this->thingsToDraw.size(); i++) {
-                        Drawable* current = this->thingsToDraw.at(i);
-                        if (current->getHeight() > maxHeight) {
-                           maxHeight = current->getHeight(); 
+                    {
+                        // heigest
+                        float maxHeight = 0.0;
+                        for (int i = 0; i < this->thingsToDraw.size(); i++) {
+                            Drawable* current = this->thingsToDraw.at(i);
+                            if (current->getHeight() > maxHeight) {
+                            maxHeight = current->getHeight(); 
+                            }
                         }
+                        return maxHeight;
                     }
-                    return maxHeight;
                     break;
                 case NONE:
-                    // same as horiz.
-                    float maxHeight2;
-                    for (int i = 0; i < this->thingsToDraw.size(); i++) {
-                        Drawable* current = this->thingsToDraw.at(i);
-                        if (current->getHeight() > maxHeight2) {
-                           maxHeight2 = current->getHeight(); 
+                    {
+                        // same as horiz.
+                        float maxHeight2 = 0.0;
+                        for (int i = 0; i < this->thingsToDraw.size(); i++) {
+                            Drawable* current = this->thingsToDraw.at(i);
+                            if (current->getHeight() > maxHeight2) {
+                            maxHeight2 = current->getHeight(); 
+                            }
                         }
+                        return maxHeight2;
                     }
-                    return maxHeight2;
                 break;
                 default:
                     return 0.0f;

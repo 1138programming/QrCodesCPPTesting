@@ -18,6 +18,8 @@ namespace bt {
 #include <vector>
 #include <iostream>
 #include <stdio.h>
+#include <sstream>
+#include <stdint.h>
 
 #undef MAKEWORD
 #define MAKEWORD(a,b) ((bt::WORD) (((bt::BYTE) (((bt::DWORD_PTR) (a)) & 0xff)) | ((bt::WORD) ((bt::BYTE) (((bt::DWORD_PTR) (b)) & 0xff))) << 8))
@@ -36,6 +38,8 @@ class Bluetooth {
         bt::SOCKET listener;
         std::vector<bt::SOCKET> connections;
         bt::BLUETOOTH_ADDRESS externalAddress;
+        bt::BTH_ADDR localAddr;
+        uint8_t port;
 
         // ___ Useful (private) functions ___
         template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
@@ -55,7 +59,7 @@ class Bluetooth {
         }
 
         // ___ useful (public) functions ___
-        void printBTNameHex(bt::BTH_ADDR addr) {
+        void printBTMacHex(bt::BTH_ADDR addr) {
             std::cout << std::hex;
             bt::BYTE* nameInBytes = (bt::BYTE*)&(addr);
             for (int i = 0; i < 5; i++) {
@@ -63,6 +67,22 @@ class Bluetooth {
             }
             std::cout << (int)(nameInBytes[5]) << std::endl;
             std::cout << std::dec;
+        }
+        std::string getLocalMacStr() {
+            std::ostringstream macBuilder;
+            bt::BYTE* nameInBytes = (bt::BYTE*)(&this->localAddr);
+            macBuilder << std::hex;
+            for (int i = 4; i > 0; i--) {
+                macBuilder << (int)nameInBytes[i] << ":";
+            }
+            macBuilder << (int)(*nameInBytes);
+            return macBuilder.str();
+        }
+        uint8_t getLocalPort() {
+            return this->port;
+        }
+        int getNumConnections() {
+            return this->connections.size();
         }
         int getHostNameStr(std::string* str) {
             char* ptr = (char*)calloc(256, sizeof(char));
@@ -102,9 +122,9 @@ class Bluetooth {
             bt::SOCKADDR_BTH localSocketName = {0}; // create struct to store addr
             int localSocketStructLen = sizeof(localSocketName); // for some reason you need this for the next function (thx windows!) (though I'm sure there's a good reason)
             checkSuccessWinsock<int>(bt::getsockname(this->listener, reinterpret_cast<bt::sockaddr*>(&localSocketName), &localSocketStructLen), 0, "Failed to get name of local socket (shouldn't be fatal?)");
-            // print data (not necessary if using the same comp. all the time)
-            printBTNameHex(localSocketName.btAddr);
-            std::cout << "Port: " << localSocketName.port << std::endl;
+            // set this data in-class
+            this->localAddr = localSocketName.btAddr;
+            this->port = localSocketName.port;
 
             //___This code advertises the BT socket to the world___
             //I do not really understand it, so dont ask (also it's very lengthy.)
