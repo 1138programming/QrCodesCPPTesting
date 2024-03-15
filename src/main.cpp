@@ -12,6 +12,7 @@
 #include "myincludes/database.hpp"
 #include "myincludes/graph.hpp"
 #include "myincludes/bluetooth.hpp"
+#include "myincludes/clientForTesting.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -37,6 +38,7 @@ int main() {
     QrCodeScanner qrScanner;
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
     Bluetooth btConn;
+    Client client;
     int sucksess = btConn.initAll();
     if (sucksess != 0) {
         std::cerr << "init failed" << std::endl;
@@ -53,10 +55,12 @@ int main() {
     Button main(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Main Tab"), RAYWHITE, 18.0_spD, 0.0));
     Button dataVisualization(0.0, 0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Data Visualization"), RAYWHITE, 18.0_spD, 0.0));
     Button matchConfiguration(0.0,0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "Match Config"), RAYWHITE, 18.0_spD, 0.0));
+    Button BT(0.0,0.0, RAYWHITE, raylib::Color(255, 255, 255, 10), raylib::Color(255, 255, 255, 40), EzText(raylib::Text(spaceCadet, "BT"), RAYWHITE, 18.0_spD, 0.0));
     main.disable();
     tabs.add(&main)
         .add(&dataVisualization)
-        .add(&matchConfiguration);
+        .add(&matchConfiguration)
+        .add(&BT);
 
     // _____ Setting up Scenes _____
     DrawableTexture texture(1280.0_spX, 720.0_spY, raylib::Image("resources/bg.png"), raylib::Color(100, 100, 100));
@@ -67,11 +71,9 @@ int main() {
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BD"), RAYWHITE, 18.0_spD, 0.0));
         Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Low Power"), RAYWHITE, 14.0_spD, 0.0));
-        Button bt(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT"), RAYWHITE, 18.0_spD, 0.0));
         Button pong(10.0, 10.0, DARKBLUE, DARKBLUE, DARKGRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
         Button pongback(100.0, 100.0, BLACK, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
         lowPowerMode.setDisplayPos(BOTTOMRIGHT);
-        bt.setDisplayPos(BOTTOMCENTERED);
         goated.setDisplayPos(CENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
@@ -87,6 +89,14 @@ int main() {
         // TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image(fileName), raylib::Image(fileName));
     // __  Data Visualization Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
+    // __ BT Testing Scene __
+        Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
+        Button btServer(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT Server"), RAYWHITE, 18.0_spD, 0.0));
+        Button btClient(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BT Client"), RAYWHITE, 18.0_spD, 0.0));
+        btServer.setDisplayPos(BOTTOMLEFT);
+        btClient.setDisplayPos(BOTTOMRIGHT);
+        btTestingScene.add(&btServer);
+        btTestingScene.add(&btClient);
 
 
 
@@ -123,6 +133,9 @@ int main() {
             dataVisualization.enable();
             matchConfiguration.disable();
         }
+        else if(BT.isPressed()) {
+            currentScene = BLUETOOTHTESTING;
+        }
 
         switch(currentScene) {
             case SCANNING:
@@ -130,9 +143,6 @@ int main() {
                 qrScanner.scan();
                 if (goated.isPressed()) {
                     qrScanner.update();
-                }
-                if(bt.isPressed()) {
-                    std::cerr << btConn.startAccept() << std::endl;
                 }
                 if(DB.isPressed()) {
                     auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
@@ -205,13 +215,18 @@ int main() {
                     matchConfiguration.enable();
                 }
                 pongscreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
-
-
-                    
-
-
             break;
-
+            case BLUETOOTHTESTING:
+                if (btClient.isPressed()) {
+                    std::cerr << client.connectToServer() << std::endl;
+                }
+                if (btServer.isPressed()) {
+                    std::cerr << btConn.startAccept() << std::endl;
+                }
+                window.BeginDrawing();
+                window.ClearBackground(BLACK);
+                btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
+            break;
         }
         if (currentScene != PONG) {
            
