@@ -50,7 +50,7 @@ class Bluetooth {
                 std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
             }
         }
-        char* readAllExpectedDataFromSocket(bt::SOCKET* readySocket, size_t dataSizeExpected) {
+        char* readAllExpectedDataFromSocket(bt::SOCKET readySocket, size_t dataSizeExpected) {
             char* dataPtr = (char*)malloc(dataSizeExpected);
             if (dataPtr == NULL) {
                 std::cerr << "cannot read: malloc() failed" << std::endl;
@@ -60,7 +60,7 @@ class Bluetooth {
 
             size_t dataRecvd = 0;
             while(dataRecvd < dataSizeExpected) {
-                size_t currentLengthRecvd = bt::recv((*readySocket), usePtr, dataSizeExpected-dataRecvd, 0);
+                size_t currentLengthRecvd = bt::recv(readySocket, usePtr, dataSizeExpected-dataRecvd, 0);
                 if (currentLengthRecvd != SOCKET_ERROR) {
                     dataRecvd += currentLengthRecvd;
                     usePtr += currentLengthRecvd; // do this so the buffer is increased
@@ -198,7 +198,32 @@ class Bluetooth {
                 this->connections.push_back(sock);
             }
         }
-        
+        void recieveDataIfConnectionsReady() {
+            bt::TIMEVAL disconnectTime = {0};
+                disconnectTime.tv_sec = 0;
+                disconnectTime.tv_usec = 0;
+                
+            bt::fd_set socketsToScan = {0};
+                memset(&socketsToScan, 0, sizeof(bt::fd_set));
+                for (size_t i = 0; i < this->connections.size(); i++) {
+                    socketsToScan.fd_array[i] = this->connections.at(i);
+                }
+                socketsToScan.fd_count = this->connections.size();
+
+            size_t sizeOfVals = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // first param ignored
+            if (sizeOfVals == SOCKET_ERROR) {
+                std::cerr << "Failed to select connections. Err code: " << std::to_string(bt::WSAGetLastError()) << std::endl;
+                return;
+            }
+            for (size_t i = 0; i < socketsToScan.fd_count; i++) {
+                char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], 4);
+                for (int i = 0; i < 4; i++) {
+                    std::cout << data[i];
+                }
+                std::cout << std::endl;
+                free(data);
+            }
+        }
 };
 
 #endif
