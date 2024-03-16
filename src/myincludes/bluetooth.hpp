@@ -61,12 +61,17 @@ class Bluetooth {
             size_t dataRecvd = 0;
             while(dataRecvd < dataSizeExpected) {
                 size_t currentLengthRecvd = bt::recv(readySocket, usePtr, dataSizeExpected-dataRecvd, 0);
+                if (currentLengthRecvd == 0) {
+                    std::cerr << "nope: " << std::endl;
+                    return dataPtr;
+                }
                 if (currentLengthRecvd != SOCKET_ERROR) {
                     dataRecvd += currentLengthRecvd;
                     usePtr += currentLengthRecvd; // do this so the buffer is increased
                 } 
                 else {
-                    std::cerr << "error recieving data" << std::endl;
+                    std::cerr << "error recieving data: " << bt::WSAGetLastError() << std::endl;
+                    return dataPtr;
                 }
             }
             return dataPtr;
@@ -95,7 +100,7 @@ class Bluetooth {
             std::ostringstream macBuilder;
             bt::BYTE* nameInBytes = (bt::BYTE*)(&this->localAddr);
             macBuilder << std::hex;
-            for (int i = 4; i > 0; i--) {
+            for (int i = 5; i > 0; i--) {
                 macBuilder << (int)nameInBytes[i] << ":";
             }
             macBuilder << (int)(*nameInBytes);
@@ -217,8 +222,11 @@ class Bluetooth {
                 std::cerr << "Failed to select connections. Err code: " << std::to_string(bt::WSAGetLastError()) << std::endl;
                 return;
             }
+            if (sizeOfVals != 0) {
+                std::cout << "ValSize: " << std::to_string(sizeOfVals) << std::endl;
+            }
             for (size_t i = 0; i < sizeOfVals; i++) {
-                char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], 4);
+                char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], EXPECTED_DATA_INITIAL);
                 for (int i = 0; i < 4; i++) {
                     std::cout << data[i];
                 }
