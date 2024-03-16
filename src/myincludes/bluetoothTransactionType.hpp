@@ -1,0 +1,8 @@
+#ifndef BT_TRANSACTIONTYPE_HPP
+#define BT_TRANSACTIONTYPE_HPP
+
+typedef enum {
+    READ_MATCH
+} BT_TRANSACTIONTYPE;
+
+#endif

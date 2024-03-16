@@ -1,37 +1,13 @@
 #ifndef BLUETOOTH_HPP
 #define BLUETOOTH_HPP
 
-namespace bt {
-    #include <winsock2.h>
-    #include <windows.h>
-
-    #include <WS2tcpip.h>
-    #include <ws2ipdef.h>
-    #include <ws2tcpip.h>
-    #include <WinSock2.h>
-    #include <MSWSock.h>
-    #include <bluetoothapis.h>
-    #include <ws2bth.h>
-    #include <synchapi.h>
-}
+#include "btIncludes.hpp"
 
 #include <vector>
 #include <iostream>
 #include <stdio.h>
 #include <sstream>
 #include <stdint.h>
-
-#undef MAKEWORD
-#define MAKEWORD(a,b) ((bt::WORD) (((bt::BYTE) (((bt::DWORD_PTR) (a)) & 0xff)) | ((bt::WORD) ((bt::BYTE) (((bt::DWORD_PTR) (b)) & 0xff))) << 8))
-#undef BT_PORT_ANY
-#define BT_PORT_ANY ((bt::ULONG)-1)
-#undef FIONBIO
-#define FIONBIO _IOW('f', 126, bt::u_long)
-#undef INVALID_SOCKET
-#define INVALID_SOCKET (bt::SOCKET)(~0)
-
-#define EXPECTED_DATA_INITIAL sizeof(int)
-
 
 static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb}};
 
@@ -50,32 +26,6 @@ class Bluetooth {
                 std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
             }
         }
-        char* readAllExpectedDataFromSocket(bt::SOCKET readySocket, size_t dataSizeExpected) {
-            char* dataPtr = (char*)malloc(dataSizeExpected);
-            if (dataPtr == NULL) {
-                std::cerr << "cannot read: malloc() failed" << std::endl;
-                return dataPtr;
-            }
-            char* usePtr = dataPtr;
-
-            size_t dataRecvd = 0;
-            while(dataRecvd < dataSizeExpected) {
-                size_t currentLengthRecvd = bt::recv(readySocket, usePtr, dataSizeExpected-dataRecvd, 0);
-                if (currentLengthRecvd == 0) {
-                    std::cerr << "nope: " << std::endl;
-                    return dataPtr;
-                }
-                if (currentLengthRecvd != SOCKET_ERROR) {
-                    dataRecvd += currentLengthRecvd;
-                    usePtr += currentLengthRecvd; // do this so the buffer is increased
-                } 
-                else {
-                    std::cerr << "error recieving data: " << bt::WSAGetLastError() << std::endl;
-                    return dataPtr;
-                }
-            }
-            return dataPtr;
-        }
     public:
         // ___ Simple BT functions ___
         int initAll() {
@@ -87,15 +37,6 @@ class Bluetooth {
         }
 
         // ___ useful (public) functions ___
-        void printBTMacHex(bt::BTH_ADDR addr) {
-            std::cout << std::hex;
-            bt::BYTE* nameInBytes = (bt::BYTE*)&(addr);
-            for (int i = 0; i < 5; i++) {
-                std::cout << (int)(nameInBytes[i]) << ":";
-            }
-            std::cout << (int)(nameInBytes[5]) << std::endl;
-            std::cout << std::dec;
-        }
         std::string getLocalMacStr() {
             std::ostringstream macBuilder;
             bt::BYTE* nameInBytes = (bt::BYTE*)(&this->localAddr);
@@ -203,36 +144,33 @@ class Bluetooth {
                 this->connections.push_back(sock);
             }
         }
-        void recieveDataIfConnectionsReady() {
+        void handleReadyConnections() {
+            // __ Get all sockets that are ready to be read from ___
             // set disconnect time to 0ms (if sockets not already ready, continue.)
             bt::TIMEVAL disconnectTime = {0};
                 disconnectTime.tv_sec = 0;
                 disconnectTime.tv_usec = 0;
-                
             bt::fd_set socketsToScan = {0};
                 memset(&socketsToScan, 0, sizeof(bt::fd_set)); // not necessary prob.
                 for (size_t i = 0; i < this->connections.size(); i++) {
                     socketsToScan.fd_array[i] = this->connections.at(i); //add all my sockets to  the arr
                 }
                 socketsToScan.fd_count = this->connections.size(); // set the size to # of sockets inputted
-
             // technically this returns the # of total sockets, but as we are only querying once, it should be fine.
             size_t sizeOfVals = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // first param ignored
             if (sizeOfVals == SOCKET_ERROR) {
                 std::cerr << "Failed to select connections. Err code: " << std::to_string(bt::WSAGetLastError()) << std::endl;
                 return;
             }
-            if (sizeOfVals != 0) {
-                std::cout << "ValSize: " << std::to_string(sizeOfVals) << std::endl;
-            }
-            for (size_t i = 0; i < sizeOfVals; i++) {
-                char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], EXPECTED_DATA_INITIAL);
-                for (int i = 0; i < 4; i++) {
-                    std::cout << data[i];
-                }
-                std::cout << std::endl;
-                free(data);
-            }
+            // ___ Read from all sockets connected ___
+            // for (size_t i = 0; i < sizeOfVals; i++) {
+            //     char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], EXPECTED_DATA_INITIAL);
+            //     for (int i = 0; i < 4; i++) {
+            //         std::cout << data[i];
+            //     }
+            //     std::cout << std::endl;
+            //     free(data);
+            // }
         }
 };
 
