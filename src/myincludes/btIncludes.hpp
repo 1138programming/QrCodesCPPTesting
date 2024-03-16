@@ -15,6 +15,13 @@ namespace bt {
     #include <synchapi.h>
 }
 
+template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
+    if (val != target) {
+        std::cerr << "ERROR: " << errorMessage << std::endl;
+        std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
+    }
+}
+
 #undef MAKEWORD
 #define MAKEWORD(a,b) ((bt::WORD) (((bt::BYTE) (((bt::DWORD_PTR) (a)) & 0xff)) | ((bt::WORD) ((bt::BYTE) (((bt::DWORD_PTR) (b)) & 0xff))) << 8))
 #undef BT_PORT_ANY

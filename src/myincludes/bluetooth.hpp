@@ -20,12 +20,6 @@ class Bluetooth {
         uint8_t port;
 
         // ___ Useful (private) functions ___
-        template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
-            if (val != target) {
-                std::cerr << "ERROR: " << errorMessage << std::endl;
-                std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
-            }
-        }
     public:
         // ___ Simple BT functions ___
         int initAll() {
