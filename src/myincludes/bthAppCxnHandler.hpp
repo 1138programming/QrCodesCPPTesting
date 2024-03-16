@@ -26,7 +26,7 @@ class BthCxnHandler {
             // create data ptr and check if malloc succeded.
             char* dataPtr = (char*)malloc(dataSizeExpected);
             if (dataPtr == NULL) {
-                ToastHandler::add(Toast("SOCKET malloc() failed", LENGTH_NORMAL));
+                toastHandler::add(Toast("SOCKET malloc() failed", LENGTH_NORMAL));
                 return dataPtr;
             }
             // create pointer to be used for getting data (as we will need to modify the ptr)
@@ -38,13 +38,13 @@ class BthCxnHandler {
                 size_t currentLengthRecvd = bt::recv(this->socket, usePtr, dataSizeExpected-dataRecvd, 0);
                 // if it returns 0, the socket has requested being closed
                 if (currentLengthRecvd == 0) {
-                    ToastHandler::add(Toast("Socket Requested Close: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
+                    toastHandler::add(Toast("Socket Requested Close: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
                     (*dataPtr) = BT_CLOSE_SOCKET;
                     return dataPtr;
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
-                    ToastHandler::add(Toast("SOCKET ERROR: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
+                    toastHandler::add(Toast("SOCKET ERROR: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
                     (*dataPtr) = BT_SOCKET_ERROR;
                     return dataPtr;
                 } 
@@ -54,7 +54,7 @@ class BthCxnHandler {
             return dataPtr;
         }
         void sendAllDataToSocket(char* data, size_t length) {
-            
+
         }
         void allowSocketBlocking() {
             bt::ULONG mode = 0;
@@ -64,11 +64,11 @@ class BthCxnHandler {
             bt::ULONG mode = 1;
             checkSuccessWinsock<int>(bt::ioctlsocket(this->socket, FIONBIO, &mode), 0, "Failed to set sock non-blocking mode.");
         }
-        void sendConfirmation() {
+        void sendAck() {
             // thumbs up emoji lol (4 bytes)
             char* dataToSend = (char*)calloc(4, sizeof(char));
             if(dataToSend == NULL) {
-                toastHandler::add(Toast("Confirmation Send Failed"), LENGTH_NORMAL);
+                toastHandler::add(Toast("Confirmation Send Failed", LENGTH_NORMAL));
             }
             // thumbs up emoji
             dataToSend[0] = 0xf0;

@@ -2,6 +2,7 @@
 #define BLUETOOTH_HPP
 
 #include "btIncludes.hpp"
+#include "bthAppCxnHandler.hpp"
 
 #include <vector>
 #include <iostream>
@@ -157,14 +158,10 @@ class Bluetooth {
                 return;
             }
             // ___ Read from all sockets connected ___
-            // for (size_t i = 0; i < sizeOfVals; i++) {
-            //     char* data = readAllExpectedDataFromSocket(socketsToScan.fd_array[i], EXPECTED_DATA_INITIAL);
-            //     for (int i = 0; i < 4; i++) {
-            //         std::cout << data[i];
-            //     }
-            //     std::cout << std::endl;
-            //     free(data);
-            // }
+            for (size_t i = 0; i < sizeOfVals; i++) {
+                BthCxnHandler handler(socketsToScan.fd_array[i]);
+                std::cout << std::to_string(handler.getTransactionType());
+            }
         }
 };
 
