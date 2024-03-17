@@ -54,19 +54,24 @@ class Pong {
 
     void update() {
         adjustedframetime = 50 * GetFrameTime();
+        bool up;
         // key = GetKeyPressed();
         // while (key != KEY_NULL) {
             
            if (IsKeyDown(KEY_DOWN)) {
+                up = false;
                 Paddle1pos.y += 5 * adjustedframetime;
            }
            else if (IsKeyDown(KEY_UP)) {
+                up = true;
                 Paddle1pos.y += -5 * adjustedframetime;
            }
             if (IsKeyDown(KEY_S)) {
+                up = false;
                 Paddle2pos.y += 5 * adjustedframetime;
            }
            else if (IsKeyDown(KEY_W)) {
+                up = true;
                 Paddle2pos.y += -5 * adjustedframetime;
            }
             // std::cout << key << std::endl;
@@ -76,41 +81,61 @@ class Pong {
         xcol = Ballpos.x >= window->GetWidth() -5 ||
         Ballpos.x <= 5;
         ycol = Ballpos.y >= window->GetHeight()-5 || Ballpos.y <= 5;
-        pcol = CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle1pos.x,Paddle1pos.y,40.0f,120.0f)) || CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle2pos.x,Paddle2pos.y,40.0f,120.0f));
+        pcol = CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle1pos.x,Paddle1pos.y,30.0f,90.0f)) || CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle2pos.x,Paddle2pos.y,30.0f,90.0f));
         if (!colast) {
-            if ((xcol && ycol) || pcol)  {
-                Ballspeed.x = -(Ballspeed.x + randfr(abs(Ballspeed.x) * -0.3f, abs(Ballspeed.x) * 0.5f));
-                Ballspeed.y = -(Ballspeed.y + randfr(abs(Ballspeed.y) * -0.32f, abs(Ballspeed.y) * 0.42f));
+            if (pcol && ycol) {
+                if (up) {
+                    Ballspeed.x += randfr( Ballspeed.x *-0.03f, Ballspeed.x * 0.04f);
 
+                    Ballspeed.y -= (2 + (randfr(Ballspeed.y * -0.02f, Ballspeed.y * 0.02f)));
+                }
+                else if (!up) {
+                    Ballspeed.x += randfr(Ballspeed.x *-0.03f, Ballspeed.x * 0.04f);
+
+                    Ballspeed.y += (2 + (randfr(Ballspeed.y * -0.02f, Ballspeed.y * 0.025f)));
+                }
+                colast = true; 
+            }
+            else if ((xcol && ycol) || pcol)  {
+                Ballspeed.x = -(Ballspeed.x + randfr(Ballspeed.x * -0.2f, Ballspeed.x * 0.4f));
+                Ballspeed.y = -(Ballspeed.y + randfr(Ballspeed.y * -0.52f, Ballspeed.y * 0.6f));
+                colast = true; 
             }
             else if (xcol) {
                 colast = true; 
                 // std::cout <<"collisionx" << std::endl;
            
-                Ballspeed.x = -(Ballspeed.x + randfr(abs(Ballspeed.x) * -0.3f, abs(Ballspeed.x) * 0.5f));
+                Ballspeed.x = -(Ballspeed.x + randfr(Ballspeed.x * -0.2f, Ballspeed.x * 0.4f));
         
             
-                Ballspeed.y += randfr(-0.05f,0.05f);
+                Ballspeed.y += randfr(-0.06f,0.06f);
             }
             else if (ycol) {
                 colast = true;
                 // std::cout <<"collisiony" << std::endl;
-                Ballspeed.y = -(Ballspeed.y + randfr(abs(Ballspeed.y) * -0.32f, abs(Ballspeed.y) * 0.42f));
-                Ballspeed.x += randfr( abs(Ballspeed.x) *-0.3f, abs(Ballspeed.x) * 0.8f);
+                Ballspeed.y = -(Ballspeed.y + randfr(Ballspeed.y * -0.5f, Ballspeed.y * 0.6f));
+                Ballspeed.x += randfr( Ballspeed.x *-0.3f, Ballspeed.x * 0.6f);
             }
             else {
                 colast = false;
             }
         }
         else {
-            if (!xcol && !ycol) {
+            if (!xcol && !ycol && !pcol) {
                 colast = false;
             }
             
         }
+     
         std::cout << Ballspeed.x << " | " << Ballspeed.y << std::endl;
         Ballpos.x += Ballspeed.x * adjustedframetime;
-        Ballpos.y += Ballspeed.y * adjustedframetime;
+        Ballpos.y += Ballspeed.y * adjustedframetime;   
+        if (abs(Ballspeed.x) > 8  ) {
+            Ballspeed.x -= (Ballspeed.x) * 0.001;
+        }
+        else if (abs(Ballspeed.y) > 4) {
+            Ballspeed.y -= (Ballspeed.y) * 0.001;
+        }
        
 
     }
