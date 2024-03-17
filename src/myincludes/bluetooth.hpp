@@ -185,13 +185,16 @@ class Bluetooth {
 
                     case WRITE_MATCH:
                     {
-                        std::string data = handler.readMatchFromTablet();
+                        bool success;
+                        std::string data = handler.readMatchFromTablet(&success);
                         
-                        // parse data and put it into database
-                        JsonParser parser(data);
-                        std::vector<MATCH_DATAPOINT> vectData = parser.parse();
-                        DatabaseMan databaseCall(vectData);
-                        databaseCall.maketh();
+                        if (success) {
+                            // parse data and put it into database
+                            JsonParser parser(data);
+                            std::vector<MATCH_DATAPOINT> vectData = parser.parse();
+                            DatabaseMan databaseCall(vectData);
+                            databaseCall.maketh();
+                        }
                     }
                     break;
 

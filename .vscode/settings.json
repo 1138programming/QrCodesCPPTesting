@@ -83,7 +83,8 @@
         "numbers": "cpp",
         "cinttypes": "cpp",
         "variant": "cpp",
-        "version": "cpp"
+        "version": "cpp",
+        "queue": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

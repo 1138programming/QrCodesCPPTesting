@@ -49,41 +49,41 @@ class Database {
                 return std::vector<std::vector<std::string>>();
             }
  
-            MYSQL_RES *resptr = mysql_use_result(&mysql);
-            if (mysql.status == MYSQL_STATUS_USE_RESULT) {
-                std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
-            }
+            // MYSQL_RES *resptr = mysql_use_result(&mysql);
+            // if (mysql.status == MYSQL_STATUS_USE_RESULT) {
+            //     std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
+            // }
 
-            if (resptr == 0) {
-                std::cout << "Error result is zero" << mysql_error(&mysql) << std::endl;
-                mysql_free_result(resptr);
-            }
-            else {
-                int i, j;
+            // if (resptr == 0) {
+            //     std::cout << "Error result is zero" << mysql_error(&mysql) << std::endl;
+            //     mysql_free_result(resptr);
+            // }
+            // else {
+            //     int i, j;
             
-            i = 0;
+            // i = 0;
             std::vector<std::vector<std::string>> vector;
             
 
-            while ((row = mysql_fetch_row(resptr)) != NULL) {  std::cout << "hhh" << std::endl;
-                vector.push_back(std::vector<std::string>());              
+            // while ((row = mysql_fetch_row(resptr)) != NULL) {  std::cout << "hhh" << std::endl;
+            //     vector.push_back(std::vector<std::string>());              
   
               
-                    for (int j=0; j < length; j++) {
-                    //    std::cout << std::string(row[j]) << std::endl;
-                    //    std::cout << "jjj" << std::endl;
-                       if (row[j] != NULL) {
-                       vector.at(i).push_back(std::string(row[j])); 
-                    }
-                    //    std::cout << "please god" << std::endl;
-                    }
+            //         for (int j=0; j < length; j++) {
+            //         //    std::cout << std::string(row[j]) << std::endl;
+            //         //    std::cout << "jjj" << std::endl;
+            //            if (row[j] != NULL) {
+            //            vector.at(i).push_back(std::string(row[j])); 
+            //         }
+            //         //    std::cout << "please god" << std::endl;
+            //         }
                     
                     
        
-                i++;
-            }
+            //     i++;
+            // }
             return vector;
-            }
+            //}
         }
             
         

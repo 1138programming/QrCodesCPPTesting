@@ -158,7 +158,7 @@ class BthCxnHandler {
             return static_cast<BT_TRANSACTIONTYPE>(transactionType);
         }
 
-        std::string readMatchFromTablet() {
+        std::string readMatchFromTablet(bool* readSuccess) {
             /*
                 C: 👍 (ACK)
                 T: # of bytes will be sent
@@ -166,6 +166,7 @@ class BthCxnHandler {
                 T: send all data (blocking)
                 C: 👍 (ACK)
             */
+            (*readSuccess) = false;
             // checking if getting data is successful.
             bool dataGetSuccess = true;
             // allow socket to block while we are doing this transaction (it shouldn't take long)
@@ -173,14 +174,14 @@ class BthCxnHandler {
                 // ___ ack ___
                 if (!sendAck()) {
                     disallowSocketBlocking();
-                    return;
+                    return std::string();
                 }
                 // ___ get data size ___
                 char* dataSizePtr = readAllExpectedDataFromSocket(EXPECTED_DATA_READSIZE, &dataGetSuccess);
                 // if we are not successful in reading (or inverting the endian-ness, as it is currently incorrect), send a NACK and return
                 if (!dataGetSuccess || !invertEndianness(dataSizePtr, EXPECTED_DATA_READSIZE)) {
                     endInteraction();
-                    return;
+                    return std::string();
                 }
                 int dataSize = ((int*)dataSizePtr)[0];
                 // free the memory we created
@@ -189,14 +190,14 @@ class BthCxnHandler {
                 // ___ ack dataSize recvd ___
                 if (!sendAck()) {
                     disallowSocketBlocking();
-                    return;
+                    return std::string();
                 }
                 // ___ read all expected data ___
                 char* jsonData = readAllExpectedDataFromSocket(dataSize, &dataGetSuccess);
                 // if we are not successful in reading, send a NACK and return
                 if (!dataGetSuccess) {
                     endInteraction();
-                    return;
+                    return std::string();
                 }
                 // get data as string before freeing ptr
                 std::string dataInStringFormat = std::string(jsonData, dataSize);
@@ -204,6 +205,7 @@ class BthCxnHandler {
                 // free ptr
                 free(jsonData);
             disallowSocketBlocking();
+            (*readSuccess) = true;
             return dataInStringFormat;
         }
         void handleSocketError() {
