@@ -4,6 +4,8 @@
 #include "btIncludes.hpp"
 #include "bluetoothTransactionType.hpp"
 #include "toastHandler.hpp"
+#include "jsonParser.hpp"
+#include "DatabaseMan.hpp"
 
 #include <iostream>
 #include <vector>
@@ -22,6 +24,7 @@ class BthCxnHandler {
             (*success) = true;
             // return nothing if no memory given (obv.)
             if (dataSizeExpected < 1) {
+                (*success) = false;
                 return nullptr;
             }
             // create data ptr and check if malloc succeded.
@@ -41,7 +44,6 @@ class BthCxnHandler {
                 if (currentLengthRecvd == 0) {
                     toastHandler::add(Toast("Socket Requested Close: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
                     (*dataPtr) = BT_CLOSE_SOCKET;
-                    (*success) = false;
                     return dataPtr;
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
@@ -111,6 +113,25 @@ class BthCxnHandler {
             bool success = sendAllDataToSocket(dataToSend, nackSize);
             return success;
         }
+        bool invertEndianness(char* ptr, size_t ptrSize) {
+            // copy pointer, returning false if failing.
+            char* ptrCopy = (char*)malloc(ptrSize);
+            if(ptrCopy == NULL) {
+                return false;
+            }
+            ptrCopy = (char*)memcpy(ptrCopy, ptr, ptrSize);
+            // set all the bits of ptr to the inverse of ptrCopy
+            for(int i = 0; i < ptrSize; i++) {
+                // -1 because index starts @ 0
+                ptr[i] = ptrCopy[ptrSize-i-1];
+            }
+            free(ptrCopy);
+            return true;
+        }
+        void endInteraction() {
+            disallowSocketBlocking();
+            sendNack();
+        }
 
     public:
         BthCxnHandler(bt::SOCKET socket) {
@@ -120,16 +141,24 @@ class BthCxnHandler {
         BT_TRANSACTIONTYPE getTransactionType() {
             bool success;
             char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, &success);
-            if (!success) {
-                free(transactionPtr);
-                return BT_SOCKET_ERROR;
-            }
             char transactionType = (*transactionPtr);
             free(transactionPtr);
+
+            // if it's a SOCKET_ERROR, check to make sure it's not fatal. If it is, change it to SOCKET_CLOSE, 
+            // as there is no point in reading from a dead socket.
+            if (transactionType == -128) {
+                if (bt::WSAGetLastError() == 10053) { // WSAECONNABORTED
+                    transactionType = BT_CLOSE_SOCKET;
+                    success = true;
+                }
+            }
+            if (!success) {
+                return BT_SOCKET_ERROR;
+            }
             return static_cast<BT_TRANSACTIONTYPE>(transactionType);
         }
 
-        void readMatchFromTablet() {
+        std::string readMatchFromTablet() {
             /*
                 C: 👍 (ACK)
                 T: # of bytes will be sent
@@ -148,15 +177,15 @@ class BthCxnHandler {
                 }
                 // ___ get data size ___
                 char* dataSizePtr = readAllExpectedDataFromSocket(EXPECTED_DATA_READSIZE, &dataGetSuccess);
-                // if we are not successful in reading, send a NACK and return
-                if (!dataGetSuccess) {
-                    disallowSocketBlocking();
-                    sendNack();
+                // if we are not successful in reading (or inverting the endian-ness, as it is currently incorrect), send a NACK and return
+                if (!dataGetSuccess || !invertEndianness(dataSizePtr, EXPECTED_DATA_READSIZE)) {
+                    endInteraction();
                     return;
                 }
                 int dataSize = ((int*)dataSizePtr)[0];
                 // free the memory we created
                 free(dataSizePtr);
+                std::cout << std::to_string(dataSize) << std::endl;
                 // ___ ack dataSize recvd ___
                 if (!sendAck()) {
                     disallowSocketBlocking();
@@ -166,17 +195,16 @@ class BthCxnHandler {
                 char* jsonData = readAllExpectedDataFromSocket(dataSize, &dataGetSuccess);
                 // if we are not successful in reading, send a NACK and return
                 if (!dataGetSuccess) {
-                    disallowSocketBlocking();
-                    sendNack();
+                    endInteraction();
                     return;
                 }
-                // else print all data got
-                for (int i = 0; i < dataSize; i++) {
-                    std::cout << jsonData[i];
-                }
+                // get data as string before freeing ptr
+                std::string dataInStringFormat = std::string(jsonData, dataSize);
+
                 // free ptr
                 free(jsonData);
             disallowSocketBlocking();
+            return dataInStringFormat;
         }
         void handleSocketError() {
             sendNack();
