@@ -10,15 +10,16 @@
 #include <stdio.h>
 
 #define EXPECTED_DATA_INITIAL sizeof(char)
+#define EXPECTED_DATA_READSIZE sizeof(int)
 
 class BthCxnHandler {
     private:
         bt::SOCKET socket;
-        bool error;
+        bool errorCheck;
 
         // useful functions
-        char* readAllExpectedDataFromSocket(size_t dataSizeExpected) {
-            this->error = false;
+        char* readAllExpectedDataFromSocket(size_t dataSizeExpected, bool* success) {
+            (*success) = true;
             // return nothing if no memory given (obv.)
             if (dataSizeExpected < 1) {
                 return nullptr;
@@ -26,7 +27,7 @@ class BthCxnHandler {
             // create data ptr and check if malloc succeded.
             char* dataPtr = (char*)malloc(dataSizeExpected);
             if (dataPtr == NULL) {
-                toastHandler::add(Toast("SOCKET malloc() failed", LENGTH_NORMAL));
+                (*success) = false;
                 return dataPtr;
             }
             // create pointer to be used for getting data (as we will need to modify the ptr)
@@ -40,12 +41,14 @@ class BthCxnHandler {
                 if (currentLengthRecvd == 0) {
                     toastHandler::add(Toast("Socket Requested Close: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
                     (*dataPtr) = BT_CLOSE_SOCKET;
+                    (*success) = false;
                     return dataPtr;
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
                     toastHandler::add(Toast("SOCKET ERROR: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
                     (*dataPtr) = BT_SOCKET_ERROR;
+                    (*success) = false;
                     return dataPtr;
                 } 
                 dataRecvd += currentLengthRecvd;
@@ -53,8 +56,18 @@ class BthCxnHandler {
             }
             return dataPtr;
         }
-        void sendAllDataToSocket(char* data, size_t length) {
-
+        bool sendAllDataToSocket(char* data, size_t expectedLength) {
+            char* currentData = data;
+            size_t sentData = 0;
+            while(sentData < expectedLength) {
+                size_t lenDataSent = bt::send(this->socket, currentData, expectedLength-sentData, 0);
+                if (lenDataSent == SOCKET_ERROR) {
+                    return false;
+                }
+                sentData += lenDataSent;
+                currentData += lenDataSent;
+            }
+            return true;
         }
         void allowSocketBlocking() {
             bt::ULONG mode = 0;
@@ -64,19 +77,39 @@ class BthCxnHandler {
             bt::ULONG mode = 1;
             checkSuccessWinsock<int>(bt::ioctlsocket(this->socket, FIONBIO, &mode), 0, "Failed to set sock non-blocking mode.");
         }
-        void sendAck() {
+        bool sendAck() {
             // thumbs up emoji lol (4 bytes)
-            char* dataToSend = (char*)calloc(4, sizeof(char));
+            size_t ackSize = 4*sizeof(char);
+            char* dataToSend = (char*)calloc(1, ackSize);
             if(dataToSend == NULL) {
                 toastHandler::add(Toast("Confirmation Send Failed", LENGTH_NORMAL));
+                return false;
             }
             // thumbs up emoji
-            dataToSend[0] = 0xf0;
-            dataToSend[1] = 0x9f;
-            dataToSend[2] = 0x91;
-            dataToSend[3] = 0x8d;
-            bt::send(this->socket, dataToSend, 4*sizeof(char), 0);
+                dataToSend[0] = 0xf0;
+                dataToSend[1] = 0x9f;
+                dataToSend[2] = 0x91;
+                dataToSend[3] = 0x8d;
+            // send thumbs up emoji and return success val
+            bool success = sendAllDataToSocket(dataToSend, ackSize);
             free(dataToSend);
+            return success;
+        }
+        bool sendNack() {
+            size_t nackSize = 4*sizeof(char);
+            char* dataToSend = (char*)calloc(1, nackSize);
+            // make sure malloc succeded
+            if(dataToSend == NULL) {
+                toastHandler::add(Toast("Nack Send Failed", LENGTH_NORMAL));
+                return false;
+            }
+            // thumbs down emoji
+                dataToSend[0] = 0xf0;
+                dataToSend[1] = 0x9f;
+                dataToSend[2] = 0x91;
+                dataToSend[3] = 0x8e;
+            bool success = sendAllDataToSocket(dataToSend, nackSize);
+            return success;
         }
 
     public:
@@ -85,19 +118,72 @@ class BthCxnHandler {
         }
         // should only be called once
         BT_TRANSACTIONTYPE getTransactionType() {
-            char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL);
+            bool success;
+            char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, &success);
+            if (!success) {
+                free(transactionPtr);
+                return BT_SOCKET_ERROR;
+            }
             char transactionType = (*transactionPtr);
             free(transactionPtr);
             return static_cast<BT_TRANSACTIONTYPE>(transactionType);
         }
 
         void readMatchFromTablet() {
+            /*
+                C: 👍 (ACK)
+                T: # of bytes will be sent
+                C: 👍 (ACK)
+                T: send all data (blocking)
+                C: 👍 (ACK)
+            */
+            // checking if getting data is successful.
+            bool dataGetSuccess = true;
             // allow socket to block while we are doing this transaction (it shouldn't take long)
             allowSocketBlocking();
-
-
-
+                // ___ ack ___
+                if (!sendAck()) {
+                    disallowSocketBlocking();
+                    return;
+                }
+                // ___ get data size ___
+                char* dataSizePtr = readAllExpectedDataFromSocket(EXPECTED_DATA_READSIZE, &dataGetSuccess);
+                // if we are not successful in reading, send a NACK and return
+                if (!dataGetSuccess) {
+                    disallowSocketBlocking();
+                    sendNack();
+                    return;
+                }
+                int dataSize = ((int*)dataSizePtr)[0];
+                // free the memory we created
+                free(dataSizePtr);
+                // ___ ack dataSize recvd ___
+                if (!sendAck()) {
+                    disallowSocketBlocking();
+                    return;
+                }
+                // ___ read all expected data ___
+                char* jsonData = readAllExpectedDataFromSocket(dataSize, &dataGetSuccess);
+                // if we are not successful in reading, send a NACK and return
+                if (!dataGetSuccess) {
+                    disallowSocketBlocking();
+                    sendNack();
+                    return;
+                }
+                // else print all data got
+                for (int i = 0; i < dataSize; i++) {
+                    std::cout << jsonData[i];
+                }
+                // free ptr
+                free(jsonData);
             disallowSocketBlocking();
+        }
+        void handleSocketError() {
+            sendNack();
+            disallowSocketBlocking();
+        }
+        void closeSocket() {
+            checkSuccessWinsock<int>(bt::closesocket(this->socket), 0, "failed to propely close socket (memory leak)");
         }
 };
 
