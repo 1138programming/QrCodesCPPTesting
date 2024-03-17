@@ -43,8 +43,6 @@ class QrCodeScanner {
                 }                   
                 key = GetCharPressed();
             }
-        
-           
         }
 
         void update() {

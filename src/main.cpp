@@ -88,7 +88,10 @@ int main() {
 
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
-        dataVisualizationScreen.add(&DB);
+        TextBox box(100.0_spX, 50.0_spY, 10, 15.0_spD);
+            box.setDisplayPos(CENTERED);
+        dataVisualizationScreen.add(&DB)
+            .add(&box);
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
         btTestingScene.add(&pong);
@@ -233,7 +236,7 @@ int main() {
                     activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
                 }
                 if (talkingToggle.isChecked()) {
-                    btConn.recieveDataIfConnectionsReady();
+                    btConn.handleReadyConnections();
                 }
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);
