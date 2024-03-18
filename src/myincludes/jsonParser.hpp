@@ -54,14 +54,14 @@ class JsonParser {
                     currentDatapoint.datapointID = element["datapointID"];
                     currentDatapoint.teamID = element["teamID"];
                     currentDatapoint.matchID = element["matchID"];
-                    currentDatapoint.datapointValue = element["datapointValue"];
+                    currentDatapoint.DCValue = element["DCValue"];
                     std::string stuff = element["DCTimestamp"];
                     if (stuff== "noShow") {
                         currentDatapoint.DCTimestamp ="NULL";
                     }
                     else {
                         
-                        currentDatapoint.DCTimestamp = ("'2024-03-09 " + stuff + "'");
+                        currentDatapoint.DCTimestamp = ("'" + stuff + "'");
 
 
                     }

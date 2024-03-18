@@ -8,7 +8,7 @@ typedef struct {
     std::string matchID;
     std::string teamID;
     std::string datapointID;
-    std::string datapointValue;
+    std::string DCValue;
     std::string DCTimestamp;
     std::string AllianceId;
 } MATCH_DATAPOINT;
