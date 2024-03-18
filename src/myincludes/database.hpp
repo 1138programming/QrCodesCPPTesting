@@ -49,10 +49,10 @@ class Database {
                 return std::vector<std::vector<std::string>>();
             }
  
-            // MYSQL_RES *resptr = mysql_use_result(&mysql);
-            // if (mysql.status == MYSQL_STATUS_USE_RESULT) {
-            //     std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
-            // }
+            MYSQL_RES *resptr = mysql_use_result(&mysql);
+            if (mysql.status == MYSQL_STATUS_USE_RESULT) {
+                std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
+            }
 
             if (resptr == 0) {
                 std::cout << "Error result is zero" << mysql_error(&mysql) << std::endl;
