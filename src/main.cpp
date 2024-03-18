@@ -237,6 +237,7 @@ int main() {
                 }
                 if (talkingToggle.isChecked()) {
                     btConn.handleReadyConnections();
+                    activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
                 }
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);

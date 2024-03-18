@@ -140,6 +140,10 @@ class Bluetooth {
             }
         }
         void handleReadyConnections() {
+            if (this->connections.size() == 0) {
+                // nothing to do lol
+                return;
+            }
             // __ Get all sockets that are ready to be read from ___
             // set disconnect time to 0ms (if sockets not already ready, continue.)
             bt::TIMEVAL disconnectTime = {0};
@@ -159,8 +163,10 @@ class Bluetooth {
             }
             // ___ Read from all sockets connected ___
             for (size_t i = 0; i < sizeOfVals; i++) {
+                std::cout << "#: " << std::to_string(i) << std::endl;
                 BthCxnHandler handler(socketsToScan.fd_array[i]);
                 BT_TRANSACTIONTYPE transaction = handler.getTransactionType();
+                std::cout << transaction << std::endl;
                 switch(transaction) {
                     case BT_SOCKET_ERROR:
                     {
@@ -172,14 +178,23 @@ class Bluetooth {
                     {
                         handler.closeSocket();
                         std::vector<bt::SOCKET>::iterator it;
-                        it = this->connections.begin();
+                        it = find(this->connections.begin(), this->connections.end(), this->connections.at(i));
                         this->connections.erase(it);
                     }
                     break;
 
                     case WRITE_MATCH:
                     {
-                        handler.readMatchFromTablet();
+                        bool success;
+                        std::string data = handler.readMatchFromTablet(&success);
+                        
+                        if (success) {
+                            // parse data and put it into database
+                            JsonParser parser(data);
+                            std::vector<MATCH_DATAPOINT> vectData = parser.parse();
+                            DatabaseMan databaseCall(vectData);
+                            databaseCall.maketh();
+                        }
                     }
                     break;
 
