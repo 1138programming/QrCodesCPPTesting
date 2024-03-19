@@ -9,16 +9,17 @@
 class VerticalScrollable : public Drawable {
     private:
         std::vector<Drawable*> thingsToDraw;
-        ShouldScale width, height;
+        ShouldScale width, height, scrollMultiple;
         raylib::Color borderColor;
         int lastX, lastY;
         double scrollPx;
     public:
-        VerticalScrollable(ShouldScale width, ShouldScale height, raylib::Color borderColor) {
+        VerticalScrollable(ShouldScale width, ShouldScale height, raylib::Color borderColor, ShouldScale scrollMultiple) {
             this->width = width;
             this->height = height;   
             this->borderColor = borderColor;
             this->scrollPx = 0.0;
+            this->scrollMultiple = scrollMultiple;
         }
 
         void add(void* thingToDraw) {
@@ -34,10 +35,10 @@ class VerticalScrollable : public Drawable {
             this->lastX = x;
             this->lastY = y;
             if (isHovering()) {
-                this->scrollPx += GetMouseWheelMoveV().y;
+                this->scrollPx += (GetMouseWheelMoveV().y * this->scrollMultiple);
             }
             raylib::Rectangle border(x, y, this->width, this->height);
-            border.Draw(this->borderColor);
+            border.DrawLines(this->borderColor);
 
             BeginScissorMode(x, y, this->width, this->height);
                 double currentY = y+this->scrollPx;

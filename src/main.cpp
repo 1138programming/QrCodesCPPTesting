@@ -15,6 +15,7 @@
 #include "myincludes/bluetooth.hpp"
 #include "myincludes/clientForTesting.hpp"
 #include "myincludes/toggle.hpp"
+#include "myincludes/verticalScrollable.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -91,6 +92,7 @@ int main() {
         TextBox box(100.0_spX, 50.0_spY, 10, 15.0_spD);
             box.setDisplayPos(CENTERED);
         dataVisualizationScreen.add(&DB)
+            .add(&scrollable)
             .add(&box);
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
