@@ -4,6 +4,7 @@
 #include "myincludes/allincludes.hpp"
 #include "../myincludes/button.hpp"
 #include "../myincludes/scenes.hpp"
+#include "../myincludes/datapoints.hpp"
 #include "../include/json_fwd.hpp"
 #include "myincludes/texturedButton.hpp"
 #include "myincludes/toastHandler.hpp"
@@ -66,6 +67,8 @@ int main() {
         Empty pongscreen(raylib::Rectangle(0,GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
         TexturedButton goated(400.0_spX, 200.0_spY, raylib::Image("resources/submit-button.png"), raylib::Image("resources/submit-button-hover.png"));
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BD"), RAYWHITE, 18.0_spD, 0.0));
+        Button AmplifyBlue(300.0_spX,100.0_spY, RAYWHITE, BLUE, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyBlue"), RAYWHITE, 12.0_spD, 0.0));
+        Button AmplifyRed(300.0_spX,100.0_spY, RAYWHITE, RED, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyRed"), RAYWHITE, 12.0_spD, 0.0));
         Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Low Power"), RAYWHITE, 14.0_spD, 0.0));
         Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
         Button pongback(100.0, 100.0, BLACK, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
@@ -74,8 +77,12 @@ int main() {
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
         pongback.setDisplayPos(BOTTOMRIGHT);
+        AmplifyBlue.setDisplayPos(CENTERLEFT);
+        AmplifyRed.setDisplayPos(CENTERRIGHT);
         scannerScreen.add(&goated);
         scannerScreen.add(&lowPowerMode);
+        scannerScreen.add(&AmplifyBlue);
+        scannerScreen.add(&AmplifyRed);
         pongscreen.add(&pongback);
 
 
@@ -155,18 +162,27 @@ int main() {
                 if (goated.isPressed()) {
                     qrScanner.update();
                 }
-                if(DB.isPressed()) {
-                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
-                     std::cout << "hhh" << std::endl;
-                    for (auto i : vector) {
-                        for (std::string j : i) {
-                            std::cout << j << std::endl;
-                        }
+                if (AmplifyBlue.isPressed()) {
+                    try {
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,-1,11,'true', -1, 'Blue');", 0);  
+                        toastHandler::add(Toast("Amplify Blue Started",LENGTH_NORMAL));
+
                     }
-                    // std::cout << resultstr <<std::endl;
-                    // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
-                    
+                    catch (...) {
+                        toastHandler::add(Toast("error",LENGTH_NORMAL));
+                    }
+                   
                 }
+                if (AmplifyRed.isPressed()) {
+                    try {
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,-1,11,'true', -1, 'Red');", 0);  
+                        toastHandler::add(Toast("Amplify Red Started",LENGTH_NORMAL));
+                   }
+                    catch (...) {
+                        toastHandler::add(Toast("error",LENGTH_NORMAL));
+                    }
+                }
+               
                   
            
                 
@@ -192,6 +208,18 @@ int main() {
             break;
 
             case DATABASE:
+                 if(DB.isPressed()) {
+                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
+                     std::cout << "hhh" << std::endl;
+                    for (auto i : vector) {
+                        for (std::string j : i) {
+                            std::cout << j << std::endl;
+                        }
+                    }
+                    // std::cout << resultstr <<std::endl;
+                    // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
+                    
+                }
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
                     texture.draw(0,0);
@@ -228,9 +256,9 @@ int main() {
                 if (pongback.isPressed()) {
                     currentScene = BLUETOOTH;
 
-                    mainTab.disable();
+                    mainTab.enable();
                     databaseTab.enable();
-                    bluetoothTab.enable();
+                    bluetoothTab.disable();
                 }
                 pongscreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
             break;
