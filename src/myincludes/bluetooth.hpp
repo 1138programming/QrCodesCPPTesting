@@ -38,13 +38,14 @@ class Bluetooth {
             macBuilder << std::hex;
             for (int i = 5; i > 0; i--) {
                 if (nameInBytes[i] <= 0x0f) {
-                    macBuilder << 0 <<(int)nameInBytes[i] << ":";
+                    macBuilder << 0;
                 }
-                else {
-                    macBuilder << (int)nameInBytes[i] << ":";
-                }
+                macBuilder << (int)nameInBytes[i] << ":";
             }
-            macBuilder << (int)(*nameInBytes);
+            if (nameInBytes[0] <= 0x0f) {
+                macBuilder << 0;
+            }
+            macBuilder << (int)(nameInBytes[0]);
             return macBuilder.str();
         }
         uint8_t getLocalPort() {
