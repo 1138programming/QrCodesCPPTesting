@@ -37,7 +37,12 @@ class Bluetooth {
             bt::BYTE* nameInBytes = (bt::BYTE*)(&this->localAddr);
             macBuilder << std::hex;
             for (int i = 5; i > 0; i--) {
-                macBuilder << (int)nameInBytes[i] << ":";
+                if (nameInBytes[i] <= 0x0f) {
+                    macBuilder << 0 <<(int)nameInBytes[i] << ":";
+                }
+                else {
+                    macBuilder << (int)nameInBytes[i] << ":";
+                }
             }
             macBuilder << (int)(*nameInBytes);
             return macBuilder.str();
