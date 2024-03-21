@@ -128,14 +128,14 @@ class BthCxnHandler {
             free(ptrCopy);
             return true;
         }
-        void endInteraction() {
-            disallowSocketBlocking();
-            sendNack();
-        }
 
     public:
         BthCxnHandler(bt::SOCKET socket) {
             this->socket = socket;
+        }
+        void endInteraction() {
+            disallowSocketBlocking();
+            sendNack();
         }
         // should only be called once
         BT_TRANSACTIONTYPE getTransactionType() {
@@ -207,10 +207,6 @@ class BthCxnHandler {
             disallowSocketBlocking();
             (*readSuccess) = true;
             return dataInStringFormat;
-        }
-        void handleSocketError() {
-            sendNack();
-            disallowSocketBlocking();
         }
         void closeSocket() {
             checkSuccessWinsock<int>(bt::closesocket(this->socket), 0, "failed to propely close socket (memory leak)");

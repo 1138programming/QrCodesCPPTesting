@@ -127,14 +127,14 @@ class Pong {
             
         }
      
-        std::cout << Ballspeed.x << " | " << Ballspeed.y << std::endl;
+        // std::cout << Ballspeed.x << " | " << Ballspeed.y << std::endl;
         Ballpos.x += Ballspeed.x * adjustedframetime;
         Ballpos.y += Ballspeed.y * adjustedframetime;   
         if (abs(Ballspeed.x) > 8  ) {
-            Ballspeed.x -= (Ballspeed.x) * 0.001;
+            Ballspeed.x -= (Ballspeed.x) * 0.005;
         }
         else if (abs(Ballspeed.y) > 4) {
-            Ballspeed.y -= (Ballspeed.y) * 0.001;
+            Ballspeed.y -= (Ballspeed.y) * 0.005;
         }
        
 

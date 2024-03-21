@@ -66,7 +66,7 @@ class Database {
                     return vector;
                 }
                 else {
-                    while ((row = mysql_fetch_row(resptr)) != NULL) {  std::cout << "hhh" << std::endl;
+                    while ((row = mysql_fetch_row(resptr)) != NULL) {
                     vector.push_back(std::vector<std::string>());              
     
                 

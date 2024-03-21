@@ -34,9 +34,9 @@ int main() {
 
     // _____ Constant Things _____
     raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);  
+        window.SetConfigFlags(FLAG_VSYNC_HINT);
     Pong pongame = Pong(&window);
-    window.SetTargetFPS(2000);
-    bool highFPS = true;
+    window.SetTargetFPS(60);
 
     QrCodeScanner qrScanner;
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
@@ -70,10 +70,8 @@ int main() {
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BD"), RAYWHITE, 18.0_spD, 0.0));
         Button AmplifyBlue(300.0_spX,100.0_spY, RAYWHITE, BLUE, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyBlue"), RAYWHITE, 12.0_spD, 0.0));
         Button AmplifyRed(300.0_spX,100.0_spY, RAYWHITE, RED, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyRed"), RAYWHITE, 12.0_spD, 0.0));
-        Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Low Power"), RAYWHITE, 14.0_spD, 0.0));
         Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
         Button pongback(100.0, 100.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
-        lowPowerMode.setDisplayPos(BOTTOMRIGHT);
         goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
@@ -81,10 +79,10 @@ int main() {
         AmplifyBlue.setDisplayPos(CENTERLEFT);
         AmplifyRed.setDisplayPos(CENTERRIGHT);
         TextBox MatchBoxMain(100.0_spX, 50.0_spY, 10, 15.0_spD);
-            MatchBoxMain.setDisplayPos(TOPCENTERED);
+        MatchBoxMain.setDisplayPos(TOPCENTERED);
+
         scannerScreen.add(&goated);
         scannerScreen.add(&MatchBoxMain);
-        scannerScreen.add(&lowPowerMode);
         scannerScreen.add(&AmplifyBlue);
         scannerScreen.add(&AmplifyRed);
         pongscreen.add(&pongback);
@@ -97,6 +95,7 @@ int main() {
         Empty gap (raylib::Rectangle(0, 0, 1, 40));
         TextBox TeamBox(100.0_spX, 20.0_spY, 10, 15.0_spD);
         TextBox MatchBox(100.0_spX, 20.0_spY, 10, 15.0_spD);
+
         Button submit (100.0_spX,50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
         DrawableList dataList(VERTICAL,10);  
             dataList.add(&teamdata);    
@@ -120,6 +119,8 @@ int main() {
         EzText talkingText(raylib::Text(spaceCadet, "BT Comms Enable:"), RAYWHITE, 12.0_spD, 0.0);
         Toggle discoveryToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
         Toggle talkingToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
+        Button disconnectAllTabs(200.0_spX, 100.0_spY, RAYWHITE, raylib::Color(0,0,0,0), raylib::Color(255,255,255,20), EzText(raylib::Text(spaceCadet, "Reset Tabs"), RAYWHITE, 12.0_spD, 0.0));
+            disconnectAllTabs.setDisplayPos(BOTTOMCENTERED);
         DrawableList discoveryList(VERTICAL, 0);
             discoveryList.add(&discoveryText);
             discoveryList.add(&discoveryToggle);
@@ -139,6 +140,7 @@ int main() {
         btTestingScene.add(&serverData);
         btTestingScene.add(&discoveryList);
         btTestingScene.add(&talkingList);
+        btTestingScene.add(&disconnectAllTabs);
 
 
 
@@ -176,16 +178,25 @@ int main() {
             bluetoothTab.disable();
         }
 
+        if (talkingToggle.isChecked()) {
+            btConn.handleReadyConnections();
+            activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
+        }
+        if (discoveryToggle.isChecked()) {
+            btConn.updateConnections();
+            activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
+        }
+
         switch(currentScene) {
             case SCANNING:
                 // calculating
-                qrScanner.scan();
-                if (goated.isPressed()) {
-                    qrScanner.update();
-                }
+                // qrScanner.scan();
+                // if (goated.isPressed()) {
+                //     qrScanner.update();
+                // }
                 if (AmplifyBlue.isPressed()) {
                     try {
-                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,-1,11,'true', -1, 'Blue');", 0);  
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() +",-1,11,'true', -1, 'Blue');", 0);  
                         toastHandler::add(Toast("Amplify Blue Started",LENGTH_NORMAL));
 
                     }
@@ -196,7 +207,7 @@ int main() {
                 }
                 if (AmplifyRed.isPressed()) {
                     try {
-                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,-1,11,'true', -1, 'Red');", 0);  
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() +",-1,11,'true', -1, 'Red');", 0);  
                         toastHandler::add(Toast("Amplify Red Started",LENGTH_NORMAL));
                    }
                     catch (...) {
@@ -204,22 +215,6 @@ int main() {
                     }
                 }
                
-                  
-           
-                
-                    
-                  
-
-                
-                if (lowPowerMode.isPressed()) {
-                    highFPS = !highFPS;
-                    if (highFPS) {
-                        window.SetTargetFPS(10000);
-                    }
-                    else {
-                        window.SetTargetFPS(24);
-                    }
-                }
                 // drawing
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
@@ -239,14 +234,23 @@ int main() {
                         std::cout << std::endl;
                     }
 
-                    
+                   
+
                     // std::cout << resultstr <<std::endl;
                     // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
                     
-                }                    
+                }    
                 teamdata.setText("Team Data:" + TeamBox.getText());
                 matchdata.setText("Match Data:" + MatchBox.getText());
-
+                if(submit.isPressed()) {
+                    auto vector = database.execQuery("select * from matchtransaction where TeamId =" + TeamBox.getText() + " && MatchId = "+ MatchBox.getText() +";", 8);
+                    for (auto i : vector) {
+                        for (std::string j : i) {
+                            std::cout << j << std::endl;
+                        }
+                        std::cout << std::endl;
+                    }
+                }
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
                     texture.draw(0,0);
@@ -254,18 +258,12 @@ int main() {
             break;
 
             case BLUETOOTH:
-            
+                if (disconnectAllTabs.isPressed()) {
+                    btConn.disconnectAll();
+                }
                 if (pong.isPressed()) {
                     std::cout << "hello" << std::endl;
                     currentScene = PONG;
-                }
-                if (discoveryToggle.isChecked()) {
-                    btConn.updateConnections();
-                    activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
-                }
-                if (talkingToggle.isChecked()) {
-                    btConn.handleReadyConnections();
-                    activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
                 }
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);

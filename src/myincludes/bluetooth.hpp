@@ -176,7 +176,7 @@ class Bluetooth {
                 switch(transaction) {
                     case BT_SOCKET_ERROR:
                     {
-                        handler.handleSocketError();
+                        handler.endInteraction();
                     }
                     break;
 
@@ -205,9 +205,15 @@ class Bluetooth {
                     break;
 
                     default:
-                        handler.handleSocketError();
+                        handler.endInteraction();
                 }
             }
+        }
+        void disconnectAll() {
+            for (int i = 0; i < this->connections.size(); i++) {
+                checkSuccessWinsock<int>(bt::closesocket(this->connections.at(i)), 0, "failed to propely close socket (memory leak)");
+            }
+            this->connections = std::vector<bt::SOCKET>();
         }
 };
 
