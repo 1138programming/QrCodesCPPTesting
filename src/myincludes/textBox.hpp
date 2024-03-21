@@ -18,19 +18,21 @@ class TextBox : public Drawable {
         int lastX, lastY;
 
         void updateText() {
-            int key = GetCharPressed();
-            if (IsKeyPressed(KEY_BACKSPACE)) {
-                this->currentChar--;
-                if (this->currentChar < 0) {
-                    this->currentChar = 0;
+            if (isHovering()) {
+                int key = GetCharPressed();
+                if (IsKeyPressed(KEY_BACKSPACE)) {
+                    this->currentChar--;
+                    if (this->currentChar < 0) {
+                        this->currentChar = 0;
+                    }
+                    this->text[currentChar] = '\0';
                 }
-                this->text[currentChar] = '\0';
-            }
-            while (((key > 31 && key < 123)) && (this->currentChar < this->sizeLimit)) {
-                    this->text[this->currentChar] = key;
-                    this->text[this->currentChar+1] = '\0';
-                    this->currentChar++;            
-                    key = GetCharPressed();
+                while (((key > 31 && key < 123)) && (this->currentChar < this->sizeLimit)) {
+                        this->text[this->currentChar] = key;
+                        this->text[this->currentChar+1] = '\0';
+                        this->currentChar++;            
+                        key = GetCharPressed();
+                }
             }
         }
     public:
@@ -40,6 +42,8 @@ class TextBox : public Drawable {
             this->sizeLimit = sizeLimit;
             this->text = (char*)calloc(this->sizeLimit+1, sizeof(char));
             this->textSize = textSize;
+            this->lastX = 0;
+            this->lastY = 0;
         }
         void draw(int x, int y) override {
             this->lastX = x;
