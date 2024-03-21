@@ -100,11 +100,11 @@ int main() {
         Button submit (100.0_spX,50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
         DrawableList dataList(VERTICAL,10);  
             dataList.add(&teamdata);    
-            dataList.add(&MatchBox);
+            dataList.add(&TeamBox);
          
             dataList.add(&gap);
             dataList.add(&matchdata);
-           dataList.add(&TeamBox);
+           dataList.add(&MatchBox);
             dataList.add(&gap);
             dataList.add(&submit);
             dataList.setDisplayPos(CENTERLEFT);
