@@ -72,7 +72,7 @@ int main() {
         Button AmplifyRed(300.0_spX,100.0_spY, RAYWHITE, RED, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyRed"), RAYWHITE, 12.0_spD, 0.0));
         Button lowPowerMode(200.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Low Power"), RAYWHITE, 14.0_spD, 0.0));
         Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
-        Button pongback(100.0, 100.0, BLACK, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
+        Button pongback(100.0, 100.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
         lowPowerMode.setDisplayPos(BOTTOMRIGHT);
         goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
@@ -80,7 +80,10 @@ int main() {
         pongback.setDisplayPos(BOTTOMRIGHT);
         AmplifyBlue.setDisplayPos(CENTERLEFT);
         AmplifyRed.setDisplayPos(CENTERRIGHT);
+        TextBox MatchBoxMain(100.0_spX, 50.0_spY, 10, 15.0_spD);
+            MatchBoxMain.setDisplayPos(TOPCENTERED);
         scannerScreen.add(&goated);
+        scannerScreen.add(&MatchBoxMain);
         scannerScreen.add(&lowPowerMode);
         scannerScreen.add(&AmplifyBlue);
         scannerScreen.add(&AmplifyRed);
@@ -89,10 +92,27 @@ int main() {
 
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
-        TextBox box(100.0_spX, 50.0_spY, 10, 15.0_spD);
-            box.setDisplayPos(CENTERED);
+        EzText teamdata (raylib::Text(spaceCadet, "Team Data:"), RAYWHITE, 12.0_spD, 0.0);
+        EzText matchdata (raylib::Text(spaceCadet, "Match Data:"), RAYWHITE, 12.0_spD, 0.0);
+        Empty gap (raylib::Rectangle(0, 0, 1, 40));
+        TextBox TeamBox(100.0_spX, 20.0_spY, 10, 15.0_spD);
+        TextBox MatchBox(100.0_spX, 20.0_spY, 10, 15.0_spD);
+        Button submit (100.0_spX,50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
+        DrawableList dataList(VERTICAL,10);  
+            dataList.add(&teamdata);    
+            dataList.add(&MatchBox);
+         
+            dataList.add(&gap);
+            dataList.add(&matchdata);
+           dataList.add(&TeamBox);
+            dataList.add(&gap);
+            dataList.add(&submit);
+            dataList.setDisplayPos(CENTERLEFT);
+
+
         dataVisualizationScreen.add(&DB)
-            .add(&box);
+            .add(&dataList);
+            
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
         btTestingScene.add(&pong);
@@ -216,11 +236,17 @@ int main() {
                         for (std::string j : i) {
                             std::cout << j << std::endl;
                         }
+                        std::cout << std::endl;
                     }
+
+                    
                     // std::cout << resultstr <<std::endl;
                     // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
                     
-                }
+                }                    
+                teamdata.setText("Team Data:" + TeamBox.getText());
+                matchdata.setText("Match Data:" + MatchBox.getText());
+
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
                     texture.draw(0,0);
@@ -228,6 +254,7 @@ int main() {
             break;
 
             case BLUETOOTH:
+            
                 if (pong.isPressed()) {
                     std::cout << "hello" << std::endl;
                     currentScene = PONG;
