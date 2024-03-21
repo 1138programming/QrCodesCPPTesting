@@ -16,6 +16,7 @@
 #include "myincludes/clientForTesting.hpp"
 #include "myincludes/toggle.hpp"
 #include "myincludes/verticalScrollable.hpp"
+#include "myincludes/timer.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
