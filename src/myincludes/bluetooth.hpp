@@ -44,6 +44,24 @@ class Bluetooth {
             }
             return -1;
         }
+        void killConnectionAndDisplay(int i) {
+            removeFromSocketVector(&(this->connections), i);
+            removeFromDrawablePtrVector(this->connListDrawable.getInternalVector(), i);
+            removeFromEzTextVector(&(this->thingsToDrawList), i);
+        }
+        void killNaughtyConnections() {
+            for (int i = 0; i < this->connections.size(); i++) {
+                char* output = NULL;
+                // i need this function to work lol
+                while (output == NULL) {
+                    char* output = (char*)malloc(sizeof(bt::DWORD)); // will be ignored
+                }
+                int outputSize = sizeof(bt::DWORD);
+                if (bt::getsockopt(this->connections.at(i), SOL_SOCKET, SO_CONNECT_TIME, output, &outputSize) == 10038) {
+                    killConnectionAndDisplay(i);
+                }
+            }
+        }
     public:
         // ___ Simple BT functions ___
         int initAll() {
@@ -224,9 +242,8 @@ class Bluetooth {
                     case BT_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
-                        removeFromSocketVector(&(this->connections), i);
-                        removeFromDrawablePtrVector(this->connListDrawable.getInternalVector(), i);
-                        removeFromEzTextVector(&(this->thingsToDrawList), i);
+                        int socketToKill = getElement(&(this->connections), socketsToScan.fd_array[i]);
+                        killConnectionAndDisplay(socketToKill);
                     }
                     break;
 
