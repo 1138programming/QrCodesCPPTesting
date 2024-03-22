@@ -16,8 +16,8 @@ static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 
 class Bluetooth {
     private:
         bt::SOCKET listener;
-        std::vector<bt::SOCKET> connections;
-        std::vector<EzText> thingsToDrawList;
+        std::vector<bt::SOCKET> connections = std::vector<bt::SOCKET>();
+        std::vector<EzText> thingsToDrawList = std::vector<EzText>();
         VerticalScrollable connListDrawable = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
         bt::BLUETOOTH_ADDRESS externalAddress;
         bt::BTH_ADDR localAddr;
@@ -35,6 +35,14 @@ class Bluetooth {
         void removeFromEzTextVector(std::vector<EzText>* vector, int element) {
             std::vector<EzText>::iterator it = (vector->begin()+element);
             vector->erase(it);
+        }
+        int getElement(std::vector<bt::SOCKET>* vector, bt::SOCKET thingToGet) {
+            for (int i = 0; i < vector->size(); i++) {
+                if (vector->at(i) == thingToGet) {
+                    return i;
+                }
+            }
+            return -1;
         }
     public:
         // ___ Simple BT functions ___
@@ -159,14 +167,20 @@ class Bluetooth {
         }
         void updateConnections() {
             bt::SOCKET sock = bt::accept(this->listener, nullptr, nullptr); // get no data abt. connection
+            EzText memAdd = EzText(raylib::Text("null"), RAYWHITE, 25.0_spX, 1.0);
             if (sock != INVALID_SOCKET) { 
                 // _this will not get run often, as most of the time there will be nothing in the accept queue_
                 // set non-blocking mode true
                 bt::ULONG mode = 1;
                 checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking");
                 this->connections.push_back(sock);
-                this->thingsToDrawList.push_back(EzText(raylib::Text("null"), RAYWHITE, 25.0_spX, 1.0));
-                this->connListDrawable.add(&(this->thingsToDrawList.at(this->thingsToDrawList.size()-1)));
+                this->thingsToDrawList.push_back(memAdd);
+                (*this->connListDrawable.getInternalVector()) = std::vector<Drawable*>();
+                for (int i = 0; i < this->thingsToDrawList.size(); i++) {
+                    this->connListDrawable.add(&(this->thingsToDrawList.at(i)));
+                    std::cout << this->connListDrawable.getInternalVector()->at(i) << std::endl;
+                    std::cout << &(this->thingsToDrawList.at(i)) << std::endl;
+                }
             }
         }
         void handleReadyConnections() {
@@ -189,6 +203,9 @@ class Bluetooth {
             size_t sizeOfVals = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // first param ignored
             if (sizeOfVals == SOCKET_ERROR) {
                 std::cerr << "Failed to select connections. Err code: " << std::to_string(bt::WSAGetLastError()) << std::endl;
+                if (bt::WSAGetLastError() == 10038) {
+                    disconnectAll();
+                }
                 return;
             }
             // ___ Read from all sockets connected ___
@@ -215,8 +232,9 @@ class Bluetooth {
 
                     case WRITE_MATCH:
                     {
-                        bool success;
+                        bool success = false;
                         std::string data = handler.readMatchFromTablet(&success);
+                        std::cerr << data << std::endl;
                         
                         if (success) {
                             // parse data and put it into database
@@ -229,10 +247,17 @@ class Bluetooth {
                     break;
                     case WRITE_TABLET_INFO:
                     {
-                        bool success;
+                        bool success = false;
                         std::string data = handler.readTabletInfoFromTablet(&success);
-                        this->thingsToDrawList.at(i).setText(data);
-                        // do stuff
+                        std::cerr << data << std::endl;
+                        std::cerr << success << std::endl;
+                        if (success) {
+                            std::cerr << "hjghh" << std::endl;
+                            int sockNumInVector = getElement(&(this->connections), socketsToScan.fd_array[i]);
+                            std::cerr << this->thingsToDrawList.size() << " " << this->connListDrawable.getInternalVector()->size() << " " << this->connections.size() << std::endl;
+                            std::cerr << &(this->thingsToDrawList.at(sockNumInVector)) << std::endl;
+                            ((EzText*)(this->connListDrawable.getInternalVector()->at(sockNumInVector)))->setText(data);
+                        }
                     }
                     break;
 
@@ -246,7 +271,8 @@ class Bluetooth {
                 checkSuccessWinsock<int>(bt::closesocket(this->connections.at(i)), 0, "failed to propely close socket (memory leak)");
             }
             this->connections = std::vector<bt::SOCKET>();
-            (*this->connListDrawable.getInternalVector()) = std::vector<Drawable*>();
+            (*(this->connListDrawable.getInternalVector())) = std::vector<Drawable*>();
+            this->thingsToDrawList = std::vector<EzText>();
         }
 };
 
