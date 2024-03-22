@@ -26,8 +26,8 @@ class VerticalScrollable : public Drawable {
             Drawable* drawableThing = (Drawable*)thingToDraw;
             this->thingsToDraw.push_back(drawableThing);
         } 
-        void remove(int location) {
-            
+        std::vector<Drawable*>* getInternalVector() {
+            return &(this->thingsToDraw);
         }
         bool isHovering() {
             raylib::Rectangle rect(this->lastX, this->lastY, this->width, this->height);

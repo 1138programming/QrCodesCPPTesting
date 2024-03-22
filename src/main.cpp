@@ -131,6 +131,9 @@ int main() {
             serverData.setDisplayPos(BOTTOMLEFT);
         btTestingScene.add(&serverData);
         btTestingScene.add(&disconnectAllTabs);
+        btConn.getConnList()->setDisplayPos(BOTTOMCENTERED);
+        btTestingScene.add(btConn.getConnList());
+
 
 
 

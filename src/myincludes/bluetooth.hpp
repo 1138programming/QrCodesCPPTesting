@@ -17,15 +17,15 @@ class Bluetooth {
     private:
         bt::SOCKET listener;
         std::vector<bt::SOCKET> connections;
-        VerticalScrollable connListDrawable;
+        VerticalScrollable connListDrawable(200_spX, 400_spY, WHITE, 3.0);
         bt::BLUETOOTH_ADDRESS externalAddress;
         bt::BTH_ADDR localAddr;
         uint8_t port;
 
         // ___ Useful (private) functions ___
-        template <typename T> void removeFromVector(std::vector<T> vector) {
-            std::vector<T>::iterator it;
-            it = find(vector.begin(), vector.end(), vector.at(i));
+        template <typename T> void removeFromVector(std::vector<T>* vector, T element) {
+            typename std::vector<T>::iterator it;
+            it = find(vector->begin(), vector->end(), element);
             this->connections.erase(it);
         }
     public:
@@ -157,6 +157,7 @@ class Bluetooth {
                 bt::ULONG mode = 1;
                 checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking");
                 this->connections.push_back(sock);
+                this->connListDrawable.add(EzText(raylib::Text("null"), RAYWHITE));
             }
         }
         void handleReadyConnections() {
@@ -197,6 +198,8 @@ class Bluetooth {
                     case BT_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
+                        removeFromVector<bt::SOCKET>(&(this->connections), this->connections.at(i));
+                        removeFromVector<Drawable*>(this->connListDrawable.getInternalVector(), (*this->connListDrawable.getInternalVector()).at(i));
                     }
                     break;
 
