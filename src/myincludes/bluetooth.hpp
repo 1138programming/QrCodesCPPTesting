@@ -3,6 +3,7 @@
 
 #include "btIncludes.hpp"
 #include "bthAppCxnHandler.hpp"
+#include "verticalScrollable.hpp"
 
 #include <vector>
 #include <iostream>
@@ -16,11 +17,17 @@ class Bluetooth {
     private:
         bt::SOCKET listener;
         std::vector<bt::SOCKET> connections;
+        VerticalScrollable connListDrawable;
         bt::BLUETOOTH_ADDRESS externalAddress;
         bt::BTH_ADDR localAddr;
         uint8_t port;
 
         // ___ Useful (private) functions ___
+        template <typename T> void removeFromVector(std::vector<T> vector) {
+            std::vector<T>::iterator it;
+            it = find(vector.begin(), vector.end(), vector.at(i));
+            this->connections.erase(it);
+        }
     public:
         // ___ Simple BT functions ___
         int initAll() {
@@ -70,6 +77,9 @@ class Bluetooth {
             (*str) = std::string(ptr);
             free(ptr);
             return 0;
+        }
+        VerticalScrollable* getConnList() {
+            return &(this->connListDrawable);
         }
 
         // ___ Connection functions ___
@@ -187,9 +197,6 @@ class Bluetooth {
                     case BT_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
-                        std::vector<bt::SOCKET>::iterator it;
-                        it = find(this->connections.begin(), this->connections.end(), this->connections.at(i));
-                        this->connections.erase(it);
                     }
                     break;
 
@@ -211,6 +218,7 @@ class Bluetooth {
                     {
                         bool success;
                         std::string data = handler.readMatchFromTablet(&success);
+                        std::cout << data << std::endl;
                         // do stuff
                     }
                     break;
