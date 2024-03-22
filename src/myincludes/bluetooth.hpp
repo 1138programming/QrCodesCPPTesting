@@ -198,7 +198,7 @@ class Bluetooth {
                     case BT_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
-                        removeFromVector<bt::SOCKET>(&(this->connections), this->connections.at(i));
+                        removeFromVector<bt::SOCKET>(&(this->connections), i);
                         removeFromVector<Drawable*>(this->connListDrawable.getInternalVector(), i);
                     }
                     break;
@@ -236,6 +236,7 @@ class Bluetooth {
                 checkSuccessWinsock<int>(bt::closesocket(this->connections.at(i)), 0, "failed to propely close socket (memory leak)");
             }
             this->connections = std::vector<bt::SOCKET>();
+            (*this->connListDrawable.getInternalVector()) = std::vector<Drawable*>();
         }
 };
 

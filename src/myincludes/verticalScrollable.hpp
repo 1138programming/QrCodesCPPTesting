@@ -29,6 +29,12 @@ class VerticalScrollable : public Drawable {
         std::vector<Drawable*>* getInternalVector() {
             return &(this->thingsToDraw);
         }
+        raylib::Color getBorderColor() {
+            return this->borderColor;
+        }
+        ShouldScale getScrollMultiple() {
+            return this->scrollMultiple;
+        }
         bool isHovering() {
             raylib::Rectangle rect(this->lastX, this->lastY, this->width, this->height);
             return CheckCollisionPointRec(GetMousePosition(), rect);
