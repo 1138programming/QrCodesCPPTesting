@@ -17,16 +17,15 @@ class Bluetooth {
     private:
         bt::SOCKET listener;
         std::vector<bt::SOCKET> connections;
-        VerticalScrollable connListDrawable(200_spX, 400_spY, WHITE, 3.0);
+        std::vector<EzText> thingsToDrawList;
+        VerticalScrollable connListDrawable = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
         bt::BLUETOOTH_ADDRESS externalAddress;
         bt::BTH_ADDR localAddr;
         uint8_t port;
 
         // ___ Useful (private) functions ___
-        template <typename T> void removeFromVector(std::vector<T>* vector, T element) {
-            typename std::vector<T>::iterator it;
-            it = find(vector->begin(), vector->end(), element);
-            this->connections.erase(it);
+        template <typename T> void removeFromVector(std::vector<T>* vector, int element) {
+            vector->erase(vector->begin() + element);
         }
     public:
         // ___ Simple BT functions ___
@@ -157,7 +156,8 @@ class Bluetooth {
                 bt::ULONG mode = 1;
                 checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking");
                 this->connections.push_back(sock);
-                this->connListDrawable.add(EzText(raylib::Text("null"), RAYWHITE));
+                this->thingsToDrawList.push_back(EzText(raylib::Text("null"), RAYWHITE, 40.0_spX, 1.0));
+                this->connListDrawable.add(&(this->thingsToDrawList.at(this->thingsToDrawList.size()-1)));
             }
         }
         void handleReadyConnections() {
@@ -199,7 +199,7 @@ class Bluetooth {
                     {
                         handler.closeSocket();
                         removeFromVector<bt::SOCKET>(&(this->connections), this->connections.at(i));
-                        removeFromVector<Drawable*>(this->connListDrawable.getInternalVector(), (*this->connListDrawable.getInternalVector()).at(i));
+                        removeFromVector<Drawable*>(this->connListDrawable.getInternalVector(), i);
                     }
                     break;
 
@@ -221,7 +221,7 @@ class Bluetooth {
                     {
                         bool success;
                         std::string data = handler.readMatchFromTablet(&success);
-                        std::cout << data << std::endl;
+                        this->thingsToDrawList.at(i).setText(data);
                         // do stuff
                     }
                     break;
