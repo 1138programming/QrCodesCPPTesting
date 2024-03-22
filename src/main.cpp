@@ -35,11 +35,14 @@ int main() {
     // _____ Constant Things _____
     raylib::Window window(1280,720,"Scouting App Computer UI", FLAG_WINDOW_RESIZABLE);  
         window.SetConfigFlags(FLAG_VSYNC_HINT);
+        window.SetConfigFlags(FLAG_MSAA_4X_HINT);
+        window.SetIcon(raylib::Image("resources/eagleEngineeringLogoLowRes.png"));
     Pong pongame = Pong(&window);
     window.SetTargetFPS(60);
 
-    QrCodeScanner qrScanner;
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
+    raylib::Font comicSans(std::string("resources/ComicMono.ttf"));
+    raylib::Font spaceMono(std::string("resources/SpaceMono-Bold.ttf"));
     Bluetooth btConn;
     Client client;
     btConn.initAll();
@@ -78,7 +81,7 @@ int main() {
         pongback.setDisplayPos(BOTTOMRIGHT);
         AmplifyBlue.setDisplayPos(CENTERLEFT);
         AmplifyRed.setDisplayPos(CENTERRIGHT);
-        TextBox MatchBoxMain(100.0_spX, 50.0_spY, 10, 15.0_spD);
+        TextBox MatchBoxMain(100.0_spX, 50.0_spY, 10, 0.0, 15.0_spD, spaceMono, WHITE, WHITE);
         MatchBoxMain.setDisplayPos(TOPCENTERED);
 
         scannerScreen.add(&goated);
@@ -93,8 +96,8 @@ int main() {
         EzText teamdata (raylib::Text(spaceCadet, "Team Data:"), RAYWHITE, 12.0_spD, 0.0);
         EzText matchdata (raylib::Text(spaceCadet, "Match Data:"), RAYWHITE, 12.0_spD, 0.0);
         Empty gap (raylib::Rectangle(0, 0, 1, 40));
-        TextBox TeamBox(100.0_spX, 20.0_spY, 10, 15.0_spD);
-        TextBox MatchBox(100.0_spX, 20.0_spY, 10, 15.0_spD);
+        TextBox TeamBox(100.0_spX, 20.0_spY, 10, 0.0, 15.0_spD, spaceMono, WHITE, WHITE);
+        TextBox MatchBox(100.0_spX, 20.0_spY, 10, 0.0, 15.0_spD, spaceMono, WHITE, WHITE);
 
         Button submit (100.0_spX,50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
         DrawableList dataList(VERTICAL,10);  
@@ -103,7 +106,7 @@ int main() {
          
             dataList.add(&gap);
             dataList.add(&matchdata);
-           dataList.add(&MatchBox);
+            dataList.add(&MatchBox);
             dataList.add(&gap);
             dataList.add(&submit);
             dataList.setDisplayPos(CENTERLEFT);
@@ -115,31 +118,17 @@ int main() {
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
         btTestingScene.add(&pong);
-        EzText discoveryText(raylib::Text(spaceCadet, "BT Discovery Enable:"), RAYWHITE, 12.0_spD, 0.0);
-        EzText talkingText(raylib::Text(spaceCadet, "BT Comms Enable:"), RAYWHITE, 12.0_spD, 0.0);
-        Toggle discoveryToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
-        Toggle talkingToggle(50.0_spX, 50.0_spY, 0.75, RAYWHITE);
         Button disconnectAllTabs(200.0_spX, 100.0_spY, RAYWHITE, raylib::Color(0,0,0,0), raylib::Color(255,255,255,20), EzText(raylib::Text(spaceCadet, "Reset Tabs"), RAYWHITE, 12.0_spD, 0.0));
-            disconnectAllTabs.setDisplayPos(BOTTOMCENTERED);
-        DrawableList discoveryList(VERTICAL, 0);
-            discoveryList.add(&discoveryText);
-            discoveryList.add(&discoveryToggle);
-            discoveryList.setDisplayPos(BOTTOMLEFT);
-        DrawableList talkingList(VERTICAL, 0);
-            talkingList.add(&talkingText);
-            talkingList.add(&talkingToggle);
-            talkingList.setDisplayPos(BOTTOMRIGHT);
-        EzText macAddress(raylib::Text(spaceCadet, "Mac: " + btConn.getLocalMacStr()), RAYWHITE, 12.0_spD, 0.0);
-        EzText port(raylib::Text(spaceCadet, "Port: " + std::to_string(btConn.getLocalPort())), RAYWHITE, 12.0_spD, 0.0);
-        EzText activeConnections(raylib::Text(spaceCadet, "Connections: " + std::to_string(btConn.getNumConnections())), RAYWHITE, 12.0_spD, 0.0);
+            disconnectAllTabs.setDisplayPos(BOTTOMRIGHT);
+        EzText macAddress(raylib::Text(comicSans, "Mac: " + btConn.getLocalMacStr()), RAYWHITE, 24.0_spD, 0.0);
+        EzText port(raylib::Text(comicSans, "Port: " + std::to_string(btConn.getLocalPort())), RAYWHITE, 24.0_spD, 0.0);
+        EzText activeConnections(raylib::Text(comicSans, "Connections: " + std::to_string(btConn.getNumConnections())), RAYWHITE, 24.0_spD, 0.0);
         DrawableList serverData(VERTICAL, 0);
             serverData.add(&macAddress);
             serverData.add(&port);
             serverData.add(&activeConnections);
-            serverData.setDisplayPos(CENTERED);
+            serverData.setDisplayPos(BOTTOMLEFT);
         btTestingScene.add(&serverData);
-        btTestingScene.add(&discoveryList);
-        btTestingScene.add(&talkingList);
         btTestingScene.add(&disconnectAllTabs);
 
 
@@ -178,14 +167,10 @@ int main() {
             bluetoothTab.disable();
         }
 
-        if (talkingToggle.isChecked()) {
-            btConn.handleReadyConnections();
-            activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
-        }
-        if (discoveryToggle.isChecked()) {
-            btConn.updateConnections();
-            activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
-        }
+        btConn.handleReadyConnections();
+        activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
+        btConn.updateConnections();
+        activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
 
         switch(currentScene) {
             case SCANNING:

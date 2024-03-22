@@ -157,6 +157,37 @@ class BthCxnHandler {
             }
             return static_cast<BT_TRANSACTIONTYPE>(transactionType);
         }
+        // can set socket blocking off if fail
+        int getDataSizeFromTablet(bool* success) {
+            // ___ vars ___
+            bool localSuccess = false;
+            // if we don't get to the end, it failed
+            (*success) = false;
+
+            // ___ ack ___
+            if (!sendAck()) {
+                return 0;
+            }
+
+            // ___ get data size ___
+            char* dataSizePtr = readAllExpectedDataFromSocket(EXPECTED_DATA_READSIZE, &localSuccess);
+            // if we are not successful in reading (or inverting the endian-ness, as it is currently incorrect), send a NACK and return
+            if (!localSuccess || !invertEndianness(dataSizePtr, EXPECTED_DATA_READSIZE)) {
+                endInteraction();
+                return 0;
+            }
+            int dataSize = ((int*)dataSizePtr)[0];
+            // free the memory we created
+            free(dataSizePtr);
+            
+            // ___ ack dataSize recvd ___
+            if (!sendAck()) {
+                disallowSocketBlocking();
+                return 0;
+            }
+            (*success) = true;
+            return dataSize;
+        }
 
         std::string readMatchFromTablet(bool* readSuccess) {
             /*
@@ -166,32 +197,19 @@ class BthCxnHandler {
                 T: send all data (blocking)
                 C: 👍 (ACK)
             */
+            // if we did not get to the end- not successful
             (*readSuccess) = false;
             // checking if getting data is successful.
             bool dataGetSuccess = true;
             // allow socket to block while we are doing this transaction (it shouldn't take long)
             allowSocketBlocking();
-                // ___ ack ___
-                if (!sendAck()) {
+                // ___ Get size of data to get ___
+                int dataSize = getDataSizeFromTablet(&dataGetSuccess);
+                if (!dataGetSuccess) {
                     disallowSocketBlocking();
                     return std::string();
                 }
-                // ___ get data size ___
-                char* dataSizePtr = readAllExpectedDataFromSocket(EXPECTED_DATA_READSIZE, &dataGetSuccess);
-                // if we are not successful in reading (or inverting the endian-ness, as it is currently incorrect), send a NACK and return
-                if (!dataGetSuccess || !invertEndianness(dataSizePtr, EXPECTED_DATA_READSIZE)) {
-                    endInteraction();
-                    return std::string();
-                }
-                int dataSize = ((int*)dataSizePtr)[0];
-                // free the memory we created
-                free(dataSizePtr);
-                std::cout << std::to_string(dataSize) << std::endl;
-                // ___ ack dataSize recvd ___
-                if (!sendAck()) {
-                    disallowSocketBlocking();
-                    return std::string();
-                }
+
                 // ___ read all expected data ___
                 char* jsonData = readAllExpectedDataFromSocket(dataSize, &dataGetSuccess);
                 // if we are not successful in reading, send a NACK and return
@@ -207,6 +225,34 @@ class BthCxnHandler {
             disallowSocketBlocking();
             (*readSuccess) = true;
             return dataInStringFormat;
+        }
+        std::string readTabletInfoFromTablet(bool* success) {
+            // if we do not get to end- we did not succeed.
+            (*success) = false;
+            allowSocketBlocking();
+                // ___ Get Expected Data Size ___
+                bool localSuccess = false;
+                int dataSize = getDataSizeFromTablet(&localSuccess);
+                if (!localSuccess) {
+                    disallowSocketBlocking();
+                    return std::string();
+                }
+
+                // ___ Read Expected Data From Socket ___
+                char* tabletInfo = readAllExpectedDataFromSocket(dataSize, &localSuccess);
+                if (!localSuccess) {
+                    endInteraction();
+                    return 0;
+                }
+
+                // get data as string
+                std::string tabletInfoStr = std::string(tabletInfo, dataSize);
+                // free data
+                free(tabletInfo);
+            disallowSocketBlocking();
+            //🥳🥳🥳🥳🥳🥳🥳🥳🥳
+            (*success) = true;
+            return tabletInfoStr;
         }
         void closeSocket() {
             checkSuccessWinsock<int>(bt::closesocket(this->socket), 0, "failed to propely close socket (memory leak)");

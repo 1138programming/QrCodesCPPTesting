@@ -11,7 +11,9 @@ class TextBox : public Drawable {
         ShouldScale width;
         ShouldScale height;
         raylib::Font font;
+        raylib::Color rectColor, textColor;
         ShouldScale textSize;
+        ShouldScale spacing;
         char* text;
         int sizeLimit = 0;
         int currentChar = 0;
@@ -36,12 +38,16 @@ class TextBox : public Drawable {
             }
         }
     public:
-        TextBox(ShouldScale width, ShouldScale height, int sizeLimit, ShouldScale textSize) {
+        TextBox(ShouldScale width, ShouldScale height, int sizeLimit, ShouldScale spacing,  ShouldScale textSize, Font font, raylib::Color fontColor, raylib::Color rectColor) {
             this->width = width;
             this->height = height;
             this->sizeLimit = sizeLimit;
             this->text = (char*)calloc(this->sizeLimit+1, sizeof(char));
             this->textSize = textSize;
+            this->font = raylib::Font(font);
+            this->textColor = fontColor;
+            this->rectColor = rectColor;
+            this->spacing = spacing;
             this->lastX = 0;
             this->lastY = 0;
         }
@@ -50,9 +56,9 @@ class TextBox : public Drawable {
             this->lastY = y;
             this->updateText();
             
-            EzText textToDraw(raylib::Text(this->font, std::string(this->text)), DARKGRAY, this->textSize, 0.0);
+            EzText textToDraw(raylib::Text(this->font, std::string(this->text)), this->textColor, this->textSize, this->spacing);
             raylib::Rectangle rect(x, y, this->width, this->height);
-            rect.DrawLines(GRAY);
+            rect.DrawLines(rectColor);
             textToDraw.draw(x,y);
         }
 

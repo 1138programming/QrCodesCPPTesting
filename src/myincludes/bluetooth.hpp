@@ -46,7 +46,11 @@ class Bluetooth {
                 macBuilder << 0;
             }
             macBuilder << (int)(nameInBytes[0]);
-            return macBuilder.str();
+            std::string macAddr = macBuilder.str();
+            for (int i = 0; i < macAddr.length(); i++) {
+                macAddr[i] = std::toupper(macAddr[i]);
+            }
+            return macAddr;
         }
         uint8_t getLocalPort() {
             return this->port;
@@ -201,6 +205,13 @@ class Bluetooth {
                             DatabaseMan databaseCall(vectData);
                             databaseCall.maketh();
                         }
+                    }
+                    break;
+                    case WRITE_TABLET_INFO:
+                    {
+                        bool success;
+                        std::string data = handler.readMatchFromTablet(&success);
+                        // do stuff
                     }
                     break;
 
