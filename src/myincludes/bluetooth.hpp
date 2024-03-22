@@ -24,8 +24,17 @@ class Bluetooth {
         uint8_t port;
 
         // ___ Useful (private) functions ___
-        template <typename T> void removeFromVector(std::vector<T>* vector, int element) {
-            vector->erase(vector->begin() + element);
+        void removeFromSocketVector(std::vector<bt::SOCKET>* vector, int element) {
+            std::vector<bt::SOCKET>::iterator it = (vector->begin() + element);
+            vector->erase(it);
+        }
+        void removeFromDrawablePtrVector(std::vector<Drawable*>* vector, int element) {
+            std::vector<Drawable*>::iterator it = (vector->begin()+element);
+            vector->erase(it);
+        }
+        void removeFromEzTextVector(std::vector<EzText>* vector, int element) {
+            std::vector<EzText>::iterator it = (vector->begin()+element);
+            vector->erase(it);
         }
     public:
         // ___ Simple BT functions ___
@@ -198,8 +207,9 @@ class Bluetooth {
                     case BT_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
-                        removeFromVector<bt::SOCKET>(&(this->connections), i);
-                        removeFromVector<Drawable*>(this->connListDrawable.getInternalVector(), i);
+                        removeFromSocketVector(&(this->connections), i);
+                        removeFromDrawablePtrVector(this->connListDrawable.getInternalVector(), i);
+                        removeFromEzTextVector(&(this->thingsToDrawList), i);
                     }
                     break;
 
@@ -220,7 +230,7 @@ class Bluetooth {
                     case WRITE_TABLET_INFO:
                     {
                         bool success;
-                        std::string data = handler.readMatchFromTablet(&success);
+                        std::string data = handler.readTabletInfoFromTablet(&success);
                         this->thingsToDrawList.at(i).setText(data);
                         // do stuff
                     }

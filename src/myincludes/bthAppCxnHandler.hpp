@@ -206,7 +206,7 @@ class BthCxnHandler {
                 // ___ Get size of data to get ___
                 int dataSize = getDataSizeFromTablet(&dataGetSuccess);
                 if (!dataGetSuccess) {
-                    disallowSocketBlocking();
+                    endInteraction();
                     return std::string();
                 }
 
@@ -234,14 +234,13 @@ class BthCxnHandler {
                 bool localSuccess = false;
                 int dataSize = getDataSizeFromTablet(&localSuccess);
                 if (!localSuccess) {
-                    disallowSocketBlocking();
                     return std::string();
                 }
 
                 // ___ Read Expected Data From Socket ___
                 char* tabletInfo = readAllExpectedDataFromSocket(dataSize, &localSuccess);
                 if (!localSuccess) {
-                    endInteraction();
+                    disallowSocketBlocking();
                     return 0;
                 }
 
