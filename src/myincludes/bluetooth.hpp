@@ -156,7 +156,7 @@ class Bluetooth {
                 bt::ULONG mode = 1;
                 checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking");
                 this->connections.push_back(sock);
-                this->thingsToDrawList.push_back(EzText(raylib::Text("null"), RAYWHITE, 40.0_spX, 1.0));
+                this->thingsToDrawList.push_back(EzText(raylib::Text("null"), RAYWHITE, 25.0_spX, 1.0));
                 this->connListDrawable.add(&(this->thingsToDrawList.at(this->thingsToDrawList.size()-1)));
             }
         }
