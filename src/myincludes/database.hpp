@@ -52,8 +52,11 @@ class Database {
             MYSQL_RES *resptr = mysql_use_result(&mysql);
             if (mysql.status == MYSQL_STATUS_USE_RESULT) {
                 std::cout << "Error bad" << mysql_error(&mysql) << std::endl;
+            }    
+            if (length == 0) {
+                return std::vector<std::vector<std::string>>();
             }
-
+            else {
             if (resptr == 0) {
                 std::cout << "Error result is zero" << mysql_error(&mysql) << std::endl;
             }
@@ -62,10 +65,8 @@ class Database {
                 
                 i = 0;
                 std::vector<std::vector<std::string>> vector;
-                if (length == 0) {
-                    return vector;
-                }
-                else {
+            
+                
                     while ((row = mysql_fetch_row(resptr)) != NULL) {
                     vector.push_back(std::vector<std::string>());              
     
@@ -83,11 +84,12 @@ class Database {
         
                     i++;
                 }
-                }
+               
                 
                 mysql_free_result(resptr);
 
                 return vector;
+            }
             }
             return std::vector<std::vector<std::string>>();
             

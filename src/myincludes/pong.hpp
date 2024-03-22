@@ -98,7 +98,7 @@ class Pong {
             }
             else if ((xcol && ycol) || pcol)  {
                 Ballspeed.x = -(Ballspeed.x + randfr(Ballspeed.x * -0.2f, Ballspeed.x * 0.4f));
-                Ballspeed.y = -(Ballspeed.y + randfr(Ballspeed.y * -0.52f, Ballspeed.y * 0.6f));
+                Ballspeed.y = -(Ballspeed.y + randfr(Ballspeed.y * -0.6f, Ballspeed.y * 0.7f));
                 colast = true; 
             }
             else if (xcol) {
@@ -133,7 +133,7 @@ class Pong {
         if (abs(Ballspeed.x) > 8  ) {
             Ballspeed.x -= (Ballspeed.x) * 0.005;
         }
-        else if (abs(Ballspeed.y) > 4) {
+        else if (abs(Ballspeed.y) > 6) {
             Ballspeed.y -= (Ballspeed.y) * 0.005;
         }
        
