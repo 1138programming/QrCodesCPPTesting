@@ -54,7 +54,7 @@ class Bluetooth {
                 char* output = NULL;
                 // i need this function to work lol
                 while (output == NULL) {
-                    char* output = (char*)malloc(sizeof(bt::DWORD)); // will be ignored
+                    output = (char*)malloc(sizeof(bt::DWORD)); // will be ignored
                 }
                 int outputSize = sizeof(bt::DWORD);
                 if (bt::getsockopt(this->connections.at(i), SOL_SOCKET, SO_CONNECT_TIME, output, &outputSize) == 10038) {
