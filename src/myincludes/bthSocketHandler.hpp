@@ -8,7 +8,9 @@ class bthSocketHandler {
     private:
         bt::SOCKET internalSocket;
         bool apoptosis; // fatal socket error?
-        int errorCode;
+        int errorCode; // error code if error
+        std::future<std::vector<char>> data;
+        bt::SOCKETCALLTYPE callType;
     public:
         btSocketHandler(bt::SOCKET socket) {
             this->internalSocket = socket;
@@ -39,9 +41,12 @@ class bthSocketHandler {
         }
 
         /**
-         * @returns A std::future<> of byte[]
+         * @brief starts internal read operation
         */
-        std::future<std::vector<char>> readData() {
+        void initRead() {
+            this->data = std::async(a,);
+        }
+        static std::vector<char> readData() {
 
         }
 

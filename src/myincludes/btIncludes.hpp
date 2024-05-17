@@ -13,6 +13,8 @@ namespace bt {
     #include <bluetoothapis.h>
     #include <ws2bth.h>
     #include <synchapi.h>
+    
+    #include "bthSocketCallingType.hpp"
 }
 
 template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
