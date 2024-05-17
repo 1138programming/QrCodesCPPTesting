@@ -16,12 +16,39 @@ class bthSocketHandler {
             this->internalSocket = socket;
             this->apoptosis = false;
             this->errorCode = -1;
+            this->callType = bt::CALLTYPE_DEFAULT;
+        }
+
+        char* readAllExpectedDataFromSocket(size_t dataSizeExpected, bool& success) {
+            success = true;
+            // return nothing if no memory given (obv.)
+            if (dataSizeExpected < 1) {
+                success = false;
+                return nullptr;
+            }
+            // create data && check if succeded
+            char* dataPtr = (char*)malloc(dataSizeExpected);
+            if (dataPtr == NULL) {
+                success = false;
+                return nullptr;
+            }
+
+            char* dataPtrCopy = dataPtr; // will be used as return val
+
+            size_t dataRecvd = 0;
+            while (dataRecvd < dataSizeExpected) {
+                
+            }
         }
 
         /**
          * @returns if bluetooth socket is ready to receive some info
         */
         bool scan() {
+            if (this->errorCode) {
+                return false; // we aren't ready if there's been an error
+            }
+
             bt::TIMEVAL disconnectTime = {0}; // ensures that we don't wait for socket to be ready, just want to know if it currently is
                 disconnectTime.tv_sec = 0;
                 disconnectTime.tv_usec = 0;
@@ -41,12 +68,33 @@ class bthSocketHandler {
         }
 
         /**
-         * @brief starts internal read operation
+         * @brief starts internal read operation with previously defined policy
         */
         void initRead() {
-            this->data = std::async(a,);
+            switch(this->callType) {
+                case bt::CALLTYPE_ASYNC:
+                {
+                    this->data = std::async(std::launch::async, readData, this);
+                }
+                break;
+                
+                case bt::CALLTYPE_DEFERRED:
+                {
+                    this->data = std::async(std::launch::deferred, readData, this);
+                }
+                break;
+
+                case bt::CALLTYPE_DEFAULT:
+                {
+                    this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
+                }
+                break;
+
+                default:
+                    this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
+            }
         }
-        static std::vector<char> readData() {
+        std::vector<char> readData() {
 
         }
 
@@ -61,6 +109,16 @@ class bthSocketHandler {
         */
         bool getErrorState() {
             return this->apoptosis;
+        }
+        /**
+         * @returns current calling policy
+        */
+        bt::SOCKETCALLTYPE getLaunchPolicy() {
+            return this->callType;
+        }
+
+        void setLaunchPolicy(bt::SOCKETCALLTYPE callType) {
+            this->callType = callType;
         }
 };
 
