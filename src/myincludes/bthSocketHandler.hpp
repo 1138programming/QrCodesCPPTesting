@@ -33,12 +33,41 @@ class bthSocketHandler {
                 return nullptr;
             }
 
-            char* dataPtrCopy = dataPtr; // will be used as return val
+            char* dataPtrCopy = dataPtr; // will be used as return val (we modify the original)
 
             size_t dataRecvd = 0;
             while (dataRecvd < dataSizeExpected) {
-                
+                size_t currentLengthRecvd = bt::recv(this->internalSocket, dataPtr, dataSizeExpected-dataRecvd, 0);
+                // graceful close 🥰
+                if (currentLengthRecvd == 0) {
+                    this->apoptosis = true;
+                    success = false;
+                    return nullptr;
+                }
+                // if SOCKET_ERROR is returned, there was an error (obv.)
+                if (currentLengthRecvd == SOCKET_ERROR) {
+                    // TODO: add error checking
+                    success = false;
+                    return nullptr;
+                }
+                dataRecvd += currentLengthRecvd;
+                dataPtr += currentLengthRecvd;
             }
+            return dataPtrCopy; // other one points to end of data
+        }
+
+        bool sendAllDataToSocket(char* data, size_t dataLen) {
+            char* currentData = data;
+            size_t sentData = 0;
+            while (sentData < dataLen) {
+                size_t lenDataSent = bt::send(this->internalSocket, currentData, dataLen-sentData, 0);
+                if (lenDataSent == SOCKET_ERROR) {
+                    return false;
+                }
+                sentData += lenDataSent;
+                currentData += lenDataSent;
+            }
+            return true;
         }
 
         /**
