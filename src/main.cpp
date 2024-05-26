@@ -17,6 +17,7 @@
 #include "myincludes/toggle.hpp"
 #include "myincludes/verticalScrollable.hpp"
 #include "myincludes/timer.hpp"
+#include "myincludes/winsockErrorDesc.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -148,6 +149,9 @@ int main() {
                 window.SetFullscreen(false);
                 window.SetSize(1280,720);
             }
+        }
+        if (IsKeyPressed(KEY_E)) {
+            toastHandler::add(Toast(winsockErrorDesc::get(6).errorNameDesc,TOASTLENGTHS::LENGTH_LONG));
         }
 
         if (mainTab.isPressed()) {

@@ -46,7 +46,13 @@ class bthSocketHandler {
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
-                    // TODO: add error checking
+                    // catches all fatal errors
+                    switch(bt::WSAGetLastError()) {
+                        case 10038:
+                        {
+                            
+                        }
+                    }
                     success = false;
                     return nullptr;
                 }
