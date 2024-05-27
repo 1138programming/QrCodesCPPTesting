@@ -50,8 +50,25 @@ class bthSocketHandler {
                     switch(bt::WSAGetLastError()) {
                         case 10038:
                         {
-                            
+                            //WSAENOTSOCK
+                            this->apoptosis = true;
+                            this->errorCode = 10038;
                         }
+                        break;
+                        case 10052:
+                        {
+                            //WSAENETRESET
+                            this->apoptosis = true;
+                            this->errorCode = 10052;
+                        }
+                        break;
+                        case 10058:
+                        {
+                            //WSAESHUTDOWN
+                            this->apoptosis = true;
+                            this->errorCode = 10058;
+                        }
+                        break;
                     }
                     success = false;
                     return nullptr;
