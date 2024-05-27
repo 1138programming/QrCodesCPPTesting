@@ -4,7 +4,7 @@
 #include "btIncludes.hpp"
 #include <future>
 
-class bthSocketHandler {
+class BthSocketHandler {
     private:
         bt::SOCKET internalSocket;
         bool apoptosis; // fatal socket error?
@@ -37,6 +37,10 @@ class bthSocketHandler {
 
             size_t dataRecvd = 0;
             while (dataRecvd < dataSizeExpected) {
+                if (!this->scanReady()) {
+                    success = false;
+                    return nullptr;
+                }
                 size_t currentLengthRecvd = bt::recv(this->internalSocket, dataPtr, dataSizeExpected-dataRecvd, 0);
                 // graceful close 🥰
                 if (currentLengthRecvd == 0) {
@@ -94,10 +98,10 @@ class bthSocketHandler {
         }
 
         /**
-         * @returns if bluetooth socket is ready to receive some info
+         * @returns if bluetooth socket is ready to scan some info
         */
-        bool scan() {
-            if (this->errorCode) {
+        bool scanReady() {
+            if (this->apoptosis) {
                 return false; // we aren't ready if there's been an error
             }
 
@@ -110,6 +114,25 @@ class bthSocketHandler {
             socketsToScan.fd_array[0] = this->internalSocket; // set only 1 element, as we are scanning for 1 socket
                 socketsToScan.fd_count = 1;
             
+            size_t sockState = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // scan for socket reading op
+            if (sockState == SOCKET_ERROR) {
+                this->apoptosis = true;
+                this->errorCode = bt::WSAGetLastError();
+                return false;
+            }
+            return (sockState != 0);
+        }
+        bool scanReady(bt::TIMEVAL disconnectTime) {
+            if (this->apoptosis) {
+                return false; // we aren't ready if there's been an error
+            }
+            
+            bt::fd_set socketsToScan = {0};
+                memset(&socketsToScan, 0, sizeof(bt::fd_set)); // ensures struct is zero (should be garuenteed but yk)
+
+            socketsToScan.fd_array[0] = this->internalSocket; // set only 1 element, as we are scanning for 1 socket
+                socketsToScan.fd_count = 1;
+
             size_t sockState = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // scan for socket reading op
             if (sockState == SOCKET_ERROR) {
                 this->apoptosis = true;
@@ -147,7 +170,7 @@ class bthSocketHandler {
             }
         }
         std::vector<char> readData() {
-
+            
         }
 
         /**
@@ -171,6 +194,10 @@ class bthSocketHandler {
 
         void setLaunchPolicy(bt::SOCKETCALLTYPE callType) {
             this->callType = callType;
+        }
+
+        void destroySelf() {
+            bt::closesocket(this->internalSocket);
         }
 };
 
