@@ -139,7 +139,7 @@ int main() {
 
 
     while(!window.ShouldClose()) {
-        
+        Animation<ANIMATIONTYPE_MOVING> gaming(&btTestingScene);
         // make application fullscreen on f11 press (and set resolution)
         if (IsKeyPressed(KEY_F11)) {
             if (!window.IsFullscreen()) {
