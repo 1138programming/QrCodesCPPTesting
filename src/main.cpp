@@ -17,6 +17,7 @@
 #include "myincludes/toggle.hpp"
 #include "myincludes/verticalScrollable.hpp"
 #include "myincludes/timer.hpp"
+#include "myincludes/animation.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -138,6 +139,7 @@ int main() {
 
 
     while(!window.ShouldClose()) {
+        
         // make application fullscreen on f11 press (and set resolution)
         if (IsKeyPressed(KEY_F11)) {
             if (!window.IsFullscreen()) {
