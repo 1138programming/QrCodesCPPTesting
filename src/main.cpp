@@ -294,5 +294,6 @@ int main() {
         window.EndDrawing();
             
     }
+    winsockErrorDesc::destroy();
     return 0;
 }
