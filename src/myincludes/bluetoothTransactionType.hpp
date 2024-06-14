@@ -7,6 +7,6 @@ typedef enum {
     BT_CLOSE_SOCKET = 0,
     WRITE_MATCH = 1,
     WRITE_TABLET_INFO = 2
-} BT_TRANSACTIONTYPE;
+} TRANSACTIONTYPE;
 
 #endif

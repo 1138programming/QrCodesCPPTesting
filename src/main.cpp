@@ -18,6 +18,7 @@
 #include "myincludes/verticalScrollable.hpp"
 #include "myincludes/timer.hpp"
 #include "myincludes/winsockErrorDesc.hpp"
+#include "myincludes/bthSocketHandler.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>

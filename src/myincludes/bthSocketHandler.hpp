@@ -11,6 +11,36 @@ class bthSocketHandler {
         int errorCode; // error code if error
         std::future<std::vector<char>> data;
         bt::SOCKETCALLTYPE callType;
+
+        bool errorIsFatal(int errorCode) {
+            switch(errorCode) {
+                case 10038:
+                {
+                    //WSAENOTSOCK
+                    return true;
+                }
+                break;
+                case 10052:
+                {
+                    //WSAENETRESET
+                    return true;
+                }
+                case 10053:
+                {
+                    //WSAECONNABORTED
+                    return true;
+                }
+                break;
+                case 10058:
+                {
+                    //WSAESHUTDOWN
+                    return true;
+                }
+                break;
+                default:
+                    return false;
+            }
+        }
     public:
         btSocketHandler(bt::SOCKET socket) {
             this->internalSocket = socket;
@@ -46,32 +76,14 @@ class bthSocketHandler {
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
-                    // catches all fatal errors
-                    switch(bt::WSAGetLastError()) {
-                        case 10038:
-                        {
-                            //WSAENOTSOCK
-                            this->apoptosis = true;
-                            this->errorCode = 10038;
-                        }
-                        break;
-                        case 10052:
-                        {
-                            //WSAENETRESET
-                            this->apoptosis = true;
-                            this->errorCode = 10052;
-                        }
-                        break;
-                        case 10058:
-                        {
-                            //WSAESHUTDOWN
-                            this->apoptosis = true;
-                            this->errorCode = 10058;
-                        }
-                        break;
+                    int currError = bt::WSAGetLastError();
+                    // catches most fatal errors
+                    if (this->errorIsFatal(currError)) {
+                        this->apoptosis = true;
+                        this->errorCode = currError;
+                        success = false;
+                        return nullptr;
                     }
-                    success = false;
-                    return nullptr;
                 }
                 dataRecvd += currentLengthRecvd;
                 dataPtr += currentLengthRecvd;
@@ -146,7 +158,18 @@ class bthSocketHandler {
                     this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
             }
         }
+        bt::TRANSACTIONTYPE getTransactionType() {
+            bool success;
+            char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, success);
+            if (!success) {
+                return BT_SOCKET_ERROR;
+            }
+        }
+
         std::vector<char> readData() {
+            if (!this->scan()) {
+                return std::vector<char>();
+            }
 
         }
 
