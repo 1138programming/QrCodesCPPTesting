@@ -230,16 +230,16 @@ class Bluetooth {
             for (size_t i = 0; i < sizeOfVals; i++) {
                 std::cout << "#: " << std::to_string(i) << std::endl;
                 BthCxnHandler handler(socketsToScan.fd_array[i]);
-                BT_TRANSACTIONTYPE transaction = handler.getTransactionType();
+                bt::TRANSACTIONTYPE transaction = handler.getTransactionType();
                 std::cout << transaction << std::endl;
                 switch(transaction) {
-                    case BT_SOCKET_ERROR:
+                    case bt::TRANS_SOCKET_ERROR:
                     {
                         handler.endInteraction();
                     }
                     break;
 
-                    case BT_CLOSE_SOCKET:
+                    case bt::TRANS_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
                         int socketToKill = getElement(&(this->connections), socketsToScan.fd_array[i]);
@@ -247,7 +247,7 @@ class Bluetooth {
                     }
                     break;
 
-                    case WRITE_MATCH:
+                    case bt::TRANS_WRITE_MATCH:
                     {
                         bool success = false;
                         std::string data = handler.readMatchFromTablet(&success);
@@ -262,7 +262,7 @@ class Bluetooth {
                         }
                     }
                     break;
-                    case WRITE_TABLET_INFO:
+                    case bt::TRANS_WRITE_TABLET_INFO:
                     {
                         bool success = false;
                         std::string data = handler.readTabletInfoFromTablet(&success);

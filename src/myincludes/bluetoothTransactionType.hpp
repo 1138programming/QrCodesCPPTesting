@@ -3,10 +3,10 @@
 
 // from the POV of the tablet
 typedef enum {
-    BT_SOCKET_ERROR = -128,
-    BT_CLOSE_SOCKET = 0,
-    WRITE_MATCH = 1,
-    WRITE_TABLET_INFO = 2
+    TRANS_SOCKET_ERROR = -128,
+    TRANS_CLOSE_SOCKET = 0,
+    TRANS_WRITE_MATCH = 1,
+    TRANS_WRITE_TABLET_INFO = 2
 } TRANSACTIONTYPE;
 
 #endif

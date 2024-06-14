@@ -162,7 +162,7 @@ class bthSocketHandler {
             bool success;
             char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, success);
             if (!success) {
-                return BT_SOCKET_ERROR;
+                return bt::TRANS_SOCKET_ERROR;
             }
         }
 

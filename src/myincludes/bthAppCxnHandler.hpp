@@ -43,13 +43,13 @@ class BthCxnHandler {
                 // if it returns 0, the socket has requested being closed
                 if (currentLengthRecvd == 0) {
                     toastHandler::add(Toast("Socket Requested Close: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
-                    (*dataPtr) = BT_CLOSE_SOCKET;
+                    (*dataPtr) = bt::TRANS_CLOSE_SOCKET;
                     return dataPtr;
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
                     toastHandler::add(Toast("SOCKET ERROR: " + std::to_string(bt::WSAGetLastError()), LENGTH_NORMAL));
-                    (*dataPtr) = BT_SOCKET_ERROR;
+                    (*dataPtr) = bt::TRANS_SOCKET_ERROR;
                     (*success) = false;
                     return dataPtr;
                 } 
@@ -138,7 +138,7 @@ class BthCxnHandler {
             sendNack();
         }
         // should only be called once
-        BT_TRANSACTIONTYPE getTransactionType() {
+        bt::TRANSACTIONTYPE getTransactionType() {
             bool success;
             char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, &success);
             char transactionType = (*transactionPtr);
@@ -148,14 +148,14 @@ class BthCxnHandler {
             // as there is no point in reading from a dead socket.
             if (transactionType == -128) {
                 if (bt::WSAGetLastError() == 10053) { // WSAECONNABORTED
-                    transactionType = BT_CLOSE_SOCKET;
+                    transactionType = bt::TRANS_CLOSE_SOCKET;
                     success = true;
                 }
             }
             if (!success) {
-                return BT_SOCKET_ERROR;
+                return bt::TRANS_SOCKET_ERROR;
             }
-            return static_cast<BT_TRANSACTIONTYPE>(transactionType);
+            return static_cast<bt::TRANSACTIONTYPE>(transactionType);
         }
         // can set socket blocking off if fail
         int getDataSizeFromTablet(bool* success) {
