@@ -285,7 +285,6 @@ int main() {
         }
         if (currentScene != PONG) {
             tabs.updateAndDraw(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));
-
         }
 //  std::cout << GetFrameTime() << std::endl;
 
@@ -295,5 +294,6 @@ int main() {
             
     }
     winsockErrorDesc::destroy();
+    std::cout << "test" << std::endl;
     return 0;
 }
