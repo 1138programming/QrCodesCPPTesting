@@ -117,7 +117,7 @@ class winsockErrorDesc {
             return valCopy;
         }
         static void destroy() {
-            winsockErrorDesc::errorCodes.erase();
+            winsockErrorDesc::errorCodes.clear();
         }
 };
 
