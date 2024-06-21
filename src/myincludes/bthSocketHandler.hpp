@@ -9,7 +9,6 @@ class bthSocketHandler {
         bt::SOCKET internalSocket;
         bool apoptosis; // fatal socket error?
         int errorCode; // error code if error
-        std::future<std::vector<char>> data;
         bt::SOCKETCALLTYPE callType;
 
         bool errorIsFatal(int errorCode) {
@@ -81,9 +80,9 @@ class bthSocketHandler {
                     if (this->errorIsFatal(currError)) {
                         this->apoptosis = true;
                         this->errorCode = currError;
-                        success = false;
-                        return nullptr;
                     }
+                    success = false;
+                    return nullptr;
                 }
                 dataRecvd += currentLengthRecvd;
                 dataPtr += currentLengthRecvd;
@@ -108,7 +107,7 @@ class bthSocketHandler {
         /**
          * @returns if bluetooth socket is ready to receive some info
         */
-        bool scan() {
+        bool readyToRead() {
             if (this->errorCode) {
                 return false; // we aren't ready if there's been an error
             }
@@ -124,8 +123,10 @@ class bthSocketHandler {
             
             size_t sockState = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // scan for socket reading op
             if (sockState == SOCKET_ERROR) {
-                this->apoptosis = true;
-                this->errorCode = bt::WSAGetLastError();
+                if (errorIsFatal(bt::WSAGetLastError())) {
+                    this->errorCode = bt::WSAGetLastError();
+                    this->apoptosis = true;
+                }
                 return false;
             }
             return (sockState != 0);
@@ -134,23 +135,35 @@ class bthSocketHandler {
         /**
          * @brief starts internal read operation with previously defined policy
         */
-        void initRead() {
+        bt::READRES readTabletData() {
+            // check to make sure they didn't call this function accidentally
+            bt::TRANSACTIONTYPE transactionType;
+            bt::READRES retVal;
+            if (!this->readyToRead()) {
+                //screw the caller 😡
+                retVal.
+            }
+                //             //needed for return result
+                // transactionType = this->getTransactionType();
+                // if (transactionType == bt::TRANS_SOCKET_ERROR) {
+                //     retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                // }
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    this->data = std::async(std::launch::async, readData, this);
+                    this->data = std::async(std::launch::async, internalRead, this);
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    this->data = std::async(std::launch::deferred, readData, this);
+                    this->data = std::async(std::launch::deferred, internalRead, this);
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
+                    this->data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
                 }
                 break;
 
@@ -164,10 +177,13 @@ class bthSocketHandler {
             if (!success) {
                 return bt::TRANS_SOCKET_ERROR;
             }
+            char transactionType = (*transactionPtr);
+            free(transactionPtr);
+            return static_cast<bt::TRANSACTIONTYPE>(transactionType);
         }
 
-        std::vector<char> readData() {
-            if (!this->scan()) {
+        std::vector<char> internalRead() {
+            if (!this->readyToRead()) {
                 return std::vector<char>();
             }
 

@@ -16,6 +16,7 @@ namespace bt {
     
     #include "bthSocketCallingType.hpp"
     #include "bluetoothTransactionType.hpp"
+    #include "btReadResult.hpp"
 
     #define EXPECTED_DATA_INITIAL sizeof(char)
     #define EXPECTED_DATA_READSIZE sizeof(int)
