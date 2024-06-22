@@ -40,8 +40,15 @@ class bthSocketHandler {
                     return false;
             }
         }
+
+        std::vector<char> returnEmptyVector() {
+            return std::vector<char>();
+        }
+        std::future<std::vector<char>> returnEmptyFuture() {
+            return std::async(std::launch::deferred, returnEmptyVector, this);
+        }
     public:
-        btSocketHandler(bt::SOCKET socket) {
+        bthSocketHandler(bt::SOCKET socket) {
             this->internalSocket = socket;
             this->apoptosis = false;
             this->errorCode = -1;
@@ -103,6 +110,21 @@ class bthSocketHandler {
             }
             return true;
         }
+        bool sendAck() {
+            char* dataToSend = (char*) malloc(bt::TAB_ACK_SIZE);
+            // check to make sure malloc() succeded
+            if (dataToSend == NULL) {
+                return false;
+            }
+            // data for 👍 emoji
+                dataToSend[0] = 0xf0;
+                dataToSend[1] = 0x9f;
+                dataToSend[2] = 0x91;
+                dataToSend[3] = 0x8d;
+            bool success = sendAllDataToSocket(dataToSend, bt::TAB_ACK_SIZE);
+            free(dataToSend);
+            return false;
+        }
 
         /**
          * @returns if bluetooth socket is ready to receive some info
@@ -137,39 +159,43 @@ class bthSocketHandler {
         */
         bt::READRES readTabletData() {
             // check to make sure they didn't call this function accidentally
-            bt::TRANSACTIONTYPE transactionType;
             bt::READRES retVal;
             if (!this->readyToRead()) {
-                //screw the caller 😡
-                retVal.
+                retVal.data = returnEmptyFuture();
+                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                return retVal;
             }
-                //             //needed for return result
-                // transactionType = this->getTransactionType();
-                // if (transactionType == bt::TRANS_SOCKET_ERROR) {
-                //     retVal.transactionType = bt::TRANS_SOCKET_ERROR;
-                // }
+
+            retVal.transactionType = this->getTransactionType();
+            if (retVal.transactionType == bt::TRANS_SOCKET_ERROR) {
+                retVal.data = returnEmptyFuture();
+                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                return retVal;
+            }
+
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    this->data = std::async(std::launch::async, internalRead, this);
+                    retVal.data = std::async(std::launch::async, internalRead, this);
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    this->data = std::async(std::launch::deferred, internalRead, this);
+                    retVal.data = std::async(std::launch::deferred, internalRead, this);
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    this->data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
                 }
                 break;
 
                 default:
-                    this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
             }
+            return retVal;
         }
         bt::TRANSACTIONTYPE getTransactionType() {
             bool success;

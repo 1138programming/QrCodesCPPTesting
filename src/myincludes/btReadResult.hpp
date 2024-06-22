@@ -1,13 +1,15 @@
 #ifndef BTREADRES_HPP
 #define BTREADRES_HPP
 
+#include "btIncludes.hpp"
 #include <vector>
 #include <future>
-#include "btIncludes.hpp"
 
-typedef struct {
-    bt::TRANSACTIONTYPE transactionType;
-    std::future<std::vector<char>> result;
-} READRES;
+namespace bt {
+    typedef struct {
+        bt::TRANSACTIONTYPE transactionType;
+        std::future<std::vector<char>> data;
+    } READRES;
+}
 
 #endif
