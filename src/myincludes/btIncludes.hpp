@@ -15,7 +15,18 @@ namespace bt {
     #include <synchapi.h>
     
     #include "bthSocketCallingType.hpp"
+    #include "bluetoothTransactionType.hpp"
+
+    #define EXPECTED_DATA_INITIAL sizeof(char)
+    #define EXPECTED_DATA_READSIZE sizeof(int)
+
+    // did NOT want to work as real constants
+    const int TAB_ACK_SIZE = sizeof(char)*4;
+    const int TAB_NACK_SIZE = sizeof(char)*4;
 }
+
+//includes on timeout
+#include "btReadResult.hpp"
 
 template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
     if (val != target) {

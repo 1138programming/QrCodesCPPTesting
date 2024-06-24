@@ -4,15 +4,51 @@
 #include "btIncludes.hpp"
 #include <future>
 
-class BthSocketHandler {
+class bthSocketHandler {
     private:
         bt::SOCKET internalSocket;
         bool apoptosis; // fatal socket error?
         int errorCode; // error code if error
-        std::future<std::vector<char>> data;
         bt::SOCKETCALLTYPE callType;
+
+        bool errorIsFatal(int errorCode) {
+            switch(errorCode) {
+                case 10038:
+                {
+                    //WSAENOTSOCK
+                    return true;
+                }
+                break;
+                case 10052:
+                {
+                    //WSAENETRESET
+                    return true;
+                }
+                case 10053:
+                {
+                    //WSAECONNABORTED
+                    return true;
+                }
+                break;
+                case 10058:
+                {
+                    //WSAESHUTDOWN
+                    return true;
+                }
+                break;
+                default:
+                    return false;
+            }
+        }
+
+        std::vector<char> returnEmptyVector() {
+            return std::vector<char>();
+        }
+        std::future<std::vector<char>> returnEmptyFuture() {
+            return std::async(std::launch::deferred, returnEmptyVector, this);
+        }
     public:
-        btSocketHandler(bt::SOCKET socket) {
+        bthSocketHandler(bt::SOCKET socket) {
             this->internalSocket = socket;
             this->apoptosis = false;
             this->errorCode = -1;
@@ -37,10 +73,6 @@ class BthSocketHandler {
 
             size_t dataRecvd = 0;
             while (dataRecvd < dataSizeExpected) {
-                if (!this->scanReady()) {
-                    success = false;
-                    return nullptr;
-                }
                 size_t currentLengthRecvd = bt::recv(this->internalSocket, dataPtr, dataSizeExpected-dataRecvd, 0);
                 // graceful close 🥰
                 if (currentLengthRecvd == 0) {
@@ -50,29 +82,11 @@ class BthSocketHandler {
                 }
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
-                    // catches all fatal errors
-                    switch(bt::WSAGetLastError()) {
-                        case 10038:
-                        {
-                            //WSAENOTSOCK
-                            this->apoptosis = true;
-                            this->errorCode = 10038;
-                        }
-                        break;
-                        case 10052:
-                        {
-                            //WSAENETRESET
-                            this->apoptosis = true;
-                            this->errorCode = 10052;
-                        }
-                        break;
-                        case 10058:
-                        {
-                            //WSAESHUTDOWN
-                            this->apoptosis = true;
-                            this->errorCode = 10058;
-                        }
-                        break;
+                    int currError = bt::WSAGetLastError();
+                    // catches most fatal errors
+                    if (this->errorIsFatal(currError)) {
+                        this->apoptosis = true;
+                        this->errorCode = currError;
                     }
                     success = false;
                     return nullptr;
@@ -96,12 +110,27 @@ class BthSocketHandler {
             }
             return true;
         }
+        bool sendAck() {
+            char* dataToSend = (char*) malloc(bt::TAB_ACK_SIZE);
+            // check to make sure malloc() succeded
+            if (dataToSend == NULL) {
+                return false;
+            }
+            // data for 👍 emoji
+                dataToSend[0] = 0xf0;
+                dataToSend[1] = 0x9f;
+                dataToSend[2] = 0x91;
+                dataToSend[3] = 0x8d;
+            bool success = sendAllDataToSocket(dataToSend, bt::TAB_ACK_SIZE);
+            free(dataToSend);
+            return false;
+        }
 
         /**
-         * @returns if bluetooth socket is ready to scan some info
+         * @returns if bluetooth socket is ready to receive some info
         */
-        bool scanReady() {
-            if (this->apoptosis) {
+        bool readyToRead() {
+            if (this->errorCode) {
                 return false; // we aren't ready if there's been an error
             }
 
@@ -116,27 +145,10 @@ class BthSocketHandler {
             
             size_t sockState = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // scan for socket reading op
             if (sockState == SOCKET_ERROR) {
-                this->apoptosis = true;
-                this->errorCode = bt::WSAGetLastError();
-                return false;
-            }
-            return (sockState != 0);
-        }
-        bool scanReady(bt::TIMEVAL disconnectTime) {
-            if (this->apoptosis) {
-                return false; // we aren't ready if there's been an error
-            }
-            
-            bt::fd_set socketsToScan = {0};
-                memset(&socketsToScan, 0, sizeof(bt::fd_set)); // ensures struct is zero (should be garuenteed but yk)
-
-            socketsToScan.fd_array[0] = this->internalSocket; // set only 1 element, as we are scanning for 1 socket
-                socketsToScan.fd_count = 1;
-
-            size_t sockState = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // scan for socket reading op
-            if (sockState == SOCKET_ERROR) {
-                this->apoptosis = true;
-                this->errorCode = bt::WSAGetLastError();
+                if (errorIsFatal(bt::WSAGetLastError())) {
+                    this->errorCode = bt::WSAGetLastError();
+                    this->apoptosis = true;
+                }
                 return false;
             }
             return (sockState != 0);
@@ -145,32 +157,62 @@ class BthSocketHandler {
         /**
          * @brief starts internal read operation with previously defined policy
         */
-        void initRead() {
+        bt::READRES readTabletData() {
+            // check to make sure they didn't call this function accidentally
+            bt::READRES retVal;
+            if (!this->readyToRead()) {
+                retVal.data = returnEmptyFuture();
+                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                return retVal;
+            }
+
+            retVal.transactionType = this->getTransactionType();
+            if (retVal.transactionType == bt::TRANS_SOCKET_ERROR) {
+                retVal.data = returnEmptyFuture();
+                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                return retVal;
+            }
+
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    this->data = std::async(std::launch::async, readData, this);
+                    retVal.data = std::async(std::launch::async, internalRead, this);
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    this->data = std::async(std::launch::deferred, readData, this);
+                    retVal.data = std::async(std::launch::deferred, internalRead, this);
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
                 }
                 break;
 
                 default:
-                    this->data = std::async(std::launch::deferred | std::launch::async, readData, this);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
             }
+            return retVal;
         }
-        std::vector<char> readData() {
-            
+        bt::TRANSACTIONTYPE getTransactionType() {
+            bool success;
+            char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, success);
+            if (!success) {
+                return bt::TRANS_SOCKET_ERROR;
+            }
+            char transactionType = (*transactionPtr);
+            free(transactionPtr);
+            return static_cast<bt::TRANSACTIONTYPE>(transactionType);
+        }
+
+        std::vector<char> internalRead() {
+            if (!this->readyToRead()) {
+                return std::vector<char>();
+            }
+
         }
 
         /**
@@ -194,10 +236,6 @@ class BthSocketHandler {
 
         void setLaunchPolicy(bt::SOCKETCALLTYPE callType) {
             this->callType = callType;
-        }
-
-        void destroySelf() {
-            bt::closesocket(this->internalSocket);
         }
 };
 

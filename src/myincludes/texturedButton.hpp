@@ -84,6 +84,8 @@ class TexturedButton : public Drawable{
         }
 
         ~TexturedButton() {
+            initialHoverImage.Unload();
+            initialMainImage.Unload();
             mainTexture.Unload();
             hoverTexture.Unload();
         }
