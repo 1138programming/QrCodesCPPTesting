@@ -205,27 +205,33 @@ class bthSocketHandler {
                 return retVal;
             }
 
+            bool success; // to check success in internal read
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    retVal.data = std::async(std::launch::async, internalRead, this);
+                    retVal.data = std::async(std::launch::async, &bthSocketHandler::internalRead, *this, success);
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    retVal.data = std::async(std::launch::deferred, internalRead, this);
+                    retVal.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, *this, success);
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, *this, success);
                 }
                 break;
 
                 default:
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, internalRead, this);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, *this, success);
+            }
+            // we should prob. ignore the data if there's been an error.
+            if (success == false) {
+                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                retVal.data = returnEmptyFuture();
             }
             return retVal;
         }
@@ -241,7 +247,7 @@ class bthSocketHandler {
         }
 
         std::vector<char> internalRead(bool& success) {
-            // make sure the tablet actually wants to communicate (though if we're this far, we probably are.)
+            // make sure the tablet actually wants to communicate (though if we're this far, it probably is)
             if (!this->readyToRead()) {
                 return std::vector<char>();
             }
@@ -262,7 +268,7 @@ class bthSocketHandler {
 
            // get the # of bytes to be sent
            char* numOfByteData = readAllExpectedDataFromSocket(bt::EXPECTED_DATA_READSIZE, success);
-           if (!success || !invertEndianness(numOfByteData)) {
+           if (!success || !invertEndianness(numOfByteData, bt::EXPECTED_DATA_READSIZE)) {
                 sendNack();
                 success = false; // for good measure
                 return std::vector<char>();
