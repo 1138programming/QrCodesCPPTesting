@@ -123,7 +123,39 @@ class bthSocketHandler {
                 dataToSend[3] = 0x8d;
             bool success = sendAllDataToSocket(dataToSend, bt::TAB_ACK_SIZE);
             free(dataToSend);
-            return false;
+            return true;
+        }
+        bool sendNack() {
+            char* dataToSend = (char*) malloc(bt::TAB_NACK_SIZE);
+            // check malloc()
+            if (dataToSend == NULL) {
+                return false;
+            }
+
+            // data for 👎 emoji
+                dataToSend[0] = 0xf0;
+                dataToSend[1] = 0x9f;
+                dataToSend[2] = 0x91;
+                dataToSend[3] = 0x8e;
+            bool success = sendAllDataToSocket(dataToSend, bt::TAB_NACK_SIZE);
+            free(dataToSend);
+            return true;
+        }
+
+        bool invertEndianness(char* ptr, size_t ptrSize) {
+            // copy pointer, returning false if failing
+            char* ptrCopy = (char*) malloc(ptrSize);
+            if (ptrCopy == NULL) {
+                return false;
+            }
+            // set all the bits of ptr to its inverse
+            memcpy(ptrCopy, ptr, ptrSize);
+            for (int i = 0; i < ptrSize; i++) {
+                // -1 bc index starts @ 0
+                ptr[i] = ptrCopy[ptrSize-i-1];
+            }
+            free(ptrCopy);
+            return true;
         }
 
         /**
@@ -208,11 +240,60 @@ class bthSocketHandler {
             return static_cast<bt::TRANSACTIONTYPE>(transactionType);
         }
 
-        std::vector<char> internalRead() {
+        std::vector<char> internalRead(bool& success) {
+            // make sure the tablet actually wants to communicate (though if we're this far, we probably are.)
             if (!this->readyToRead()) {
                 return std::vector<char>();
             }
 
+            /*
+                Communication will go as follows:
+                    C: 👍 (Trailing ACK)
+                    T: # of bytes to be sent (signed int)
+                    C: 👍 (ACK)
+                    T: all data
+                    C: 👍 (ACK)
+            */
+           success = true;
+           if (!sendAck()) {
+                success = false;
+                return std::vector<char>();
+           }
+
+           // get the # of bytes to be sent
+           char* numOfByteData = readAllExpectedDataFromSocket(bt::EXPECTED_DATA_READSIZE, success);
+           if (!success || !invertEndianness(numOfByteData)) {
+                sendNack();
+                success = false; // for good measure
+                return std::vector<char>();
+           }
+           int bytesExpected = *((int*)numOfByteData);
+           free(numOfByteData);
+
+           // ack dataSize recvd
+           if (!sendAck()) {
+                success = false;
+                return std::vector<char>();
+           }
+
+           // read expected data from socket && errorcheck
+           char* expectedData = readAllExpectedDataFromSocket(bytesExpected, success);
+           if (!success) {
+                sendNack();
+                success = false;
+                return std::vector<char>();
+           }
+
+           // convert char* to vector and return
+           std::vector<char> charData;
+           charData.reserve(bytesExpected);
+           for(int i = 0; i < bytesExpected; i++) {
+                charData.push_back(expectedData[i]);
+           }
+           // cleaning up
+           free(expectedData);
+           success = true;
+           return charData;
         }
 
         /**
