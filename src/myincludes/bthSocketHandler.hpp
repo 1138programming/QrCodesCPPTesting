@@ -209,24 +209,24 @@ class bthSocketHandler {
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    retVal.data = std::async(std::launch::async, &bthSocketHandler::internalRead, *this, success);
+                    retVal.data = std::async(std::launch::async, &bthSocketHandler::internalRead, this, &success);
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    retVal.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, *this, success);
+                    retVal.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, this, &success);
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, *this, success);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, &success);
                 }
                 break;
 
                 default:
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, *this, success);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, &success);
             }
             // we should prob. ignore the data if there's been an error.
             if (success == false) {
@@ -246,7 +246,7 @@ class bthSocketHandler {
             return static_cast<bt::TRANSACTIONTYPE>(transactionType);
         }
 
-        std::vector<char> internalRead(bool& success) {
+        std::vector<char> internalRead(bool* success) {
             // make sure the tablet actually wants to communicate (though if we're this far, it probably is)
             if (!this->readyToRead()) {
                 return std::vector<char>();
