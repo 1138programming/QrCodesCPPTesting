@@ -302,6 +302,10 @@ class bthSocketHandler {
            return charData;
         }
 
+        void closeSocket() {
+            checkSuccessWinsock<int>(bt::closesocket(this->internalSocket), 0, "failed to propely close socket (memory leak)");
+        }
+
 
         /**
          * @returns -1 if no error, anything else if error
