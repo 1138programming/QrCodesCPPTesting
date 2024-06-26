@@ -11,9 +11,6 @@
 #include <vector>
 #include <stdio.h>
 
-#define EXPECTED_DATA_INITIAL sizeof(char)
-#define EXPECTED_DATA_READSIZE sizeof(int)
-
 class BthCxnHandler {
     private:
         bt::SOCKET socket;
@@ -140,7 +137,7 @@ class BthCxnHandler {
         // should only be called once
         bt::TRANSACTIONTYPE getTransactionType() {
             bool success;
-            char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, &success);
+            char* transactionPtr = readAllExpectedDataFromSocket(BT_EXPECTED_DATA_INITIAL, &success);
             char transactionType = (*transactionPtr);
             free(transactionPtr);
 
@@ -170,9 +167,9 @@ class BthCxnHandler {
             }
 
             // ___ get data size ___
-            char* dataSizePtr = readAllExpectedDataFromSocket(EXPECTED_DATA_READSIZE, &localSuccess);
+            char* dataSizePtr = readAllExpectedDataFromSocket(BT_EXPECTED_DATA_READSIZE, &localSuccess);
             // if we are not successful in reading (or inverting the endian-ness, as it is currently incorrect), send a NACK and return
-            if (!localSuccess || !invertEndianness(dataSizePtr, EXPECTED_DATA_READSIZE)) {
+            if (!localSuccess || !invertEndianness(dataSizePtr, BT_EXPECTED_DATA_READSIZE)) {
                 endInteraction();
                 return 0;
             }

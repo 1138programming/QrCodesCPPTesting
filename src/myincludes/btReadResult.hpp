@@ -9,6 +9,7 @@ namespace bt {
     typedef struct {
         bt::TRANSACTIONTYPE transactionType;
         std::future<std::vector<char>> data;
+        bool reportedSuccess;
     } READRES;
 }
 

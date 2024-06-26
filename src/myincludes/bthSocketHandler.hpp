@@ -55,6 +55,23 @@ class bthSocketHandler {
             this->callType = bt::CALLTYPE_DEFAULT;
         }
 
+        bool invertEndianness(char* ptr, size_t ptrSize) {
+            // copy pointer, returning false if failing
+            char* ptrCopy = (char*) malloc(ptrSize);
+            if (ptrCopy == NULL) {
+                return false;
+            }
+            // set all the bits of ptr to its inverse
+            memcpy(ptrCopy, ptr, ptrSize);
+            for (int i = 0; i < ptrSize; i++) {
+                // -1 bc index starts @ 0
+                ptr[i] = ptrCopy[ptrSize-i-1];
+            }
+            free(ptrCopy);
+            return true;
+        }
+
+
         char* readAllExpectedDataFromSocket(size_t dataSizeExpected, bool& success) {
             success = true;
             // return nothing if no memory given (obv.)
@@ -110,8 +127,9 @@ class bthSocketHandler {
             }
             return true;
         }
+
         bool sendAck() {
-            char* dataToSend = (char*) malloc(bt::TAB_ACK_SIZE);
+            char* dataToSend = (char*) malloc(BT_TAB_ACK_SIZE);
             // check to make sure malloc() succeded
             if (dataToSend == NULL) {
                 return false;
@@ -121,12 +139,13 @@ class bthSocketHandler {
                 dataToSend[1] = 0x9f;
                 dataToSend[2] = 0x91;
                 dataToSend[3] = 0x8d;
-            bool success = sendAllDataToSocket(dataToSend, bt::TAB_ACK_SIZE);
+            bool success = sendAllDataToSocket(dataToSend, BT_TAB_ACK_SIZE);
             free(dataToSend);
             return true;
         }
+        
         bool sendNack() {
-            char* dataToSend = (char*) malloc(bt::TAB_NACK_SIZE);
+            char* dataToSend = (char*) malloc(BT_TAB_NACK_SIZE);
             // check malloc()
             if (dataToSend == NULL) {
                 return false;
@@ -137,24 +156,8 @@ class bthSocketHandler {
                 dataToSend[1] = 0x9f;
                 dataToSend[2] = 0x91;
                 dataToSend[3] = 0x8e;
-            bool success = sendAllDataToSocket(dataToSend, bt::TAB_NACK_SIZE);
+            bool success = sendAllDataToSocket(dataToSend, BT_TAB_NACK_SIZE);
             free(dataToSend);
-            return true;
-        }
-
-        bool invertEndianness(char* ptr, size_t ptrSize) {
-            // copy pointer, returning false if failing
-            char* ptrCopy = (char*) malloc(ptrSize);
-            if (ptrCopy == NULL) {
-                return false;
-            }
-            // set all the bits of ptr to its inverse
-            memcpy(ptrCopy, ptr, ptrSize);
-            for (int i = 0; i < ptrSize; i++) {
-                // -1 bc index starts @ 0
-                ptr[i] = ptrCopy[ptrSize-i-1];
-            }
-            free(ptrCopy);
             return true;
         }
 
@@ -195,6 +198,7 @@ class bthSocketHandler {
             if (!this->readyToRead()) {
                 retVal.data = returnEmptyFuture();
                 retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                retVal.reportedSuccess = false;
                 return retVal;
             }
 
@@ -202,42 +206,38 @@ class bthSocketHandler {
             if (retVal.transactionType == bt::TRANS_SOCKET_ERROR) {
                 retVal.data = returnEmptyFuture();
                 retVal.transactionType = bt::TRANS_SOCKET_ERROR;
+                retVal.reportedSuccess = false;
                 return retVal;
             }
 
-            bool success; // to check success in internal read
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    retVal.data = std::async(std::launch::async, &bthSocketHandler::internalRead, this, &success);
+                    retVal.data = std::async(std::launch::async, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    retVal.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, this, &success);
+                    retVal.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, &success);
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
                 }
                 break;
 
                 default:
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, &success);
-            }
-            // we should prob. ignore the data if there's been an error.
-            if (success == false) {
-                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
-                retVal.data = returnEmptyFuture();
+                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
             }
             return retVal;
         }
+
         bt::TRANSACTIONTYPE getTransactionType() {
             bool success;
-            char* transactionPtr = readAllExpectedDataFromSocket(EXPECTED_DATA_INITIAL, success);
+            char* transactionPtr = readAllExpectedDataFromSocket(BT_EXPECTED_DATA_INITIAL, success);
             if (!success) {
                 return bt::TRANS_SOCKET_ERROR;
             }
@@ -246,7 +246,7 @@ class bthSocketHandler {
             return static_cast<bt::TRANSACTIONTYPE>(transactionType);
         }
 
-        std::vector<char> internalRead(bool* success) {
+        std::vector<char> internalRead(bool& success) {
             // make sure the tablet actually wants to communicate (though if we're this far, it probably is)
             if (!this->readyToRead()) {
                 return std::vector<char>();
@@ -267,8 +267,8 @@ class bthSocketHandler {
            }
 
            // get the # of bytes to be sent
-           char* numOfByteData = readAllExpectedDataFromSocket(bt::EXPECTED_DATA_READSIZE, success);
-           if (!success || !invertEndianness(numOfByteData, bt::EXPECTED_DATA_READSIZE)) {
+           char* numOfByteData = readAllExpectedDataFromSocket(BT_EXPECTED_DATA_READSIZE, success);
+           if (!success || !invertEndianness(numOfByteData, BT_EXPECTED_DATA_READSIZE)) {
                 sendNack();
                 success = false; // for good measure
                 return std::vector<char>();
@@ -301,6 +301,7 @@ class bthSocketHandler {
            success = true;
            return charData;
         }
+
 
         /**
          * @returns -1 if no error, anything else if error
