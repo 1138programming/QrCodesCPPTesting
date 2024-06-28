@@ -230,9 +230,11 @@ class Bluetooth {
             for (size_t i = 0; i < sizeOfVals; i++) {
                 std::cout << "#: " << std::to_string(i) << std::endl;
                 bthSocketHandler handler(socketsToScan.fd_array[i]);
-                bt::READRES readResult = handler.readTabletData();
-                std::cout << readResult.transactionType << std::endl;
-                switch(readResult.transactionType) {
+                handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
+                bt::READRES* readResult = handler.readTabletData();
+                std::cout << readResult->isReady() << std::endl;
+                std::cout << readResult->transactionType << std::endl;
+                switch(readResult->transactionType) {
                     case bt::TRANS_SOCKET_ERROR:
                     {
                         handler.sendNack();
@@ -249,8 +251,8 @@ class Bluetooth {
 
                     case bt::TRANS_WRITE_MATCH:
                     {
-                        std::vector<char> readDataVec = readResult.data.get();
-                        if (readResult.reportedSuccess) {
+                        std::vector<char> readDataVec = readResult->data.get();
+                        if (readResult->reportedSuccess) {
                             std::string data = std::string(readDataVec.begin(), readDataVec.end());
                             std::cerr << data << std::endl;
                         
@@ -264,8 +266,10 @@ class Bluetooth {
                     break;
                     case bt::TRANS_WRITE_TABLET_INFO:
                     {
-                        std::vector<char> infoDataVec = readResult.data.get();
-                        if (readResult.reportedSuccess) {
+                        std::cout << "WRITE_INFO" << std::endl;
+                        std::vector<char> infoDataVec = readResult->data.get();
+                        std::cout << "WRITE_INFO #2: " << readResult->reportedSuccess << std::endl;
+                        if (readResult->reportedSuccess) {
                             std::string data = std::string(infoDataVec.begin(), infoDataVec.end());
                             std::cerr << "Tablet info successfuly gotten, displaying now:" << std::endl;
                             std::cerr << data << std::endl;
