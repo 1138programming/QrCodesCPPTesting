@@ -10,6 +10,7 @@ class bthSocketHandler {
         bool apoptosis; // fatal socket error?
         int errorCode; // error code if error
         bt::SOCKETCALLTYPE callType;
+        bt::READRES currentRead; // we don't want to just keep calling it.
 
         bool errorIsFatal(int errorCode) {
             switch(errorCode) {
@@ -65,6 +66,7 @@ class bthSocketHandler {
             memcpy(ptrCopy, ptr, ptrSize);
             for (int i = 0; i < ptrSize; i++) {
                 // -1 bc index starts @ 0
+                std::cout << (int)ptr[i] << std::endl;
                 ptr[i] = ptrCopy[ptrSize-i-1];
             }
             free(ptrCopy);
@@ -76,6 +78,7 @@ class bthSocketHandler {
             success = true;
             // return nothing if no memory given (obv.)
             if (dataSizeExpected < 1) {
+                std::cout << "?????" << std::endl;
                 success = false;
                 return nullptr;
             }
@@ -93,6 +96,7 @@ class bthSocketHandler {
                 size_t currentLengthRecvd = bt::recv(this->internalSocket, dataPtr, dataSizeExpected-dataRecvd, 0);
                 // graceful close 🥰
                 if (currentLengthRecvd == 0) {
+                    std::cout << "The tablet's fault" << std::endl;
                     this->apoptosis = true;
                     success = false;
                     return nullptr;
@@ -100,10 +104,15 @@ class bthSocketHandler {
                 // if SOCKET_ERROR is returned, there was an error (obv.)
                 if (currentLengthRecvd == SOCKET_ERROR) {
                     int currError = bt::WSAGetLastError();
+                    if (currError == 10035) {
+                        continue;
+                    }
+                    std::cout << "why?: " << currError << std::endl;
                     // catches most fatal errors
                     if (this->errorIsFatal(currError)) {
                         this->apoptosis = true;
                         this->errorCode = currError;
+                        // TODO: unsafe?
                     }
                     success = false;
                     return nullptr;
@@ -165,7 +174,7 @@ class bthSocketHandler {
          * @returns if bluetooth socket is ready to receive some info
         */
         bool readyToRead() {
-            if (this->errorCode) {
+            if (this->apoptosis) {
                 return false; // we aren't ready if there's been an error
             }
 
@@ -192,47 +201,48 @@ class bthSocketHandler {
         /**
          * @brief starts internal read operation with previously defined policy
         */
-        bt::READRES readTabletData() {
+        bt::READRES* readTabletData() {
             // check to make sure they didn't call this function accidentally
-            bt::READRES retVal;
             if (!this->readyToRead()) {
-                retVal.data = returnEmptyFuture();
-                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
-                retVal.reportedSuccess = false;
-                return retVal;
+                std::cerr << "Tablet not ready to read" << std::endl;
+                this->currentRead.data = returnEmptyFuture();
+                this->currentRead.transactionType = bt::TRANS_SOCKET_ERROR;
+                this->currentRead.reportedSuccess = false;
+                return &this->currentRead;
             }
 
-            retVal.transactionType = this->getTransactionType();
-            if (retVal.transactionType == bt::TRANS_SOCKET_ERROR) {
-                retVal.data = returnEmptyFuture();
-                retVal.transactionType = bt::TRANS_SOCKET_ERROR;
-                retVal.reportedSuccess = false;
-                return retVal;
+            this->currentRead.transactionType = this->getTransactionType();
+            if (this->currentRead.transactionType == bt::TRANS_SOCKET_ERROR) {
+                std::cout << "getTransactionType() returned TRANS_SOCKET_ERROR" << std::endl;
+                this->currentRead.data = returnEmptyFuture();
+                this->currentRead.transactionType = bt::TRANS_SOCKET_ERROR;
+                this->currentRead.reportedSuccess = false;
+                return &this->currentRead;
             }
 
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNC:
                 {
-                    retVal.data = std::async(std::launch::async, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
+                    this->currentRead.data = std::async(std::launch::async, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
                 }
                 break;
                 
                 case bt::CALLTYPE_DEFERRED:
                 {
-                    retVal.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
+                    this->currentRead.data = std::async(std::launch::deferred, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
                 }
                 break;
 
                 case bt::CALLTYPE_DEFAULT:
                 {
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
+                    this->currentRead.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
                 }
                 break;
 
                 default:
-                    retVal.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(retVal.reportedSuccess));
+                    this->currentRead.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
             }
-            return retVal;
+            return &this->currentRead;
         }
 
         bt::TRANSACTIONTYPE getTransactionType() {
@@ -247,11 +257,6 @@ class bthSocketHandler {
         }
 
         std::vector<char> internalRead(bool& success) {
-            // make sure the tablet actually wants to communicate (though if we're this far, it probably is)
-            if (!this->readyToRead()) {
-                return std::vector<char>();
-            }
-
             /*
                 Communication will go as follows:
                     C: 👍 (Trailing ACK)
@@ -266,21 +271,27 @@ class bthSocketHandler {
                 return std::vector<char>();
            }
 
+            std::cout << "CKPT 1" << std::endl;
+
            // get the # of bytes to be sent
            char* numOfByteData = readAllExpectedDataFromSocket(BT_EXPECTED_DATA_READSIZE, success);
+           std::cout << "CKPT 1.5: " << success << std::endl;
            if (!success || !invertEndianness(numOfByteData, BT_EXPECTED_DATA_READSIZE)) {
+                std::cout << "CKPT 1b" << std::endl;
                 sendNack();
                 success = false; // for good measure
                 return std::vector<char>();
            }
-           int bytesExpected = *((int*)numOfByteData);
+           int bytesExpected = ((int*)numOfByteData)[0];
            free(numOfByteData);
 
+            std::cout << "CKPT 2" << std::endl;
            // ack dataSize recvd
            if (!sendAck()) {
                 success = false;
                 return std::vector<char>();
            }
+            std::cout << "CKPT 3" << std::endl;
 
            // read expected data from socket && errorcheck
            char* expectedData = readAllExpectedDataFromSocket(bytesExpected, success);
@@ -290,6 +301,7 @@ class bthSocketHandler {
                 return std::vector<char>();
            }
 
+            std::cout << "CKPT 4" << std::endl;
            // convert char* to vector and return
            std::vector<char> charData;
            charData.reserve(bytesExpected);
@@ -303,7 +315,7 @@ class bthSocketHandler {
         }
 
         void closeSocket() {
-            checkSuccessWinsock<int>(bt::closesocket(this->internalSocket), 0, "failed to propely close socket (memory leak)");
+            checkSuccessWinsock<int>(bt::closesocket(this->internalSocket), 0, "failed to propely close socket (minor memory leak)");
         }
 
 
