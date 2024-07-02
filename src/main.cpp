@@ -17,7 +17,8 @@
 #include "myincludes/toggle.hpp"
 #include "myincludes/verticalScrollable.hpp"
 #include "myincludes/timer.hpp"
-#include "myincludes/animation.hpp"
+#include "myincludes/winsockErrorDesc.hpp"
+#include "myincludes/bthSocketHandler.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -151,6 +152,9 @@ int main() {
                 window.SetSize(1280,720);
             }
         }
+        if (IsKeyPressed(KEY_E)) {
+            toastHandler::add(Toast(winsockErrorDesc::get(6).errorNameDesc,TOASTLENGTHS::LENGTH_LONG));
+        }
 
         if (mainTab.isPressed()) {
             currentScene = SCANNING;
@@ -282,7 +286,6 @@ int main() {
         }
         if (currentScene != PONG) {
             tabs.updateAndDraw(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));
-
         }
 //  std::cout << GetFrameTime() << std::endl;
 
@@ -291,5 +294,7 @@ int main() {
         window.EndDrawing();
             
     }
+    winsockErrorDesc::destroy();
+    std::cout << "test" << std::endl;
     return 0;
 }

@@ -2,7 +2,7 @@
 #define BLUETOOTH_HPP
 
 #include "btIncludes.hpp"
-#include "bthAppCxnHandler.hpp"
+#include "bthSocketHandler.hpp"
 #include "verticalScrollable.hpp"
 
 #include <vector>
@@ -229,17 +229,19 @@ class Bluetooth {
             // ___ Read from all sockets connected ___
             for (size_t i = 0; i < sizeOfVals; i++) {
                 std::cout << "#: " << std::to_string(i) << std::endl;
-                BthCxnHandler handler(socketsToScan.fd_array[i]);
-                BT_TRANSACTIONTYPE transaction = handler.getTransactionType();
-                std::cout << transaction << std::endl;
-                switch(transaction) {
-                    case BT_SOCKET_ERROR:
+                bthSocketHandler handler(socketsToScan.fd_array[i]);
+                handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
+                bt::READRES* readResult = handler.readTabletData();
+                std::cout << readResult->isReady() << std::endl;
+                std::cout << readResult->transactionType << std::endl;
+                switch(readResult->transactionType) {
+                    case bt::TRANS_SOCKET_ERROR:
                     {
-                        handler.endInteraction();
+                        handler.sendNack();
                     }
                     break;
 
-                    case BT_CLOSE_SOCKET:
+                    case bt::TRANS_CLOSE_SOCKET:
                     {
                         handler.closeSocket();
                         int socketToKill = getElement(&(this->connections), socketsToScan.fd_array[i]);
@@ -247,13 +249,13 @@ class Bluetooth {
                     }
                     break;
 
-                    case WRITE_MATCH:
+                    case bt::TRANS_WRITE_MATCH:
                     {
-                        bool success = false;
-                        std::string data = handler.readMatchFromTablet(&success);
-                        std::cerr << data << std::endl;
+                        std::vector<char> readDataVec = readResult->data.get();
+                        if (readResult->reportedSuccess) {
+                            std::string data = std::string(readDataVec.begin(), readDataVec.end());
+                            std::cerr << data << std::endl;
                         
-                        if (success) {
                             // parse data and put it into database
                             JsonParser parser(data);
                             std::vector<MATCH_DATAPOINT> vectData = parser.parse();
@@ -262,14 +264,16 @@ class Bluetooth {
                         }
                     }
                     break;
-                    case WRITE_TABLET_INFO:
+                    case bt::TRANS_WRITE_TABLET_INFO:
                     {
-                        bool success = false;
-                        std::string data = handler.readTabletInfoFromTablet(&success);
-                        std::cerr << data << std::endl;
-                        std::cerr << success << std::endl;
-                        if (success) {
-                            std::cerr << "hjghh" << std::endl;
+                        std::cout << "WRITE_INFO" << std::endl;
+                        std::vector<char> infoDataVec = readResult->data.get();
+                        std::cout << "WRITE_INFO #2: " << readResult->reportedSuccess << std::endl;
+                        if (readResult->reportedSuccess) {
+                            std::string data = std::string(infoDataVec.begin(), infoDataVec.end());
+                            std::cerr << "Tablet info successfuly gotten, displaying now:" << std::endl;
+                            std::cerr << data << std::endl;
+
                             int sockNumInVector = getElement(&(this->connections), socketsToScan.fd_array[i]);
                             std::cerr << this->thingsToDrawList.size() << " " << this->connListDrawable.getInternalVector()->size() << " " << this->connections.size() << std::endl;
                             std::cerr << &(this->thingsToDrawList.at(sockNumInVector)) << std::endl;
@@ -279,7 +283,7 @@ class Bluetooth {
                     break;
 
                     default:
-                        handler.endInteraction();
+                        handler.sendNack();
                 }
             }
         }

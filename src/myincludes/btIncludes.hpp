@@ -13,7 +13,19 @@ namespace bt {
     #include <bluetoothapis.h>
     #include <ws2bth.h>
     #include <synchapi.h>
+    
+    #include "bthSocketCallingType.hpp"
+    #include "bluetoothTransactionType.hpp"
+
+    #define BT_EXPECTED_DATA_INITIAL (sizeof(char))
+    #define BT_EXPECTED_DATA_READSIZE (sizeof(int))
+
+    #define BT_TAB_ACK_SIZE (sizeof(char) * 4)
+    #define BT_TAB_NACK_SIZE (sizeof(char) * 4)
 }
+
+//includes on timeout
+#include "btReadResult.hpp"
 
 template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
     if (val != target) {
