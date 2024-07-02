@@ -19,6 +19,7 @@
 #include "myincludes/timer.hpp"
 #include "myincludes/winsockErrorDesc.hpp"
 #include "myincludes/bthSocketHandler.hpp"
+#include "myincludes/movementAnimation.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -140,7 +141,6 @@ int main() {
 
 
     while(!window.ShouldClose()) {
-        Animation<ANIMATIONTYPE_MOVING> gaming(&btTestingScene);
         // make application fullscreen on f11 press (and set resolution)
         if (IsKeyPressed(KEY_F11)) {
             if (!window.IsFullscreen()) {

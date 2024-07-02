@@ -1,8 +1,0 @@
-#ifndef ANIMATIONTYPE_HPP
-#define ANIMATIONTYPE_HPP
-
-typedef enum {
-    ANIMATIONTYPE_MOVING
-} ANIMATIONTYPE;
-
-#endif

@@ -5,6 +5,7 @@
 #include "toastLengths.hpp"
 #include "../include/raylib-cpp.hpp"
 #include "ezText.hpp"
+#include "movementAnimation.hpp"
 #include <string>
 
 class Toast : public Drawable {
@@ -12,8 +13,9 @@ class Toast : public Drawable {
         TOASTLENGTHS length;
         std::string message;
         double setTime;
+        MovementAnimation selfAnimation;
     public:
-        Toast(std::string message, TOASTLENGTHS length) {
+        Toast(std::string message, TOASTLENGTHS length) : selfAnimation(this, raylib::Vector2(0.0f, 0.0f)) {
             this->message = message;
             this->length = length;
         }
@@ -33,13 +35,19 @@ class Toast : public Drawable {
                     this->setTime = GetTime() + 4.0;
                 break;
             }
+            this->customTransformation.y -= GetScreenHeight()/10.0;
+            std::cout << this->customTransformation.y << std::endl;
+            this->selfAnimation = MovementAnimation(this, raylib::Vector2(0.0f, 0.0f));
+            this->selfAnimation.setDuration((this->setTime - GetTime())/2.0f);
+            this->selfAnimation.start();
         }
         bool isDone() {
             return (GetTime() >= this->setTime);
         }
 
         void draw(int x, int y) override {
-            raylib::Rectangle rect(x, y, GetScreenWidth()/5.0, GetScreenHeight()/10.0);
+            this->selfAnimation.update();
+            raylib::Rectangle rect(x + this->customTransformation.x, y + this->customTransformation.y, GetScreenWidth()/5.0, GetScreenHeight()/10.0);
             EzText text(raylib::Text(GetFontDefault(), message, (rect.width/message.length())*1.4), RAYWHITE);
             raylib::Vector2 textSize = text.getSize();
             
