@@ -38,7 +38,8 @@ class Toast : public Drawable {
             this->customTransformation.y -= GetScreenHeight()/10.0;
             std::cout << this->customTransformation.y << std::endl;
             this->selfAnimation = MovementAnimation(this, raylib::Vector2(0.0f, 0.0f));
-            this->selfAnimation.setDuration((this->setTime - GetTime())/2.0f);
+            this->selfAnimation.setDuration((this->setTime - GetTime())/3.0f);
+            this->selfAnimation.setEasing(EASING_IN_SINE);
             this->selfAnimation.start();
         }
         bool isDone() {
