@@ -21,6 +21,7 @@ class Bluetooth {
         VerticalScrollable connListDrawable = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
         bt::BLUETOOTH_ADDRESS externalAddress;
         bt::BTH_ADDR localAddr;
+        std::vector<bt::READRES*> runningBtTransactions; // _WE_ are responsible for killing these
         uint8_t port;
 
         // ___ Useful (private) functions ___
@@ -201,6 +202,18 @@ class Bluetooth {
                 }
             }
         }
+        void handleRunningConnections() {
+            if (this->runningBtTransactions.size == 0) {
+                return; // nothing to do
+            }
+
+            for(int i = 0; i < this->runningBtTransactins.size; i++) {
+                bt::READRES* curr = this->runningBtTransactions.at(i);
+                if (curr->isReady()) {
+                    
+                }
+            }
+        }
         void handleReadyConnections() {
             if (this->connections.size() == 0) {
                 // nothing to do lol
@@ -231,9 +244,14 @@ class Bluetooth {
                 std::cout << "#: " << std::to_string(i) << std::endl;
                 bthSocketHandler handler(socketsToScan.fd_array[i]);
                 handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
+
                 bt::READRES* readResult = handler.readTabletData();
                 std::cout << readResult->isReady() << std::endl;
                 std::cout << readResult->transactionType << std::endl;
+
+                if (!readResult->isReady()) {
+                    // queue this socket for handling later
+                }
                 switch(readResult->transactionType) {
                     case bt::TRANS_SOCKET_ERROR:
                     {

@@ -244,6 +244,12 @@ class bthSocketHandler {
             }
             return &this->currentRead;
         }
+        bt::READRES* transferReadresOwnership() {
+            bt::READRES* orphan = (bt::READRES*)malloc(sizeof(this->currentRead));
+            memcpy(orphan, &(this->currentRead), sizeof(this->currentRead));
+            orphan->data = std::move(this->currentRead.data);
+            return orphan;
+        }
 
         bt::TRANSACTIONTYPE getTransactionType() {
             bool success;
