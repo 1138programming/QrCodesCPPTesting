@@ -8,6 +8,10 @@
 
 class DebugConsole {
     public:
+        static void print(std::string message) {
+            print(message, DBGC_DEFAULT);
+        }
+
         static void print(std::string message, DEBUGCOLORS color) {
             bt::HANDLE stdOut;
             stdOut = bt::GetStdHandle(STD_OUTPUT_HANDLE);
@@ -18,31 +22,31 @@ class DebugConsole {
             }
             else {
                 switch(color) {
-                    case DBG_RED:
+                    case DBGC_RED:
                     {
                         std::cout << "\033[31m";
                     }
                     break;
 
-                    case DBG_BLUE:
+                    case DBGC_BLUE:
                     {
                         std::cout << "\033[36m";
                     }
                     break;
 
-                    case DBG_GREEN:
+                    case DBGC_GREEN:
                     {
                         std::cout << "\033[32m";
                     }
                     break;
 
-                    case DBG_YELLOW:
+                    case DBGC_YELLOW:
                     {
                         std::cout << "\033[33m";
                     }
                     break;
 
-                    case DBG_DEFAULT_COLOR:
+                    case DBGC_DEFAULT:
                     {
                         std::cout << "\033[0m";
                     }
@@ -54,6 +58,17 @@ class DebugConsole {
                 std::cout << message << "\033[0m";
             }
         }
+
+        static void print(std::type_info& callerClass, std::string message){ 
+            std::string finalMessage = callerClass.name() + ": " + message;
+            print(finalMessage);
+        }
+
+        static void print(std::type_info& callerClass, std::string message, DEBUGCOLORS color) {
+            std::string finalMessage = callerClass.name() + ": " + message;
+            print(finalMessage, color);
+        }
+
 };
 
 #endif
