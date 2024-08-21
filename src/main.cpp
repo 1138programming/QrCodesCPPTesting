@@ -20,6 +20,7 @@
 #include "myincludes/winsockErrorDesc.hpp"
 #include "myincludes/bthSocketHandler.hpp"
 #include "myincludes/movementAnimation.hpp"
+#include "myincludes/debugConsole.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -28,11 +29,12 @@
 
 
 int main() {
-     MYSQL_RES res;
+    MYSQL_RES res;
     //  MYSQL_ROWS sqldata;
-     MYSQL_ROW row;
-     std::string resultstr;
+    MYSQL_ROW row;
+    std::string resultstr;
    
+    DebugConsole::print("Welcome to the main computer!\n", DBG_GREEN);
      
     // DrawableGraph<double, double> graph(200, 200, 400.0_spX, 400.0_spY);
 
@@ -94,7 +96,6 @@ int main() {
         scannerScreen.add(&AmplifyRed);
         pongscreen.add(&pongback);
 
-
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
         EzText teamdata (raylib::Text(spaceCadet, "Team Data:"), RAYWHITE, 12.0_spD, 0.0);
@@ -136,7 +137,6 @@ int main() {
         btTestingScene.add(&disconnectAllTabs);
         btConn.getConnList()->setDisplayPos(BOTTOMCENTERED);
         btTestingScene.add(btConn.getConnList());
-
 
 
 
