@@ -221,20 +221,15 @@ int main() {
             case DATABASE:
                  if(DB.isPressed()) {
                     auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
-                     std::cout << "hhh" << std::endl;
+                    std::cout << "hhh" << std::endl;
                     for (auto i : vector) {
                         for (std::string j : i) {
                             std::cout << j << std::endl;
                         }
                         std::cout << std::endl;
-                    }
-
-                   
-
-                    // std::cout << resultstr <<std::endl;
-                    // res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values (1,1,2,'hello', 1, 'Blue');");  
-                    
-                }    
+                    }                    
+                }
+                
                 teamdata.setText("Team Data:" + TeamBox.getText());
                 matchdata.setText("Match Data:" + MatchBox.getText());
                 if(submit.isPressed()) {
