@@ -202,9 +202,9 @@ int main() {
                 }
                 if (AmplifyRed.isPressed()) {
                     try {
-                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() +",-1,11,'true', -1, 'Red');", 0);  
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() + ",-1,11,'true', -1, 'Red');", 0);  
                         toastHandler::add(Toast("Amplify Red Started",LENGTH_NORMAL));
-                   }
+                    }
                     catch (...) {
                         toastHandler::add(Toast("error",LENGTH_NORMAL));
                     }
@@ -229,7 +229,7 @@ int main() {
                         std::cout << std::endl;
                     }                    
                 }
-                
+
                 teamdata.setText("Team Data:" + TeamBox.getText());
                 matchdata.setText("Match Data:" + MatchBox.getText());
                 if(submit.isPressed()) {
@@ -259,6 +259,7 @@ int main() {
                 window.ClearBackground(BLACK);
                 btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));               
             break;
+            
             case PONG:
                 window.BeginDrawing();
                 window.ClearBackground(BEIGE);
