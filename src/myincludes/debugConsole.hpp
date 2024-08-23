@@ -5,6 +5,7 @@
 #include "btIncludes.hpp" // just use this header for simplicity sake
 
 #include <iostream>
+#include <sstream>
 
 class DebugConsole {
     public:
@@ -59,14 +60,16 @@ class DebugConsole {
             }
         }
 
-        static void print(std::type_info& callerClass, std::string message){ 
-            std::string finalMessage = callerClass.name() + ": " + message;
-            print(finalMessage);
+        static void print(const std::type_info& callerClass, std::string message){ 
+            std::stringstream finalMessage;
+            finalMessage << std::string(callerClass.name()) << ": " << message;
+            print(finalMessage.str());
         }
 
-        static void print(std::type_info& callerClass, std::string message, DEBUGCOLORS color) {
-            std::string finalMessage = callerClass.name() + ": " + message;
-            print(finalMessage, color);
+        static void print(const std::type_info& callerClass, std::string message, DEBUGCOLORS color) {
+            std::stringstream finalMessage;
+            finalMessage << std::string(callerClass.name()) << ": " << message;
+            print(finalMessage.str(), color);
         }
 
 };

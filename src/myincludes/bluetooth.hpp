@@ -4,6 +4,7 @@
 #include "btIncludes.hpp"
 #include "bthSocketHandler.hpp"
 #include "verticalScrollable.hpp"
+#include "debugConsole.hpp"
 
 #include <vector>
 #include <iostream>

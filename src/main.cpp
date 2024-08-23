@@ -34,7 +34,7 @@ int main() {
     MYSQL_ROW row;
     std::string resultstr;
    
-    DebugConsole::print("Welcome to the main computer!\n", DBG_GREEN);
+    DebugConsole::print("Welcome to the main computer!\n", DBGC_BLUE);
      
     // DrawableGraph<double, double> graph(200, 200, 400.0_spX, 400.0_spY);
 
@@ -295,6 +295,5 @@ int main() {
             
     }
     winsockErrorDesc::destroy();
-    std::cout << "test" << std::endl;
     return 0;
 }
