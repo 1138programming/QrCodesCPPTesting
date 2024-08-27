@@ -67,7 +67,11 @@ class Bluetooth {
         // ___ Simple BT functions ___
         int initAll() {
             bt::WSADATA wsaData;
-            return bt::WSAStartup(MAKEWORD(2, 2), &wsaData);
+            int startupVal = bt::WSAStartup(MAKEWORD(2, 2), &wsaData);
+            if (startupVal == 0) {
+                DebugConsole::print("Bluetooth Successfully Initialized!\n", DBGC_GREEN);
+            }
+            return startupVal;
         }
         int cleanup() {
             return bt::WSACleanup();
@@ -240,7 +244,7 @@ class Bluetooth {
                     {
                         handler.sendNack();
                     }
-                    break;
+                    // "fall through" to TRANS_CLOSE_SOCKET, as that's what we probably want to do now.
 
                     case bt::TRANS_CLOSE_SOCKET:
                     {

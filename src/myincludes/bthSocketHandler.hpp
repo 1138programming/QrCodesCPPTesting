@@ -96,7 +96,7 @@ class bthSocketHandler {
                 size_t currentLengthRecvd = bt::recv(this->internalSocket, dataPtr, dataSizeExpected-dataRecvd, 0);
                 // graceful close 🥰
                 if (currentLengthRecvd == 0) {
-                    std::cout << "The tablet's fault" << std::endl;
+                    DebugConsole::print("BLUETOOTH SOCKET CLOSED: the tablet's fault\n", DBGC_YELLOW);
                     this->apoptosis = true;
                     success = false;
                     return nullptr;
