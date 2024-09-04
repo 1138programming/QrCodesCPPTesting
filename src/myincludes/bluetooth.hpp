@@ -37,6 +37,11 @@ class Bluetooth {
             std::vector<EzText>::iterator it = (vector->begin()+element);
             vector->erase(it);
         }
+        void removeFromCurrentConnectionsVector(std::vector<bt::READRES*>* vector, int element) {
+            std::vector<bt::READRES*>::iterator it = (vector->begin()+element);
+            vector->erase(it);
+        }
+
         int getElement(std::vector<bt::SOCKET>* vector, bt::SOCKET thingToGet) {
             for (int i = 0; i < vector->size(); i++) {
                 if (vector->at(i) == thingToGet) {
@@ -203,15 +208,57 @@ class Bluetooth {
             }
         }
         void handleRunningConnections() {
-            if (this->runningBtTransactions.size == 0) {
+            if (this->runningBtTransactions.size() == 0) {
                 return; // nothing to do
             }
 
-            for(int i = 0; i < this->runningBtTransactins.size; i++) {
+            for(int i = 0; i < this->runningBtTransactions.size(); i++) {
                 bt::READRES* curr = this->runningBtTransactions.at(i);
                 if (curr->isReady()) {
-                    
+                    handleDatabaseWrites(curr);
+                    removeFromCurrentConnectionsVector(&this->runningBtTransactions, i);
+                    free(curr); // kill the orphan
                 }
+            }
+        }
+        void handleDatabaseWrites(bt::READRES* connection) {
+            switch(connection->transactionType) {
+                case bt::TRANS_WRITE_MATCH:
+                {
+                    std::vector<char> readDataVec = connection->data.get();
+                    if (connection->reportedSuccess) {
+                        std::string data = std::string(readDataVec.begin(), readDataVec.end());
+                        std::cerr << data << std::endl;
+                    
+                        // parse data and put it into database
+                        JsonParser parser(data);
+                        std::vector<MATCH_DATAPOINT> vectData = parser.parse();
+                        DatabaseMan databaseCall(vectData);
+                        databaseCall.maketh();
+                    }
+                }
+                break;
+
+                case bt::TRANS_WRITE_TABLET_INFO:
+                {
+                    std::cout << "WRITE_INFO" << std::endl;
+                    std::vector<char> infoDataVec = connection->data.get();
+                    std::cout << "WRITE_INFO #2: " << connection->reportedSuccess << std::endl;
+                    if (connection->reportedSuccess) {
+                        std::string data = std::string(infoDataVec.begin(), infoDataVec.end());
+                        std::cerr << "Tablet info successfuly gotten, displaying now:" << std::endl;
+                        std::cerr << data << std::endl;
+
+                        int sockNumInVector = getElement(&(this->connections), connection->parentSocket);
+                        std::cerr << this->thingsToDrawList.size() << " " << this->connListDrawable.getInternalVector()->size() << " " << this->connections.size() << std::endl;
+                        std::cerr << &(this->thingsToDrawList.at(sockNumInVector)) << std::endl;
+                        ((EzText*)(this->connListDrawable.getInternalVector()->at(sockNumInVector)))->setText(data);
+                    }
+                }
+                break;
+
+                default:
+                    std::cerr << "a" << std::endl;
             }
         }
         void handleReadyConnections() {
@@ -251,6 +298,7 @@ class Bluetooth {
 
                 if (!readResult->isReady()) {
                     // queue this socket for handling later
+                    runningBtTransactions.push_back(handler.transferReadresOwnership());
                 }
                 switch(readResult->transactionType) {
                     case bt::TRANS_SOCKET_ERROR:
@@ -269,34 +317,12 @@ class Bluetooth {
 
                     case bt::TRANS_WRITE_MATCH:
                     {
-                        std::vector<char> readDataVec = readResult->data.get();
-                        if (readResult->reportedSuccess) {
-                            std::string data = std::string(readDataVec.begin(), readDataVec.end());
-                            std::cerr << data << std::endl;
-                        
-                            // parse data and put it into database
-                            JsonParser parser(data);
-                            std::vector<MATCH_DATAPOINT> vectData = parser.parse();
-                            DatabaseMan databaseCall(vectData);
-                            databaseCall.maketh();
-                        }
+                        handleDatabaseWrites(readResult);
                     }
                     break;
                     case bt::TRANS_WRITE_TABLET_INFO:
                     {
-                        std::cout << "WRITE_INFO" << std::endl;
-                        std::vector<char> infoDataVec = readResult->data.get();
-                        std::cout << "WRITE_INFO #2: " << readResult->reportedSuccess << std::endl;
-                        if (readResult->reportedSuccess) {
-                            std::string data = std::string(infoDataVec.begin(), infoDataVec.end());
-                            std::cerr << "Tablet info successfuly gotten, displaying now:" << std::endl;
-                            std::cerr << data << std::endl;
-
-                            int sockNumInVector = getElement(&(this->connections), socketsToScan.fd_array[i]);
-                            std::cerr << this->thingsToDrawList.size() << " " << this->connListDrawable.getInternalVector()->size() << " " << this->connections.size() << std::endl;
-                            std::cerr << &(this->thingsToDrawList.at(sockNumInVector)) << std::endl;
-                            ((EzText*)(this->connListDrawable.getInternalVector()->at(sockNumInVector)))->setText(data);
-                        }
+                        handleDatabaseWrites(readResult);
                     }
                     break;
 

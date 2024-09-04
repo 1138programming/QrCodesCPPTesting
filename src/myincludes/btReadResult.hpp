@@ -8,6 +8,7 @@
 
 namespace bt {
     typedef struct {
+        bt::SOCKET parentSocket; // the socket that produced this result
         bt::TRANSACTIONTYPE transactionType;
         std::future<std::vector<char>> data;
         bool reportedSuccess;
