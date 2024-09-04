@@ -202,6 +202,8 @@ class bthSocketHandler {
          * @brief starts internal read operation with previously defined policy
         */
         bt::READRES* readTabletData() {
+            this->currentRead.parentSocket = this->internalSocket;
+
             // check to make sure they didn't call this function accidentally
             if (!this->readyToRead()) {
                 std::cerr << "Tablet not ready to read" << std::endl;
@@ -243,6 +245,15 @@ class bthSocketHandler {
                     this->currentRead.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
             }
             return &this->currentRead;
+        }
+        /***
+            @warning IF YOU WANT TO OWN THE CHILD, *YOU* MUST KILL IT PROPERLY (you get memory ownership)
+        */
+        bt::READRES* transferReadresOwnership() {
+            bt::READRES* orphan = (bt::READRES*)malloc(sizeof(this->currentRead));
+            memcpy(orphan, &(this->currentRead), sizeof(this->currentRead)); // pull a fast one on c++ and don't tell them we moved it 🤫 (TODO: FIX)
+            //orphan->data = std::move(this->currentRead.data); // make sure cpp does cpp things
+            return orphan;
         }
 
         bt::TRANSACTIONTYPE getTransactionType() {
