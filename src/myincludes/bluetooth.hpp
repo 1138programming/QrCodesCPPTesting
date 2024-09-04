@@ -263,7 +263,7 @@ class Bluetooth {
                 break;
 
                 default:
-                    std::cerr << "a" << std::endl;
+                    DebugConsole::print("ERROR: Something went seriously wrong. Tablet is probably screwed (no valid write transaction sent)\n", DBGC_RED);
             }
         }
         void handleReadyConnections() {
