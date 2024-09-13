@@ -223,7 +223,7 @@ class bthSocketHandler {
             }
 
             switch(this->callType) {
-                case bt::CALLTYPE_ASYNC:
+                case bt::CALLTYPE_ASYNCHRONOUS:
                 {
                     this->currentRead.data = std::async(std::launch::async, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
                 }
