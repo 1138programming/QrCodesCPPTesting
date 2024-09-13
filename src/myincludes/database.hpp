@@ -55,8 +55,7 @@ class Database {
                     DebugConsole::print(std::string("Error result is zero: ") + mysql_error(&mysql) + "\n", DBGC_RED);
                 }
                 else {
-                    int i, j;
-                    i = 0;
+                    int i = 0;
 
                     std::vector<std::vector<std::string>> vector;
 
