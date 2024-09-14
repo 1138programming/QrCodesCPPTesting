@@ -41,7 +41,7 @@ template<typename T> void checkSuccessWinsock(T val, T target, std::string error
 #undef FIONBIO
 #define FIONBIO _IOW('f', 126, bt::u_long)
 #undef INVALID_SOCKET
-#define INVALID_SOCKET (bt::SOCKET)(~0)
+#define INVALID_SOCKET	((bt::SOCKET)(~0))
 #undef STD_OUTPUT_HANDLE
 #define STD_OUTPUT_HANDLE ((bt::DWORD)-11)
 

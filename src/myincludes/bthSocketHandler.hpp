@@ -3,10 +3,11 @@
 
 #include "btIncludes.hpp"
 #include <future>
+#include <algorithm>
 
 class bthSocketHandler {
     private:
-        bt::SOCKET internalSocket;
+        bthSocketWrapper internalSocketMgr;
         bool apoptosis; // fatal socket error?
         int errorCode; // error code if error
         bt::SOCKETCALLTYPE callType;
@@ -49,8 +50,8 @@ class bthSocketHandler {
             return std::async(std::launch::deferred, returnEmptyVector, this);
         }
     public:
-        bthSocketHandler(bt::SOCKET socket) {
-            this->internalSocket = socket;
+        bthSocketHandler(bthSocketWrapper socket) {
+            this->internalSocketMgr = socket;
             this->apoptosis = false;
             this->errorCode = -1;
             this->callType = bt::CALLTYPE_DEFAULT;
@@ -93,7 +94,7 @@ class bthSocketHandler {
 
             size_t dataRecvd = 0;
             while (dataRecvd < dataSizeExpected) {
-                size_t currentLengthRecvd = bt::recv(this->internalSocket, dataPtr, dataSizeExpected-dataRecvd, 0);
+                size_t currentLengthRecvd = bt::recv(this->internalSocketMgr.socket, dataPtr, dataSizeExpected-dataRecvd, 0);
                 // graceful close 🥰
                 if (currentLengthRecvd == 0) {
                     DebugConsole::print("BLUETOOTH SOCKET CLOSED: the tablet's fault\n", DBGC_YELLOW);
@@ -127,7 +128,7 @@ class bthSocketHandler {
             char* currentData = data;
             size_t sentData = 0;
             while (sentData < dataLen) {
-                size_t lenDataSent = bt::send(this->internalSocket, currentData, dataLen-sentData, 0);
+                size_t lenDataSent = bt::send(this->internalSocketMgr.socket, currentData, dataLen-sentData, 0);
                 if (lenDataSent == SOCKET_ERROR) {
                     return false;
                 }
@@ -184,7 +185,7 @@ class bthSocketHandler {
             bt::fd_set socketsToScan = {0};
                 memset(&socketsToScan, 0, sizeof(bt::fd_set)); // ensures struct is zero (should be garuenteed but yk)
 
-            socketsToScan.fd_array[0] = this->internalSocket; // set only 1 element, as we are scanning for 1 socket
+            socketsToScan.fd_array[0] = this->internalSocketMgr.socket; // set only 1 element, as we are scanning for 1 socket
                 socketsToScan.fd_count = 1;
             
             size_t sockState = bt::select(0, &socketsToScan, NULL, NULL, &disconnectTime); // scan for socket reading op
@@ -202,7 +203,7 @@ class bthSocketHandler {
          * @brief starts internal read operation with previously defined policy
         */
         bt::READRES* readTabletData() {
-            this->currentRead.parentSocket = this->internalSocket;
+            this->currentRead.parentSocket = this->internalSocketMgr;
 
             // check to make sure they didn't call this function accidentally
             if (!this->readyToRead()) {
@@ -326,7 +327,7 @@ class bthSocketHandler {
         }
 
         void closeSocket() {
-            checkSuccessWinsock<int>(bt::closesocket(this->internalSocket), 0, "failed to propely close socket (minor memory leak)");
+            checkSuccessWinsock<int>(bt::closesocket(this->internalSocketMgr.socket), 0, "failed to propely close socket (minor memory leak)");
         }
 
 

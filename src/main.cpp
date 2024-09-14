@@ -1,4 +1,3 @@
-
 #include "include/raylib-cpp.hpp"
 #include "../myincludes/qrcodeScanner.hpp"
 #include "myincludes/allincludes.hpp"
@@ -25,7 +24,6 @@
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
-
 
 
 int main() {

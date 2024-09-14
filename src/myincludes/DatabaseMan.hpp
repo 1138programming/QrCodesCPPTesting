@@ -19,40 +19,30 @@ class DatabaseMan {
         std::vector<MATCH_DATAPOINT> datapoints;
         MATCH_DATAPOINT temp;
         std::string resultstr;
-        
-        
+
     public:
-   
-    DatabaseMan(std::vector<MATCH_DATAPOINT> datapointsn) { 
-        this->datapoints = datapointsn;
-     
+        DatabaseMan(std::vector<MATCH_DATAPOINT> datapointsn) {
+            DatabaseMan(datapointsn, "1138scapp");
+        }
+        DatabaseMan(std::vector<MATCH_DATAPOINT> datapointsn, std::string db) : database(db) { 
+            this->datapoints = datapointsn;
+        }
 
-    }
-
-  
-
-
-    void maketh() {
-        for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
-            if (i.base() != NULL) {
-                temp = *i.base();
-                std::cout << "working" <<std::endl;
-                
-                // std::cout << "insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");" << std::endl;
-                auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
-                
+        void maketh() {
+            for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
+                if (i.base() != NULL) {
+                    temp = *i.base();
+                    std::cout << "working" <<std::endl;
+                    
+                    // std::cout << "insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");" << std::endl;
+                    auto _notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
+                }
+                else {
+                    std::cerr << " it doesn't work, it is null" << std::endl;
+                }   
             }
-            else {
-                std::cerr << " it doesn't work, it is null" << std::endl;
-              }   
         }
-         
-  
 
-    }
-
-    ~DatabaseMan() {
-            
-        }
+        ~DatabaseMan() { }
 };
 #endif

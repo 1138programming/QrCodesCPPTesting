@@ -5,6 +5,7 @@
 #include "bthSocketHandler.hpp"
 #include "verticalScrollable.hpp"
 #include "debugConsole.hpp"
+#include "bthSocketWrapper.hpp"
 
 #include <vector>
 #include <iostream>
@@ -17,7 +18,7 @@ static const bt::GUID MY_GUID = {0x00001101, 0x0000, 0x1000, {0x80, 0x00, 0x00, 
 class Bluetooth {
     private:
         bt::SOCKET listener;
-        std::vector<bt::SOCKET> connections = std::vector<bt::SOCKET>();
+        std::vector<bthSocketWrapper> connections = std::vector<bthSocketWrapper>();
         std::vector<EzText> thingsToDrawList = std::vector<EzText>();
         VerticalScrollable connListDrawable = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
         bt::BLUETOOTH_ADDRESS externalAddress;
@@ -26,8 +27,8 @@ class Bluetooth {
         uint8_t port;
 
         // ___ Useful (private) functions ___
-        void removeFromSocketVector(std::vector<bt::SOCKET>* vector, int element) {
-            std::vector<bt::SOCKET>::iterator it = (vector->begin() + element);
+        void removeFromSocketVector(std::vector<bthSocketWrapper>* vector, int element) {
+            std::vector<bthSocketWrapper>::iterator it = (vector->begin() + element);
             vector->erase(it);
         }
         void removeFromDrawablePtrVector(std::vector<Drawable*>* vector, int element) {
@@ -43,9 +44,9 @@ class Bluetooth {
             vector->erase(it);
         }
 
-        int getElement(std::vector<bt::SOCKET>* vector, bt::SOCKET thingToGet) {
+        int getElement(std::vector<bthSocketWrapper>* vector, bthSocketWrapper thingToGet) {
             for (int i = 0; i < vector->size(); i++) {
-                if (vector->at(i) == thingToGet) {
+                if (vector->at(i).socket == thingToGet.socket) {
                     return i;
                 }
             }
@@ -64,7 +65,7 @@ class Bluetooth {
                     output = (char*)malloc(sizeof(bt::DWORD)); // will be ignored
                 }
                 int outputSize = sizeof(bt::DWORD);
-                if (bt::getsockopt(this->connections.at(i), SOL_SOCKET, SO_CONNECT_TIME, output, &outputSize) == 10038) {
+                if (bt::getsockopt(this->connections.at(i).socket, SOL_SOCKET, SO_CONNECT_TIME, output, &outputSize) == 10038) {
                     killConnectionAndDisplay(i);
                 }
             }
@@ -202,7 +203,7 @@ class Bluetooth {
                 // set non-blocking mode true
                 bt::ULONG mode = 1;
                 checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking");
-                this->connections.push_back(sock);
+                this->connections.push_back(bthSocketWrapper(sock));
                 this->thingsToDrawList.push_back(memAdd);
                 (*this->connListDrawable.getInternalVector()) = std::vector<Drawable*>();
                 for (int i = 0; i < this->thingsToDrawList.size(); i++) {
@@ -239,6 +240,19 @@ class Bluetooth {
                         JsonParser parser(data);
                         std::vector<MATCH_DATAPOINT> vectData = parser.parse();
                         DatabaseMan databaseCall(vectData);
+                        switch (connection->parentSocket.databaseTarget) {
+                            case DBSEL_FRC:
+                            {
+                                databaseCall = DatabaseMan(vectData, "1138scapp");
+                            }
+                            break;
+
+                            case DBSEL_VEX:
+                            {
+                                databaseCall = DatabaseMan(vectData, "1138vexapp");
+                            }
+                            break;
+                        }
                         databaseCall.maketh();
                     }
                 }
@@ -279,7 +293,7 @@ class Bluetooth {
             bt::fd_set socketsToScan = {0};
                 memset(&socketsToScan, 0, sizeof(bt::fd_set)); // not necessary prob.
                 for (size_t i = 0; i < this->connections.size(); i++) {
-                    socketsToScan.fd_array[i] = this->connections.at(i); //add all my sockets to  the arr
+                    socketsToScan.fd_array[i] = this->connections.at(i).socket; //add all my sockets to  the arr
                 }
                 socketsToScan.fd_count = this->connections.size(); // set the size to # of sockets inputted
             // technically this returns the # of total sockets, but as we are only querying once, it should be fine.
@@ -338,9 +352,9 @@ class Bluetooth {
         }
         void disconnectAll() {
             for (int i = 0; i < this->connections.size(); i++) {
-                checkSuccessWinsock<int>(bt::closesocket(this->connections.at(i)), 0, "failed to propely close socket (memory leak)");
+                checkSuccessWinsock<int>(bt::closesocket(this->connections.at(i).socket), 0, "failed to propely close socket (memory leak)");
             }
-            this->connections = std::vector<bt::SOCKET>();
+            this->connections = std::vector<bthSocketWrapper>();
             (*(this->connListDrawable.getInternalVector())) = std::vector<Drawable*>();
             this->thingsToDrawList = std::vector<EzText>();
         }

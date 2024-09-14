@@ -2,16 +2,18 @@
 #define BTREADRES_HPP
 
 #include "btIncludes.hpp"
+#include "bthSocketWrapper.hpp"
 #include <vector>
 #include <future>
 #include <chrono>
 
 namespace bt {
     typedef struct {
-        bt::SOCKET parentSocket; // the socket that produced this result
+        bthSocketWrapper parentSocket; // the socket that produced this result
         bt::TRANSACTIONTYPE transactionType;
         std::future<std::vector<char>> data;
         bool reportedSuccess;
+
         bool isReady() {
             
             switch(data.wait_for(std::chrono::seconds(0))) {

@@ -1,0 +1,9 @@
+#ifndef SOCKETDBSELECTION_HPP
+#define SOCKETDBSELECTION_HPP
+
+typedef enum {
+    DBSEL_FRC,
+    DBSEL_VEX
+} SOCKETDBSELECTION;
+
+#endif
