@@ -5,7 +5,8 @@ enum SCENES {
     SCANNING,
     DATABASE,
     BLUETOOTH,
-    PONG
+    PONG,
+    DVDScene
 };
 
 #endif

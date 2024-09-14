@@ -10,6 +10,7 @@
 #include "myincludes/toastHandler.hpp"
 #include "myincludes/texture.hpp"
 #include "myincludes/pong.hpp"
+#include "myincludes/DVD.hpp"
 #include "myincludes/database.hpp"
 #include "myincludes/graph.hpp"
 #include "myincludes/bluetooth.hpp"
@@ -44,6 +45,7 @@ int main() {
         window.SetConfigFlags(FLAG_MSAA_4X_HINT);
         window.SetIcon(raylib::Image("resources/eagleEngineeringLogoLowRes.png"));
     Pong pongame = Pong(&window);
+    DVD logo = DVD(&window);
     window.SetTargetFPS(60);
 
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
@@ -79,8 +81,9 @@ int main() {
         Button DB(200.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "BD"), RAYWHITE, 18.0_spD, 0.0));
         Button AmplifyBlue(300.0_spX,100.0_spY, RAYWHITE, BLUE, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyBlue"), RAYWHITE, 12.0_spD, 0.0));
         Button AmplifyRed(300.0_spX,100.0_spY, RAYWHITE, RED, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyRed"), RAYWHITE, 12.0_spD, 0.0));
-        Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
-        Button pongback(100.0, 100.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
+        Button pong(10.0_spX, 10.0_spY, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
+        Button pongback(100.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
+        Button DVDButton(100.0_spX, 500.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "DVD"), RAYWHITE, 10.0_spD, 0.0));
         goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
@@ -95,6 +98,8 @@ int main() {
         scannerScreen.add(&AmplifyBlue);
         scannerScreen.add(&AmplifyRed);
         pongscreen.add(&pongback);
+        pongscreen.add(&DVDButton);
+        
 
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
@@ -277,10 +282,32 @@ int main() {
                     databaseTab.enable();
                     bluetoothTab.disable();
                 }
+                 if (DVDButton.isPressed()) {
+                    currentScene = DVDScene;
+
+                  
+                }
                 pongscreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
             break;
+            case DVDScene:
+              window.BeginDrawing();
+                window.ClearBackground(BEIGE);
+                logo.update();
+                DrawCircle(logo.Logopos.x,logo.Logopos.y,20.0f,BLACK);
+              
+                mainTab.disable();
+                databaseTab.disable();
+                bluetoothTab.disable();
+                if (pongback.isPressed()) {
+                    currentScene = BLUETOOTH;
+
+                    mainTab.enable();
+                    databaseTab.enable();
+                    bluetoothTab.disable();
+                }
+                pongscreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
         }
-        if (currentScene != PONG) {
+        if (currentScene != DVDScene) {
             tabs.updateAndDraw(raylib::Rectangle(0, 0, GetScreenWidth(), GetScreenHeight() * 0.15));
         }
 //  std::cout << GetFrameTime() << std::endl;

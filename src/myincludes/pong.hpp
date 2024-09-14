@@ -78,9 +78,9 @@ class Pong {
             // key = GetKeyPressed();
         // }
         bool xcol, ycol, pcol;
-        xcol = Ballpos.x >= window->GetWidth() -5 ||
+        xcol = Ballpos.x >= window->GetWidth() -10 ||
         Ballpos.x <= 5;
-        ycol = Ballpos.y >= window->GetHeight()-5 || Ballpos.y <= 5;
+        ycol = Ballpos.y >= window->GetHeight()-10 || Ballpos.y <= 5;
         pcol = CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle1pos.x,Paddle1pos.y,30.0f,90.0f)) || CheckCollisionPointRec(Ballpos, raylib::Rectangle(Paddle2pos.x,Paddle2pos.y,30.0f,90.0f));
         if (!colast) {
             if (pcol && ycol) {
