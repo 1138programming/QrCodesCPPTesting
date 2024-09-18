@@ -203,7 +203,7 @@ class bthSocketHandler {
          * @brief starts internal read operation with previously defined policy
         */
         bt::READRES* readTabletData() {
-            this->currentRead.parentSocket = this->internalSocketMgr;
+            this->currentRead->parentSocket = this->internalSocketMgr;
 
             // check to make sure they didn't call this function accidentally
             if (!this->readyToRead()) {

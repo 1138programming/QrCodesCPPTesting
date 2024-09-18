@@ -221,13 +221,13 @@ class Bluetooth {
             for(int i = 0; i < this->runningBtTransactions.size(); i++) {
                 bt::READRES* curr = this->runningBtTransactions.at(i);
                 if (curr->isReady()) {
-                    handleDatabaseWrites(curr);
+                    handleBTAsyncWrites(curr);
                     removeFromCurrentConnectionsVector(&this->runningBtTransactions, i);
                     free(curr); // kill the orphan
                 }
             }
         }
-        void handleDatabaseWrites(bt::READRES* connection) {
+        void handleBTAsyncWrites(bt::READRES* connection) {
             switch(connection->transactionType) {
                 case bt::TRANS_WRITE_MATCH:
                 {
@@ -240,7 +240,7 @@ class Bluetooth {
                         JsonParser parser(data);
                         std::vector<MATCH_DATAPOINT> vectData = parser.parse();
                         DatabaseMan databaseCall(vectData);
-                        switch (connection->parentSocket.databaseTarget) {
+                        switch (connection->parentSocket->databaseTarget) {
                             case DBSEL_FRC:
                             {
                                 databaseCall = DatabaseMan(vectData, "1138scapp");
@@ -268,11 +268,17 @@ class Bluetooth {
                         std::cerr << "Tablet info successfuly gotten, displaying now:" << std::endl;
                         std::cerr << data << std::endl;
 
-                        int sockNumInVector = getElement(&(this->connections), connection->parentSocket);
+                        int sockNumInVector = getElement(&(this->connections), *connection->parentSocket);
                         std::cerr << this->thingsToDrawList.size() << " " << this->connListDrawable.getInternalVector()->size() << " " << this->connections.size() << std::endl;
                         std::cerr << &(this->thingsToDrawList.at(sockNumInVector)) << std::endl;
                         ((EzText*)(this->connListDrawable.getInternalVector()->at(sockNumInVector)))->setText(data);
                     }
+                }
+                break;
+
+                case bt::TRANS_WRITE_DATABASE_TYPE:
+                {
+                    connection->parentSocket->databaseTarget = (SOCKETDBSELECTION)connection->data.get().at(0);
                 }
                 break;
 
@@ -309,7 +315,7 @@ class Bluetooth {
             for (size_t i = 0; i < sizeOfVals; i++) {
                 std::cout << "#: " << std::to_string(i) << std::endl;
                 bthSocketHandler handler(socketsToScan.fd_array[i]);
-                handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
+                handler.setLaunchPolicy(bt::CALLTYPE_DEFAULT);
 
                 bt::READRES* readResult = handler.readTabletData();
                 std::cout << readResult->isReady() << std::endl;
@@ -334,14 +340,20 @@ class Bluetooth {
                     }
                     break;
 
+                    case bt::TRANS_WRITE_DATABASE_TYPE:
+                    {
+                        handleBTAsyncWrites(readResult);
+                    }
+                    break;
+
                     case bt::TRANS_WRITE_MATCH:
                     {
-                        handleDatabaseWrites(readResult);
+                        handleBTAsyncWrites(readResult);
                     }
                     break;
                     case bt::TRANS_WRITE_TABLET_INFO:
                     {
-                        handleDatabaseWrites(readResult);
+                        handleBTAsyncWrites(readResult);
                     }
                     break;
 
