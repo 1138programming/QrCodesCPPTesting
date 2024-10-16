@@ -24,6 +24,9 @@ class Bluetooth {
         bt::BTH_ADDR localAddr;
         std::vector<bt::READRES*> runningBtTransactions; // _WE_ are responsible for killing these
         uint8_t port;
+        
+        bt::HANDLE btRadio; // init/shutdown vars
+        bt::HBLUETOOTH_RADIO_FIND btFindingVal;
 
         // ___ Useful (private) functions ___
         void removeFromSocketVector(std::vector<bt::SOCKET>* vector, int element) {
@@ -76,10 +79,23 @@ class Bluetooth {
             int startupVal = bt::WSAStartup(MAKEWORD(2, 2), &wsaData);
             if (startupVal == 0) {
                 DebugConsole::print("Bluetooth Successfully Initialized!\n", DBGC_GREEN);
+
+                // __ Set radio to connectable __
+                bt::BLUETOOTH_FIND_RADIO_PARAMS btRadioSearchVer = { 0 };
+                    btRadioSearchVer.dwSize = sizeof(bt::BLUETOOTH_FIND_RADIO_PARAMS); // probably uses size to determine version internally
+
+                this->btFindingVal = BluetoothFindFirstRadio(&btRadioSearchVer, &this->btRadio);
+                if (bt::BluetoothEnableDiscovery(this->btRadio, true) == false) {
+                    DebugConsole::print("Bluetooth failed to enable discovery :C\n", DBGC_RED);
+                }
+                if (bt::BluetoothEnableIncomingConnections(this->btRadio, true) == false) {
+                    DebugConsole::print("Bluetooth failed to enable connections :C\n", DBGC_RED);
+                }
             }
             return startupVal;
         }
         int cleanup() {
+            bt::BluetoothFindRadioClose(this->btFindingVal);
             return bt::WSACleanup();
         }
 
@@ -171,9 +187,9 @@ class Bluetooth {
             // create struct used to register us as a BTH thingy
             bt::WSAQUERYSETA wsaQuery = {0};
                 wsaQuery.dwSize = sizeof(bt::WSAQUERYSETA);
-                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str();
+                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)L"BT Service";
                 wsaQuery.lpServiceClassId = (bt::LPGUID)&MY_GUID; // p sure this one isn't ignored- how we're found + what we're being registered as.
-                wsaQuery.lpszComment = (bt::LPSTR)L"Example Service instance registered in the directory service through RnR";
+                wsaQuery.lpszComment = (bt::LPSTR)L"bt";
                 wsaQuery.dwNameSpace = NS_BTH;
                 wsaQuery.dwNumberOfProtocols = 0; // used for an optional arg (don't think it's applicable for BT)
                 wsaQuery.dwNumberOfCsAddrs = 1; // IG always 1 for BT 🤷‍♂️
