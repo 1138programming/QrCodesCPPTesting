@@ -154,6 +154,10 @@ class Bluetooth {
             // set this data in-class
             this->localAddr = localSocketName.btAddr;
             this->port = localSocketName.port;
+            if (this->port != 3) {
+                toastHandler::add(Toast("WRONG PORT- CHECK CONSOLE", LENGTH_LONG));
+                DebugConsole::print("Incorrect port- ensure there not another instance of the app open or tell the scouts to input the correct port in the menu. Make sure they do not change the MAC and DO NOT IGNORE THIS MESSAGE.", DBGC_RED);
+            }
 
             //___This code advertises the BT socket to the world___
             //I do not really understand it, so dont ask (also it's very lengthy.)
