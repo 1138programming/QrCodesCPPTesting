@@ -25,6 +25,9 @@ class Bluetooth {
         std::vector<bt::READRES*> runningBtTransactions; // _WE_ are responsible for killing these
         uint8_t port;
 
+        bt::HANDLE btRadio; // init/shutdown vars
+        bt::HBLUETOOTH_RADIO_FIND btFindingVal;
+
         // ___ Useful (private) functions ___
         void removeFromSocketVector(std::vector<bt::SOCKET>* vector, int element) {
             std::vector<bt::SOCKET>::iterator it = (vector->begin() + element);
@@ -128,6 +131,22 @@ class Bluetooth {
         }
 
         // ___ Connection functions ___
+        void makeDiscoverable() {
+            bt::BLUETOOTH_FIND_RADIO_PARAMS radioParams;
+                radioParams.dwSize = sizeof(bt::BLUETOOTH_FIND_RADIO_PARAMS);
+            
+            this->btFindingVal = bt::BluetoothFindFirstRadio(&radioParams, &this->btRadio);
+
+            if (bt::BluetoothEnableDiscovery(this->btRadio, true)) {
+                DebugConsole::print("Enabled discoverabilitiy\n", DBGC_BLUE);
+            }
+            else {
+                DebugConsole::print("Failed to enable discoverability", DBGC_RED);
+            }
+
+            bt::CloseHandle(this->btRadio);
+            bt::BluetoothFindRadioClose(this->btFindingVal);
+        }
         void initAccept() {
             // ___init a windows socket in (normal) bluetooth mode___
             this->listener = bt::socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
@@ -156,7 +175,7 @@ class Bluetooth {
             this->port = localSocketName.port;
             if (this->port != 3) {
                 toastHandler::add(Toast("WRONG PORT- CHECK CONSOLE", LENGTH_LONG));
-                DebugConsole::print("Incorrect port- ensure there not another instance of the app open or tell the scouts to input the correct port in the menu. Make sure they do not change the MAC and DO NOT IGNORE THIS MESSAGE.", DBGC_RED);
+                DebugConsole::print("Incorrect port- ensure there not another instance of the app open or tell the scouts to input the correct port in the menu. Make sure they do not change the MAC and DO NOT IGNORE THIS MESSAGE.\n", DBGC_RED);
             }
 
             //___This code advertises the BT socket to the world___
@@ -183,7 +202,7 @@ class Bluetooth {
                 wsaQuery.dwNumberOfCsAddrs = 1; // IG always 1 for BT 🤷‍♂️
                 wsaQuery.lpcsaBuffer = wsaQueryInfo;
             // function to actually register us
-            checkSuccessWinsock<int>(bt::WSASetServiceA(&wsaQuery, bt::RNRSERVICE_REGISTER, 0), 0, "Failed to register port to UUID");
+            checkSuccessWinsock<int>(bt::WSASetServiceA(&wsaQuery, bt::RNRSERVICE_REGISTER, 0), 0, "Failed to register port to UUID (SDP registering)");
 
             // ___set up port to listen for connection___
             checkSuccessWinsock<int>(bt::listen(this->listener, 8), 0, "Failed to set up port to listen"); // 8 reccomended for BTH
@@ -197,6 +216,8 @@ class Bluetooth {
 
             // ___free pointers we alloc()'d___
             free(wsaQueryInfo);
+
+            makeDiscoverable(); // make ourselves discoverable!!!!! :DDDD
         }
         void updateConnections() {
             bt::SOCKET sock = bt::accept(this->listener, nullptr, nullptr); // get no data abt. connection
