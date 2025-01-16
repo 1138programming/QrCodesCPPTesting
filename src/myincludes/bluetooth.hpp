@@ -131,21 +131,29 @@ class Bluetooth {
         }
 
         // ___ Connection functions ___
-        void makeDiscoverable() {
+        void initRadioHandles() {
             bt::BLUETOOTH_FIND_RADIO_PARAMS radioParams;
                 radioParams.dwSize = sizeof(bt::BLUETOOTH_FIND_RADIO_PARAMS);
-            
-            this->btFindingVal = bt::BluetoothFindFirstRadio(&radioParams, &this->btRadio);
 
+            this->btFindingVal = bt::BluetoothFindFirstRadio(&radioParams, &this->btRadio);
+            if (this->btFindingVal == NULL) {
+                DebugConsole::print("ERROR: no valid bluetooth radio found!", DBGC_RED);
+            }
+        }
+        void freeRadioHandles() {
+            bt::CloseHandle(this->btRadio);
+            bt::BluetoothFindRadioClose(this->btFindingVal);
+        }
+        void makeDiscoverable() {
+            initRadioHandles();
+            
             if (bt::BluetoothEnableDiscovery(this->btRadio, true)) {
                 DebugConsole::print("Enabled discoverabilitiy\n", DBGC_BLUE);
             }
             else {
                 DebugConsole::print("Failed to enable discoverability", DBGC_RED);
             }
-
-            bt::CloseHandle(this->btRadio);
-            bt::BluetoothFindRadioClose(this->btFindingVal);
+            freeRadioHandles();
         }
         void initAccept() {
             // ___init a windows socket in (normal) bluetooth mode___
