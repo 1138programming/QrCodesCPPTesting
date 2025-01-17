@@ -148,10 +148,12 @@ class Bluetooth {
             initRadioHandles();
             
             if (bt::BluetoothEnableDiscovery(this->btRadio, true)) {
-                DebugConsole::print("Enabled discoverabilitiy\n", DBGC_BLUE);
+                std::string hostName;
+                    getHostNameStr(&hostName);
+                DebugConsole::print(std::string("Enabled discoverabilitiy- Host Name: ") + hostName + std::string("\n"), DBGC_BLUE);
             }
             else {
-                DebugConsole::print("Failed to enable discoverability", DBGC_RED);
+                DebugConsole::print("Failed to enable discoverability\n", DBGC_RED);
             }
             freeRadioHandles();
         }
