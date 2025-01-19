@@ -20,13 +20,13 @@ class Database {
             if(mysql_init(&mysql) == NULL) { 
                 DebugConsole::print("ERROR: Database failed to initialize. Check that you have it installed?\n", DBGC_RED);
                 mysql_close(&mysql);
-                toastHandler::add(Toast("fuck you",LENGTH_NORMAL));
+                toastHandler::add(Toast("fuck you", LENGTH_NORMAL));
             } 
 
             if (!mysql_real_connect(&mysql, "localhost", "root", "1138", "1138scapp", 0, NULL, 0)) {
                 DebugConsole::print(std::string("Error connecting to Server: ") + mysql_error(&mysql) + "\n", DBGC_RED);
                 mysql_close(&mysql);
-                toastHandler::add(Toast("fuck you",LENGTH_NORMAL));
+                toastHandler::add(Toast("fuck you", LENGTH_NORMAL));
             }; 
 
             DebugConsole::print("DB Connected!\n", DBGC_GREEN);

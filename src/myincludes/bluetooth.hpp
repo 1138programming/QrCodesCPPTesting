@@ -193,9 +193,9 @@ class Bluetooth {
             // create an info struct about the port(?)
             bt::LPCSADDR_INFO wsaQueryInfo = (bt::CSADDR_INFO*)calloc(1, sizeof(bt::CSADDR_INFO)); // it is a pointer, so we have to alloc() the memory
                 wsaQueryInfo->LocalAddr.iSockaddrLength = sizeof(bt::SOCKADDR_BTH);
-                wsaQueryInfo->LocalAddr.lpSockaddr = (bt::LPSOCKADDR)&listenerAddr;
+                wsaQueryInfo->LocalAddr.lpSockaddr = (bt::LPSOCKADDR)&localSocketName;
                 wsaQueryInfo->RemoteAddr.iSockaddrLength = sizeof(bt::SOCKADDR_BTH);
-                wsaQueryInfo->RemoteAddr.lpSockaddr = (bt::LPSOCKADDR)&listenerAddr;
+                wsaQueryInfo->RemoteAddr.lpSockaddr = (bt::LPSOCKADDR)&localSocketName;
                 wsaQueryInfo->iSocketType = SOCK_STREAM; // only socket type avail. for BT
                 wsaQueryInfo->iProtocol = BTHPROTO_RFCOMM; // Normal bluetooth, not LE (for LE use BTHPROTO_L2CAP)
             // get host (our) name for next struct
@@ -231,8 +231,12 @@ class Bluetooth {
         }
         void updateConnections() {
             bt::SOCKET sock = bt::accept(this->listener, nullptr, nullptr); // get no data abt. connection
+
+
             EzText memAdd = EzText(raylib::Text("null"), RAYWHITE, 25.0_spX, 1.0);
             if (sock != INVALID_SOCKET) { 
+                //sendAndroidConnectionSignal(sock); //android-specific socket send signal
+
                 // _this will not get run often, as most of the time there will be nothing in the accept queue_
                 // set non-blocking mode true
                 bt::ULONG mode = 1;
@@ -245,6 +249,19 @@ class Bluetooth {
                     std::cout << this->connListDrawable.getInternalVector()->at(i) << std::endl;
                     std::cout << &(this->thingsToDrawList.at(i)) << std::endl;
                 }
+            }
+        }
+        void sendAndroidConnectionSignal(bt::SOCKET sock) {
+            char androidAckSignal[bt::ANDROID_SOCK_ACCEPT_SIGNAL_SIZE];
+                ((short*)(androidAckSignal))[0] = bt::ANDROID_SOCK_ACCEPT_SIGNAL_SIZE;
+                ((short*)(androidAckSignal))[1] = (short)(true ? 1 : 0); // are we accepting a signal
+            
+            if (bt::send(sock, androidAckSignal, bt::ANDROID_SOCK_ACCEPT_SIGNAL_SIZE, 0) == SOCKET_ERROR) {
+                DebugConsole::print("Failed to send\n", DBGC_RED);
+                std::cerr << "Error code: " << bt::WSAGetLastError() << std::endl;
+            }
+            else {
+                DebugConsole::print("Sent\n", DBGC_GREEN);
             }
         }
         void handleRunningConnections() {
