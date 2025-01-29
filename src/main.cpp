@@ -21,6 +21,7 @@
 #include "myincludes/bthSocketHandler.hpp"
 #include "myincludes/movementAnimation.hpp"
 #include "myincludes/debugConsole.hpp"
+#include "myincludes/restReqHandler.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -53,6 +54,11 @@ int main() {
     Client client;
     btConn.initAll();
     btConn.initAccept();
+
+    std::cout << "Test" << std::endl;
+
+    RestReqHandler handler;
+        // handler.test();
 
     SCENES currentScene = SCANNING;
     Database database;
