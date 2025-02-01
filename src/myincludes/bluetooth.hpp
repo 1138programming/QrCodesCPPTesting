@@ -204,7 +204,7 @@ class Bluetooth {
             // create struct used to register us as a BTH thingy
             bt::WSAQUERYSETA wsaQuery = {0};
                 wsaQuery.dwSize = sizeof(bt::WSAQUERYSETA);
-                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str();
+                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str(); // this can't actually be changed- we just set it to our host name out of respect for windows 👍
                 wsaQuery.lpServiceClassId = (bt::LPGUID)&MY_GUID; // p sure this one isn't ignored- how we're found + what we're being registered as.
                 wsaQuery.lpszComment = (bt::LPSTR)L"Example Service instance registered in the directory service through RnR";
                 wsaQuery.dwNameSpace = NS_BTH;
