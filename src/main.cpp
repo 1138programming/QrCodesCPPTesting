@@ -21,6 +21,7 @@
 #include "myincludes/bthSocketHandler.hpp"
 #include "myincludes/movementAnimation.hpp"
 #include "myincludes/debugConsole.hpp"
+#include "myincludes/restReqHandler.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -54,6 +55,12 @@ int main() {
     btConn.initAll();
     btConn.initAccept();
 
+    std::cout << "Test" << std::endl;
+
+    RestReqHandler handler;
+        handler.test();
+        
+
     SCENES currentScene = SCANNING;
     Database database;
     // set up display + constant scene stuff
@@ -81,6 +88,8 @@ int main() {
         Button AmplifyRed(300.0_spX,100.0_spY, RAYWHITE, RED, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyRed"), RAYWHITE, 12.0_spD, 0.0));
         Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
         Button pongback(100.0, 100.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
+        Button rest(100.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "rest"), RAYWHITE, 10.0_spD, 0.0));
+
         goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
@@ -89,11 +98,14 @@ int main() {
         AmplifyRed.setDisplayPos(CENTERRIGHT);
         TextBox MatchBoxMain(100.0_spX, 50.0_spY, 10, 0.0, 15.0_spD, spaceMono, WHITE, WHITE);
         MatchBoxMain.setDisplayPos(TOPCENTERED);
+        rest.setDisplayPos(TOPCENTERED);
 
         scannerScreen.add(&goated);
         scannerScreen.add(&MatchBoxMain);
         scannerScreen.add(&AmplifyBlue);
         scannerScreen.add(&AmplifyRed);
+        scannerScreen.add(&rest);
+    
         pongscreen.add(&pongback);
 
     // __  Database Scene __
@@ -188,7 +200,12 @@ int main() {
                 // qrScanner.scan();
                 // if (goated.isPressed()) {
                 //     qrScanner.update();
-                // }
+                // } 
+                if (rest.isPressed()) {
+
+                    handler.test();
+                   
+                }
                 if (AmplifyBlue.isPressed()) {
                     try {
                         auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() +",-1,11,'true', -1, 'Blue');", 0);  
