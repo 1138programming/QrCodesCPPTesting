@@ -58,6 +58,7 @@ int main() {
     std::cout << "Test" << std::endl;
 
     RestReqHandler handler;
+        handler.test();
         
 
     SCENES currentScene = SCANNING;
