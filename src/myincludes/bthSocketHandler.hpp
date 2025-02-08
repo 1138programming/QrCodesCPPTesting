@@ -143,11 +143,10 @@ class bthSocketHandler {
             if (dataToSend == NULL) {
                 return false;
             }
-            // data for 👍 emoji
-                dataToSend[0] = 0xf0;
-                dataToSend[1] = 0x9f;
-                dataToSend[2] = 0x91;
-                dataToSend[3] = 0x8d;
+            // data for ACK
+                dataToSend[0] = 'A';
+                dataToSend[1] = 'C';
+                dataToSend[2] = 'K';
             bool success = sendAllDataToSocket(dataToSend, BT_TAB_ACK_SIZE);
             free(dataToSend);
             return true;
@@ -160,13 +159,31 @@ class bthSocketHandler {
                 return false;
             }
 
-            // data for 👎 emoji
-                dataToSend[0] = 0xf0;
-                dataToSend[1] = 0x9f;
-                dataToSend[2] = 0x91;
-                dataToSend[3] = 0x8e;
+            // data for NACK
+                dataToSend[0] = 'N';
+                dataToSend[1] = 'C';
+                dataToSend[2] = 'K';
             bool success = sendAllDataToSocket(dataToSend, BT_TAB_NACK_SIZE);
             free(dataToSend);
+            return true;
+        }
+        bool readAck() {
+            char* ackData = (char*) malloc(BT_TAB_ACK_SIZE);
+            if (ackData = NULL) {
+                return false;
+            }
+            // data for ACK (backwards because we read it that way)
+                ackData[0] = 'K';
+                ackData[1] = 'C';
+                ackData[2] = 'A';
+            bool success;
+            char* dataGotten = readAllExpectedDataFromSocket(BT_TAB_ACK_SIZE, success);
+            if (!success) {
+                return false;
+            }
+            if (strncmp(ackData, dataGotten, BT_TAB_ACK_SIZE) != 0) {
+                return false;
+            }
             return true;
         }
 
@@ -199,9 +216,10 @@ class bthSocketHandler {
         }
 
         /**
-         * @brief starts internal read operation with previously defined policy
+         * @returns only the READRES.transactionType paramater- changing this or reading any other vals will result in undefined behaviour
+         * @warning MAKE SURE THE TABLET IS NOT WAITING FOR A RESPONSE FOR TOO LONG- after this function is called it WILL be expecting one. Drink Responsibly 👍
         */
-        bt::READRES* readTabletData() {
+        bt::READRES* readTransactionData() {
             this->currentRead.parentSocket = this->internalSocket;
 
             // check to make sure they didn't call this function accidentally
@@ -221,7 +239,12 @@ class bthSocketHandler {
                 this->currentRead.reportedSuccess = false;
                 return &this->currentRead;
             }
-
+            return &this->currentRead;
+        }
+        /**
+         * @brief starts internal read operation with previously defined policy
+        */
+        bt::READRES* readTabletData() {
             switch(this->callType) {
                 case bt::CALLTYPE_ASYNCHRONOUS:
                 {
@@ -243,6 +266,31 @@ class bthSocketHandler {
 
                 default:
                     this->currentRead.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalRead, this, std::ref(this->currentRead.reportedSuccess));
+            }
+            return &this->currentRead;
+        }
+        bt::READRES* writeTabletData(std::vector<char> data) {
+            switch(this->callType) {
+                case bt::CALLTYPE_ASYNCHRONOUS:
+                {
+                    this->currentRead.data = std::async(std::launch::async, &bthSocketHandler::internalWrite, this, data, std::ref(this->currentRead.reportedSuccess));
+                }
+                break;
+                
+                case bt::CALLTYPE_DEFERRED:
+                {
+                    this->currentRead.data = std::async(std::launch::deferred, &bthSocketHandler::internalWrite, this, data, std::ref(this->currentRead.reportedSuccess));
+                }
+                break;
+
+                case bt::CALLTYPE_DEFAULT:
+                {
+                    this->currentRead.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalWrite, this, data, std::ref(this->currentRead.reportedSuccess));
+                }
+                break;
+
+                default:
+                    this->currentRead.data = std::async(std::launch::deferred | std::launch::async, &bthSocketHandler::internalWrite, this, data, std::ref(this->currentRead.reportedSuccess));
             }
             return &this->currentRead;
         }
@@ -324,6 +372,32 @@ class bthSocketHandler {
            success = true;
            return charData;
         }
+        std::vector<char> internalWrite(std::vector<char> data, bool& success) {
+            /*
+                Communication will go as follows:
+                    C: # of bytes to be sent (signed int) (trailing from connection number)
+                    T: ACK
+                    C: all data
+                    T: ACK
+            */
+           success = true;
+
+           // send # bytes to tab
+           int dataSize = data.size();
+           success = (success && sendAllDataToSocket((char*)&dataSize, BT_EXPECTED_DATA_READSIZE));
+           // read ack
+           success = (success && readAck());
+           // send full data 
+           success = (success && sendAllDataToSocket(data.data(), data.size()));
+           // read ack
+           success = (success && readAck());
+
+           std::vector<char> retData;
+              retData.push_back((char)success);
+           // yayy
+           return retData;
+        }
+
 
         void closeSocket() {
             checkSuccessWinsock<int>(bt::closesocket(this->internalSocket), 0, "failed to propely close socket (minor memory leak)");

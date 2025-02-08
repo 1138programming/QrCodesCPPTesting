@@ -318,6 +318,19 @@ class Bluetooth {
                     DebugConsole::print("ERROR: Something went seriously wrong. Tablet is probably screwed (no valid write transaction sent)\n", DBGC_RED);
             }
         }
+        void handleDatabaseReads(bt::READRES* connection) {
+            switch(connection->transactionType) {
+                case bt::TRANS_CHECK_LOCAL_DB: {
+
+                }
+                break;
+
+                case bt::TRANS_UPDATE_LOCAL_DB: {
+
+                }
+                break;
+            }
+        }
         void handleReadyConnections() {
             if (this->connections.size() == 0) {
                 // nothing to do lol
@@ -349,14 +362,14 @@ class Bluetooth {
                 bthSocketHandler handler(socketsToScan.fd_array[i]);
                 handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
 
-                bt::READRES* readResult = handler.readTabletData();
-                std::cout << readResult->isReady() << std::endl;
-                std::cout << readResult->transactionType << std::endl;
+                bt::READRES* readResult = handler.readTransactionData();
+                // std::cout << readResult->isReady() << std::endl;
+                // std::cout << readResult->transactionType << std::endl;
 
-                if (!readResult->isReady()) {
-                    // queue this socket for handling later
-                    runningBtTransactions.push_back(handler.transferReadresOwnership());
-                }
+                // if (!readResult->isReady()) {
+                //     // queue this socket for handling later
+                //     runningBtTransactions.push_back(handler.transferReadresOwnership());
+                // }
                 switch(readResult->transactionType) {
                     case bt::TRANS_SOCKET_ERROR:
                     {
@@ -380,6 +393,15 @@ class Bluetooth {
                     case bt::TRANS_WRITE_TABLET_INFO:
                     {
                         handleDatabaseWrites(readResult);
+                    }
+                    break;
+                    
+                    case bt::TRANS_CHECK_LOCAL_DB: {
+                        handleDatabaseReads(readResult);
+                    }
+                    break;
+                    case bt::TRANS_UPDATE_LOCAL_DB: {
+
                     }
                     break;
 
