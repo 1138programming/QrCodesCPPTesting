@@ -201,7 +201,8 @@ int main() {
                 // } 
                 if (rest.isPressed()) {
 
-                    handler.test();
+                    handler.getteamdata();
+                    
                    
                 }
                 if (AmplifyBlue.isPressed()) {
