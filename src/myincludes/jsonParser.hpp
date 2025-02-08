@@ -24,7 +24,7 @@ class JsonParser {
             }
             std::ofstream file;
             try {
-                file = std::ofstream("log copy.json");
+                file = std::ofstream("log copy 88889.json");
                 file << datan;
                 file.close();
                 
@@ -35,7 +35,7 @@ class JsonParser {
             }
            
         }
-        std::vector<MATCH_DATAPOINT> parse() {                
+        std::vector<MATCH_DATAPOINT> parseMatch() {                
             std::vector<MATCH_DATAPOINT> datapoints = std::vector<MATCH_DATAPOINT>();  
             try {
               
@@ -90,6 +90,49 @@ class JsonParser {
             
              
             return datapoints;
+        }
+        std::vector<TEAM_DATAPOINT> parseAPI() {                
+            std::vector<TEAM_DATAPOINT> Teamsdata = std::vector<TEAM_DATAPOINT>();  
+            try {
+              
+
+                for (auto it = this->data.begin(); it != this->data.end() ; ++it) { 
+                
+                    TEAM_DATAPOINT currentDatapoint;
+               
+                    std::cout << "hello3" <<std::endl;
+                
+         
+                    
+                   
+                    json element = *it; 
+                    std::cout << *it << std::endl;
+                    (!element["website"].is_null()) ?  currentDatapoint.teamName = element["nickname"] : currentDatapoint.teamName = "NULL";
+                    (!element["website"].is_null()) ?  currentDatapoint.teamNum = element["team_number"] : currentDatapoint.teamNum = 0;
+                    (!element["website"].is_null()) ?  currentDatapoint.teamDesc = element["website"] : currentDatapoint.teamDesc = "NULL";
+                  
+                    
+              
+           
+                
+                Teamsdata.push_back(currentDatapoint);  
+                
+                
+                }
+              std::cout << "hello4777777" <<std::endl; 
+            }
+            catch (...) {
+                std::cout << "errbitch" <<std::endl; //uh oh
+                // toastHandler::add(Toast("fuck. it no workie", LENGTH_NORMAL));
+
+            }
+           
+            // std::cout << (datapoints.begin().base())->datapointID <<std::endl; 
+           
+                
+            
+             
+            return Teamsdata;
         }
 };
 

@@ -13,4 +13,13 @@ typedef struct {
     std::string AllianceId;
 } MATCH_DATAPOINT;
 
+typedef struct {
+    int teamNum;
+    std::string teamName;
+    std::string teamDesc;
+
+} TEAM_DATAPOINT;
+
+
+
 #endif

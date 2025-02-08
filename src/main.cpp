@@ -57,9 +57,7 @@ int main() {
 
     std::cout << "Test" << std::endl;
 
-    RestReqHandler handler;
-        handler.test();
-        
+    RestReqHandler handler;        
 
     SCENES currentScene = SCANNING;
     Database database;
@@ -203,7 +201,8 @@ int main() {
                 // } 
                 if (rest.isPressed()) {
 
-                    handler.test();
+                    handler.getteamdata();
+                    
                    
                 }
                 if (AmplifyBlue.isPressed()) {

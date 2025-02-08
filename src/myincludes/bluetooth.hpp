@@ -204,7 +204,7 @@ class Bluetooth {
             // create struct used to register us as a BTH thingy
             bt::WSAQUERYSETA wsaQuery = {0};
                 wsaQuery.dwSize = sizeof(bt::WSAQUERYSETA);
-                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str();
+                wsaQuery.lpszServiceInstanceName = (bt::LPSTR)lpzServiceInstanceNameLocal.c_str(); // this can't actually be changed- we just set it to our host name out of respect for windows 👍
                 wsaQuery.lpServiceClassId = (bt::LPGUID)&MY_GUID; // p sure this one isn't ignored- how we're found + what we're being registered as.
                 wsaQuery.lpszComment = (bt::LPSTR)L"Example Service instance registered in the directory service through RnR";
                 wsaQuery.dwNameSpace = NS_BTH;
@@ -289,7 +289,7 @@ class Bluetooth {
                     
                         // parse data and put it into database
                         JsonParser parser(data);
-                        std::vector<MATCH_DATAPOINT> vectData = parser.parse();
+                        std::vector<MATCH_DATAPOINT> vectData = parser.parseMatch();
                         DatabaseMan databaseCall(vectData);
                         databaseCall.maketh();
                     }
@@ -316,6 +316,19 @@ class Bluetooth {
 
                 default:
                     DebugConsole::print("ERROR: Something went seriously wrong. Tablet is probably screwed (no valid write transaction sent)\n", DBGC_RED);
+            }
+        }
+        void handleDatabaseReads(bt::READRES* connection) {
+            switch(connection->transactionType) {
+                case bt::TRANS_CHECK_LOCAL_DB: {
+
+                }
+                break;
+
+                case bt::TRANS_UPDATE_LOCAL_DB: {
+
+                }
+                break;
             }
         }
         void handleReadyConnections() {
@@ -349,14 +362,14 @@ class Bluetooth {
                 bthSocketHandler handler(socketsToScan.fd_array[i]);
                 handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
 
-                bt::READRES* readResult = handler.readTabletData();
-                std::cout << readResult->isReady() << std::endl;
-                std::cout << readResult->transactionType << std::endl;
+                bt::READRES* readResult = handler.readTransactionData();
+                // std::cout << readResult->isReady() << std::endl;
+                // std::cout << readResult->transactionType << std::endl;
 
-                if (!readResult->isReady()) {
-                    // queue this socket for handling later
-                    runningBtTransactions.push_back(handler.transferReadresOwnership());
-                }
+                // if (!readResult->isReady()) {
+                //     // queue this socket for handling later
+                //     runningBtTransactions.push_back(handler.transferReadresOwnership());
+                // }
                 switch(readResult->transactionType) {
                     case bt::TRANS_SOCKET_ERROR:
                     {
@@ -380,6 +393,15 @@ class Bluetooth {
                     case bt::TRANS_WRITE_TABLET_INFO:
                     {
                         handleDatabaseWrites(readResult);
+                    }
+                    break;
+                    
+                    case bt::TRANS_CHECK_LOCAL_DB: {
+                        handleDatabaseReads(readResult);
+                    }
+                    break;
+                    case bt::TRANS_UPDATE_LOCAL_DB: {
+
                     }
                     break;
 
