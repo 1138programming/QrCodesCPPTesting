@@ -57,8 +57,9 @@ class QrCodeScanner {
             std::vector<MATCH_DATAPOINT> vect = parser.parseMatch();      
             std::cout << "hello5" <<std::endl;
 
-            DatabaseMan database(vect); 
-            database.maketh();
+            DatabaseMan database = * new DatabaseMan();
+            database.setmatchdata(vect);
+            database.addMatchDatapoints();
             this->counter = 0;
             this->text[0] = '\0';
         }

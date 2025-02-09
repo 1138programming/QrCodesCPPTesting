@@ -12,6 +12,8 @@ static std::string output;
 class RestReqHandler {
     private:
         static size_t readHandler(char* ptr, size_t size, size_t numElements, void* ourPtr) {
+
+            
             std::string temp = std::string(ptr, size * numElements);
             output.append(temp);
             
@@ -21,16 +23,18 @@ class RestReqHandler {
             return size * numElements;
 
         }
-
+        DatabaseMan database = * new DatabaseMan();
   
     public:
         
-        void getteamdata() {
+        void getteamdata(int page) {
             CURL* handler = curl_easy_init();
 
             curl_slist* headerList = NULL;
             if (handler) {
-                curl_easy_setopt(handler, CURLOPT_URL, "https://www.thebluealliance.com/api/v3/teams/0");
+                std::string url = std::string("https://www.thebluealliance.com/api/v3/teams/" + std::to_string(page));
+                // std::cout << (url.c_str()) << std::endl;
+                curl_easy_setopt(handler, CURLOPT_URL, &(url.c_str()[0]));
                 curl_easy_setopt(handler, CURLOPT_SSL_VERIFYPEER, false);
                 // curl_easy_setopt(handler, CURLOPT_URL, "http://eu.httpbin.org/ip");
 
@@ -73,12 +77,15 @@ class RestReqHandler {
                 }   
             }
 
-            // DatabaseMan database(teams)
-
-            // database.maketh();
+            
+            database.setteamdat(teams);
+            database.addTeams();
 
 
         
+        }
+        void deleteteams() {
+            database.clearTeams();
         }
 };
 

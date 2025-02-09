@@ -200,8 +200,14 @@ int main() {
                 //     qrScanner.update();
                 // } 
                 if (rest.isPressed()) {
+                    handler.deleteteams();
+                    for (int i = 0; i < 20; i++)    {
+                        handler.getteamdata(i);
+                        
+                    }
+                    
+               
 
-                    handler.getteamdata();
                     
                    
                 }

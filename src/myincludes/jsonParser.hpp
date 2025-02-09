@@ -107,8 +107,8 @@ class JsonParser {
                    
                     json element = *it; 
                     std::cout << *it << std::endl;
-                    (!element["website"].is_null()) ?  currentDatapoint.teamName = element["nickname"] : currentDatapoint.teamName = "NULL";
-                    (!element["website"].is_null()) ?  currentDatapoint.teamNum = element["team_number"] : currentDatapoint.teamNum = 0;
+                    (!element["nickname"].is_null()) ?  currentDatapoint.teamName = element["nickname"] : currentDatapoint.teamName = "NULL";
+                    (!element["team_number"].is_null()) ?  currentDatapoint.teamNum = element["team_number"] : currentDatapoint.teamNum = 0;
                     (!element["website"].is_null()) ?  currentDatapoint.teamDesc = element["website"] : currentDatapoint.teamDesc = "NULL";
                   
                     

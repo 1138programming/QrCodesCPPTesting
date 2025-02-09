@@ -290,8 +290,9 @@ class Bluetooth {
                         // parse data and put it into database
                         JsonParser parser(data);
                         std::vector<MATCH_DATAPOINT> vectData = parser.parseMatch();
-                        DatabaseMan databaseCall(vectData);
-                        databaseCall.maketh();
+                        DatabaseMan databaseCall = * new DatabaseMan();
+                        databaseCall.setmatchdata(vectData);
+                        databaseCall.addMatchDatapoints();
                     }
                 }
                 break;

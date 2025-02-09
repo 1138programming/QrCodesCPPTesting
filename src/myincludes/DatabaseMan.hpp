@@ -17,22 +17,35 @@ class DatabaseMan {
         MYSQL_ROW row;
         Database database;
         std::vector<MATCH_DATAPOINT> datapoints;
+        std::vector<TEAM_DATAPOINT> teams;
         MATCH_DATAPOINT temp;
+        TEAM_DATAPOINT temp2;
+
         std::string resultstr;
         
         
     public:
    
-    DatabaseMan(std::vector<MATCH_DATAPOINT> datapointsn) { 
-        this->datapoints = datapointsn;
+    DatabaseMan() { 
+        
      
 
     }
 
+    void setmatchdata(std::vector<MATCH_DATAPOINT> datapointsn) {
+        this->datapoints = datapointsn;
+    }
+
+    void setteamdat(std::vector<TEAM_DATAPOINT> teamsn) {
+        this->teams = teamsn;
+    }
+
+
   
 
 
-    void maketh() {
+    void addMatchDatapoints() {
+        if (!datapoints.empty()) {
         for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
             if (i.base() != NULL) {
                 temp = *i.base();
@@ -46,13 +59,51 @@ class DatabaseMan {
                 std::cerr << " it doesn't work, it is null" << std::endl;
               }   
         }
+        }
+
+        else {
+            std::cout << "datapoints is null" << std::endl;
+        }
+
+
          
   
 
     }
 
-    ~DatabaseMan() {
-            
+    void clearTeams() {
+        auto deleteRes = database.execQuery("delete from team",1);
+    }
+    void addTeams() {
+        if (!teams.empty()) {
+        for (auto i = teams.begin(); i != teams.end(); ++i) {
+            if (i.base() != NULL) {
+                temp2 = *i.base();
+                std::cout << "working" <<std::endl;
+                
+                std::cout << "insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + temp2.teamName + "');" << std::endl;
+                auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + temp2.teamName + "');" , 1); 
+                
+            }
+            else {
+                std::cerr << " it doesn't work, it is null" << std::endl;
+            }   
         }
+        }
+
+        else {
+            std::cout << "datapoints is null" << std::endl;
+        }
+    
+    }
+
+
+         
+  
+
+    
+
+
+   
 };
 #endif
