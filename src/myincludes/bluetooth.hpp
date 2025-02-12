@@ -88,8 +88,11 @@ class Bluetooth {
 
         // ___ useful (public) functions ___
         std::string getLocalMacStr() {
+            return getMacStr((bt::BYTE*)(&this->localAddr));
+        }
+        std::string getMacStr(bt::BYTE* addr) {
             std::ostringstream macBuilder;
-            bt::BYTE* nameInBytes = (bt::BYTE*)(&this->localAddr);
+            bt::BYTE* nameInBytes = addr;
             macBuilder << std::hex;
             for (int i = 5; i > 0; i--) {
                 if (nameInBytes[i] <= 0x0f) {
@@ -229,12 +232,17 @@ class Bluetooth {
 
             makeDiscoverable(); // make ourselves discoverable!!!!! :DDDD
         }
+       
         void updateConnections() {
-            bt::SOCKET sock = bt::accept(this->listener, nullptr, nullptr); // get no data abt. connection
+            bt::SOCKADDR_BTH sockAddr = {0};
+                int sizeofSockAddr = sizeof(sockAddr);
+            bt::SOCKET sock = bt::accept(this->listener, (bt::sockaddr*)&sockAddr, &sizeofSockAddr); // get no data abt. connection
 
 
             EzText memAdd = EzText(raylib::Text("null"), RAYWHITE, 25.0_spX, 1.0);
             if (sock != INVALID_SOCKET) { 
+                std::cout << getMacStr((bt::BYTE*)&sockAddr.btAddr) << std::endl;
+
                 //sendAndroidConnectionSignal(sock); //android-specific socket send signal
 
                 // _this will not get run often, as most of the time there will be nothing in the accept queue_
