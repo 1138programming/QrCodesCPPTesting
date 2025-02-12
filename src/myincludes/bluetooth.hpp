@@ -280,7 +280,12 @@ class Bluetooth {
             for(int i = 0; i < this->runningBtTransactions.size(); i++) {
                 bt::READRES* curr = this->runningBtTransactions.at(i);
                 if (curr->isReady()) {
-                    handleDatabaseWrites(curr);
+                    if (curr->tabletWrite) {
+                        handleDatabaseWrites(curr);
+                    }
+                    else {
+                        handleDatabaseReads(curr);
+                    }
                     removeFromCurrentConnectionsVector(&this->runningBtTransactions, i);
                     free(curr); // kill the orphan
                 }
@@ -371,13 +376,13 @@ class Bluetooth {
                 handler.setLaunchPolicy(bt::CALLTYPE_ASYNCHRONOUS);
 
                 bt::READRES* readResult = handler.readTransactionData();
-                // std::cout << readResult->isReady() << std::endl;
-                // std::cout << readResult->transactionType << std::endl;
+                std::cout << readResult->isReady() << std::endl;
+                std::cout << readResult->transactionType << std::endl;
 
-                // if (!readResult->isReady()) {
-                //     // queue this socket for handling later
-                //     runningBtTransactions.push_back(handler.transferReadresOwnership());
-                // }
+                if (!readResult->isReady()) {
+                    // queue this socket for handling later
+                    runningBtTransactions.push_back(handler.transferReadresOwnership());
+                }
                 switch(readResult->transactionType) {
                     case bt::TRANS_SOCKET_ERROR:
                     {
@@ -409,7 +414,7 @@ class Bluetooth {
                     }
                     break;
                     case bt::TRANS_UPDATE_LOCAL_DB: {
-
+                        handleDatabaseReads(readResult);
                     }
                     break;
 

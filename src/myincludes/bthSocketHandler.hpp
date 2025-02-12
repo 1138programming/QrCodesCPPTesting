@@ -216,8 +216,9 @@ class bthSocketHandler {
         }
 
         /**
-         * @returns only the READRES.transactionType paramater- changing this or reading any other vals will result in undefined behaviour
+         * @returns only the READRES.transactionType paramater and READRES.tabletWrite param- changing these or reading any other vals will result in undefined behaviour
          * @warning MAKE SURE THE TABLET IS NOT WAITING FOR A RESPONSE FOR TOO LONG- after this function is called it WILL be expecting one. Drink Responsibly 👍
+         * @warning Make sure this function is added to if another transaction type is created!
         */
         bt::READRES* readTransactionData() {
             this->currentRead.parentSocket = this->internalSocket;
@@ -238,6 +239,34 @@ class bthSocketHandler {
                 this->currentRead.transactionType = bt::TRANS_SOCKET_ERROR;
                 this->currentRead.reportedSuccess = false;
                 return &this->currentRead;
+            }
+            // TRANS_SOCKET_ERROR = -128,
+            // TRANS_CLOSE_SOCKET = 0,
+            // TRANS_WRITE_MATCH = 1,
+            // TRANS_WRITE_TABLET_INFO = 2,
+            // TRANS_CHECK_LOCAL_DB = 3,
+            // TRANS_UPDATE_LOCAL_DB = 4
+            switch (this->currentRead.transactionType) {
+                case bt::TRANS_WRITE_MATCH: {
+                    this->currentRead.tabletWrite = true;
+                }
+                break;
+                case bt::TRANS_WRITE_TABLET_INFO: {
+                    this->currentRead.tabletWrite = true;
+                }
+                break;
+                
+                case bt::TRANS_CHECK_LOCAL_DB: {
+                    this->currentRead.tabletWrite = false;
+                }
+                break;
+                case bt::TRANS_UPDATE_LOCAL_DB: {
+                    this->currentRead.tabletWrite = false;
+                }
+                break;
+
+                default:
+                    std::cout << "PROBLEM IN readTransactionData FUNCTION!!!!!! CHECK BTHSOCKETHANDLER CLASS!!" << std::endl;
             }
             return &this->currentRead;
         }

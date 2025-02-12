@@ -12,6 +12,7 @@ namespace bt {
         bt::TRANSACTIONTYPE transactionType;
         std::future<std::vector<char>> data;
         bool reportedSuccess;
+        bool tabletWrite; // if the tablet is going to be the one doing the writing. If not, it's safe to assume the computer will be.
         bool isReady() {
             
             switch(data.wait_for(std::chrono::seconds(0))) {
