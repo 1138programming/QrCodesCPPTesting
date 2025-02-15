@@ -87,6 +87,10 @@ class RestReqHandler {
         void deleteteams() {
             database.clearTeams();
         }
+
+        ~RestReqHandler() {
+            delete &database;
+        }
 };
 
 #endif
