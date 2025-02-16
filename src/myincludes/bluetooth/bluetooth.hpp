@@ -1,11 +1,11 @@
 #ifndef BLUETOOTH_HPP
 #define BLUETOOTH_HPP
 
-#include "btIncludes.hpp"
-#include "bthSocketHandler.hpp"
-#include "verticalScrollable.hpp"
-#include "debugConsole.hpp"
-#include "winsockErrorDesc.hpp"
+#include "../btIncludes.hpp"
+#include "../bthSocketHandler.hpp"
+#include "../verticalScrollable.hpp"
+#include "../debugConsole.hpp"
+#include "../winsockErrorDesc.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -50,7 +50,7 @@ class Bluetooth {
             
             std::string macAddr = addrBuilder.str();
             for (int i = 0; i < macAddr.length(); i++) {
-                macAddr[i] = std::toUpper(macAddr[i]);
+                macAddr[i] = std::toupper(macAddr[i]);
             }
             return macAddr;
         }
@@ -65,7 +65,7 @@ class Bluetooth {
                 str = "";
                 return -1;
             }
-            if (bt:gethostname(hostName, 256) != 0) {
+            if (bt::gethostname(hostName, 256) != 0) {
                 str = "";
                 return -2;
             }
@@ -75,6 +75,7 @@ class Bluetooth {
             return 0;
         }
         
+
         /*********************************************/
         /* INITIALIZING / FREEING FUNCTIONS */
         /*********************************************/
@@ -83,7 +84,7 @@ class Bluetooth {
          * @brief Initializes Winsock. If you are using a library that already does this, there is no real reason to do it again.
          * @returns The return value of the startup. If it != 0, there was a problem (will be logged)
         */
-        int initWinsock(int test) {
+        int initWinsock() {
             bt::WSADATA wsaData;
             int startupRet = bt::WSAStartup(MAKEWORD(2, 2), &wsaData);
 
@@ -141,7 +142,7 @@ class Bluetooth {
             else {
                 DebugConsole::println("Failed to Enable Discoverability", DBGC_RED);
             }
-            freeRadioHandles(); // they are pretty much unneeded
+            // handles are freed in destructor- they are used later.
         }
 
         /**
@@ -211,6 +212,38 @@ class Bluetooth {
 
             // we can now accept() connections!!!! :DDDDD (we will handle this in a separate function)
             makeDiscoverable(); // yipee!
+        }
+
+
+        /*********************************************/
+        /* PER-FRAME FUNCTIONS */
+        /*********************************************/
+        /**
+         * @brief accepts the incoming connections for this frame. This call is non-blocking, so should be called at least once every frame (thought there is no point in doing it multiple times)
+         */
+        void acceptConn() {
+            bt::SOCKADDR_BTH peerAddr = {0};
+                int sizeOfPeerAddr = sizeof(peerAddr);
+            bt::SOCKET curr = bt::accept(this->listener, (bt::sockaddr*)&peerAddr, sizeOfPeeraddr);
+
+            if (curr != INVALID_SOCKET) {
+                // _this will not get run often, as most of the time there will be nothing in the accept queue_
+                // set non-blocking mode true
+                bt::ULONG mode = 1;
+                checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking.");
+                
+                // attempt to get/print name:
+                bt::BLUETOOTH_DEVICE_INFO_STRUCT deviceInfo = {0};
+
+                bt::BluetoothGetDeviceInfo(this->radio, &deviceInfo);
+
+                std::cout << "Connection attempt name: " << deviceInfo.szName << std::endl;
+
+            }
+
+            ~Bluetooth() {
+                freeRadioHandles();
+            }
         }
 };
 
