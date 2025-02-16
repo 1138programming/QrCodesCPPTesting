@@ -17,7 +17,7 @@
 #include "myincludes/toggle.hpp"
 #include "myincludes/verticalScrollable.hpp"
 #include "myincludes/timer.hpp"
-#include "myincludes/winsockErrorDesc.hpp"
+#include "myincludes/WinsockErrorDesc.hpp"
 #include "myincludes/bthSocketHandler.hpp"
 #include "myincludes/movementAnimation.hpp"
 #include "myincludes/debugConsole.hpp"
@@ -54,8 +54,6 @@ int main() {
     Client client;
     btConn.initAll();
     btConn.initAccept();
-
-    std::cout << "Test" << std::endl;
 
     RestReqHandler handler;        
 
@@ -163,7 +161,7 @@ int main() {
             }
         }
         if (IsKeyPressed(KEY_E)) {
-            toastHandler::add(Toast(winsockErrorDesc::get(6).errorNameDesc,TOASTLENGTHS::LENGTH_LONG));
+            toastHandler::add(Toast(WinsockErrorDesc::get(6).errorNameDesc,TOASTLENGTHS::LENGTH_LONG));
         }
 
         if (mainTab.isPressed()) {
@@ -306,6 +304,6 @@ int main() {
         window.EndDrawing();
             
     }
-    winsockErrorDesc::destroy();
+    WinsockErrorDesc::destroy();
     return 0;
 }
