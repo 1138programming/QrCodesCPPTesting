@@ -243,6 +243,16 @@ class Bluetooth {
             if (sock != INVALID_SOCKET) { 
                 std::cout << getMacStr((bt::BYTE*)&sockAddr.btAddr) << std::endl;
 
+                initRadioHandles();
+                bt::BLUETOOTH_DEVICE_INFO deviceInfo = {0};
+                    deviceInfo.dwSize = sizeof(bt::BLUETOOTH_DEVICE_INFO);
+                    deviceInfo.Address.ullLong = sockAddr.btAddr;
+
+                bt::BluetoothGetDeviceInfo(this->btRadio, &deviceInfo);
+
+                std::cout << "Connection attempt name: " << deviceInfo.szName << std::endl;
+
+
                 //sendAndroidConnectionSignal(sock); //android-specific socket send signal
 
                 // _this will not get run often, as most of the time there will be nothing in the accept queue_

@@ -6,6 +6,7 @@
 #include "../verticalScrollable.hpp"
 #include "../debugConsole.hpp"
 #include "../winsockErrorDesc.hpp"
+#include "btTabObj.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -19,6 +20,7 @@ static const bt::GUID MY_GUID = {0x0007EA11, 0x1138, 0x1000, {0x54, 0x65, 0x61, 
 class Bluetooth {
     private:
         bt::SOCKET listener;
+        std::vector<BtTabObj> connectedTablets;
 
         bt::BLUETOOTH_ADDRESS_STRUCT localAddr;
         unsigned int port;
@@ -142,7 +144,7 @@ class Bluetooth {
             else {
                 DebugConsole::println("Failed to Enable Discoverability", DBGC_RED);
             }
-            // handles are freed in destructor- they are used later.
+            freeRadioHandles();
         }
 
         /**
@@ -219,30 +221,23 @@ class Bluetooth {
         /* PER-FRAME FUNCTIONS */
         /*********************************************/
         /**
-         * @brief accepts the incoming connections for this frame. This call is non-blocking, so should be called at least once every frame (thought there is no point in doing it multiple times)
+         * @brief accepts the incoming connections for this frame. This call is non-blocking, so should be called at least once every frame (though there is no point in doing it multiple times)
          */
         void acceptConn() {
             bt::SOCKADDR_BTH peerAddr = {0};
                 int sizeOfPeerAddr = sizeof(peerAddr);
-            bt::SOCKET curr = bt::accept(this->listener, (bt::sockaddr*)&peerAddr, sizeOfPeeraddr);
+            bt::SOCKET peer = bt::accept(this->listener, (bt::sockaddr*)&peerAddr, sizeOfPeerAddr);
 
-            if (curr != INVALID_SOCKET) {
+            if (peer != INVALID_SOCKET) {
                 // _this will not get run often, as most of the time there will be nothing in the accept queue_
                 // set non-blocking mode true
                 bt::ULONG mode = 1;
-                checkSuccessWinsock<int>(bt::ioctlsocket(sock, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking.");
-                
-                // attempt to get/print name:
-                bt::BLUETOOTH_DEVICE_INFO_STRUCT deviceInfo = {0};
+                checkSuccessWinsock<int>(bt::ioctlsocket(peer, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking.");
 
-                bt::BluetoothGetDeviceInfo(this->radio, &deviceInfo);
-
-                std::cout << "Connection attempt name: " << deviceInfo.szName << std::endl;
-
-            }
-
-            ~Bluetooth() {
-                freeRadioHandles();
+                // add the socket to our tablet list
+                bt::BLUETOOTH_ADDRESS_STRUCT addrStruct = {0};
+                    addrStruct.ullLong = peerAddr.btAddr;
+                this->connectedTablets.push_back(BtTabObj(peer, peerAddr, getMacStr(addrStruct)));
             }
         }
 };
