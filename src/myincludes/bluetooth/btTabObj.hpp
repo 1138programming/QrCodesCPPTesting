@@ -155,6 +155,26 @@ class BtTabObj {
             free(dataToSend);
             return success;
         }
+        /**
+         * @returns If an ack was read, otherwise it's safe to assume there was a problem/nack
+         */
+        bool readAck() {
+            char* ackData = (char*)malloc(BT_TAB_ACK_SIZE);
+            if (ackData == NULL) {
+                return false
+            }
+            // data for ACK (backwards because winsock returns it that way (TODO: check))
+                ackData[0] = 'K';
+                ackData[1] = 'C';
+                ackData[2] = 'A';
+            bool success;
+            char* dataRecvd = readAllSocketData(BT_TAB_ACK_SIZE, success);
+            if (!success) {
+                return false;
+            }
+
+            return (strncmp(ackData, dataRecvd, BT_TAB_ACK_SIZE) == 0);
+        }
 };
 
 #endif
