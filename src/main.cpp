@@ -22,6 +22,7 @@
 #include "myincludes/movementAnimation.hpp"
 #include "myincludes/debugConsole.hpp"
 #include "myincludes/restReqHandler.hpp"
+#include "myincludes/bluetooth/btTabObj.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>

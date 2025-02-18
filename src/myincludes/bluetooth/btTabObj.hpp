@@ -1,8 +1,9 @@
 #ifndef BTTABOBJ_HPP
 #define BTTABOBJ_HPP
 
-#include "btIncludes.hpp"
-#include "debugConosole.hpp"
+#include "../btIncludes.hpp"
+#include "../debugConsole.hpp"
+#include "bluetoothTransaction.hpp"
 
 class BtTabObj {
     private:
@@ -13,7 +14,7 @@ class BtTabObj {
 
         std::string tabScoutingName;
     public:
-        BtTabObj(bt::SOCKET socket, bt::BLUETOOTH_ADDRESS_STRUCT addr, std::string addrStr) {
+        BtTabObj(bt::SOCKET socket, bt::SOCKADDR_BTH addr, std::string addrStr) {
             this->socket = socket;
             this->macAddr = addr;
             this->macStr = addrStr;
@@ -161,7 +162,7 @@ class BtTabObj {
         bool readAck() {
             char* ackData = (char*)malloc(BT_TAB_ACK_SIZE);
             if (ackData == NULL) {
-                return false
+                return false;
             }
             // data for ACK (backwards because winsock returns it that way (TODO: check))
                 ackData[0] = 'K';
@@ -175,6 +176,53 @@ class BtTabObj {
 
             return (strncmp(ackData, dataRecvd, BT_TAB_ACK_SIZE) == 0);
         }
+
+
+        /*********************************************/
+        /* SOCKET INFO OPERATIONS */
+        /*********************************************/
+        /**
+         * @returns Whether the windows gods tell us if the socket has data to read in a non-blocking manner (includes requests to close socket)
+         * @warning If there has been a non-graceful close, this will @b always return false
+         */
+        bool readyToRead() {
+            bt::TIMEVAL waitTime = {0};
+                waitTime.tv_sec = 0; // should already be set, but make sure, as this is important
+                waitTime.tv_usec = 0;
+            bt::fd_set socketsToScan = {0};
+                socketsToScan.fd_count = 1;
+                socketsToScan.fd_array[0] = this->socket;
+
+            int sockState = bt::select(0, &socketsToScan, NULL, NULL, &waitTime);
+            if (sockState == SOCKET_ERROR) {
+                return false;
+            }
+            return (sockState != 0); // 0 == "graceful" not ready
+        }
+        /**
+         * @returns Whether the windows gods tell us if the socket is able to be written to (this does not always garuentee the call will be non-blocking).
+         * 
+         * Generally, it is probably okay to assume that the socket is able to be written to, as there are not many situations in which this will not be the case.
+         */
+        bool readyToWrite() {
+            bt::TIMEVAL waitTime = {0};
+                waitTime.tv_sec = 0; // should already be set, but make sure, as this is important
+                waitTime.tv_usec = 0;
+            bt::fd_set socketsToScan = {0};
+                socketsToScan.fd_count = 1;
+                socketsToScan.fd_array[0] = this->socket;
+            
+            int sockState = bt::select(0, NULL, &socketsToScan, NULL, &waitTime);
+            if (sockState == SOCKET_ERROR) {
+                return false;
+            }
+            return (sockState != 0);
+        }
+
+
+        /*********************************************/
+        /* COMMUNICATION PROTO PRIMATIVES */
+        /*********************************************/
 };
 
 #endif
