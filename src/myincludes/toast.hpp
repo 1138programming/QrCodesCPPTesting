@@ -45,10 +45,23 @@ class Toast : public Drawable {
             return (GetTime() >= this->setTime);
         }
 
+        double getMaxTextSize() {
+            EzText text(raylib::Text(GetFontDefault(), message, ((GetScreenWidth()/5.0)/message.length())*1.4), RAYWHITE);
+            raylib::Vector2 textSize = text.getSize();
+            while (textSize.x < GetScreenWidth()/6.0 && textSize.y < GetScreenHeight()/10.0) {
+                text.setTextSize(text.getTextSize() + 0.1);
+                textSize = text.getSize();
+            }
+            while (textSize.x > GetScreenWidth()/6.0 || textSize.y > GetScreenHeight()/10.0) {
+                text.setTextSize(text.getTextSize() - 0.1);
+                textSize = text.getSize();
+            }
+            return text.getTextSize();
+        }
         void draw(int x, int y) override {
             this->selfAnimation.update();
             raylib::Rectangle rect(x + this->customTransformation.x, y + this->customTransformation.y, GetScreenWidth()/5.0, GetScreenHeight()/10.0);
-            EzText text(raylib::Text(GetFontDefault(), message, (rect.width/message.length())*1.4), RAYWHITE);
+            EzText text(raylib::Text(GetFontDefault(), message, getMaxTextSize()), RAYWHITE);
             raylib::Vector2 textSize = text.getSize();
             
             rect.DrawRounded(1.0, 20, raylib::Color(40,40,40,200));

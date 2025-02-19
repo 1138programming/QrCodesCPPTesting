@@ -44,6 +44,13 @@ class EzText : public Drawable {
             this->text.SetText(str);
         }
 
+        ShouldScale getTextSize() {
+            return this->textSize;
+        }
+        void setTextSize(ShouldScale textSize) {
+            this->textSize = textSize;
+        }
+
         ShouldScale getWidth() override {
             this->text.fontSize = this->textSize.getData();
             this->text.spacing = this->spacing.getData();
