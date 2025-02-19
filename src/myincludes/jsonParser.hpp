@@ -27,7 +27,6 @@ class JsonParser {
                 file = std::ofstream("log copy 88889.json");
                 file << datan;
                 file.close();
-                
             }
             catch(...) {
                 file.close();
@@ -44,7 +43,7 @@ class JsonParser {
                 
                     MATCH_DATAPOINT currentDatapoint;
                
-                    std::cout << "hello3" <<std::endl;
+                    // std::cout << "hello3" <<std::endl;
                 
          
                     
@@ -76,10 +75,12 @@ class JsonParser {
                           
 
                 
-            }  std::cout << "hello4777777" <<std::endl; 
+            }  
+            // std::cout << "end" <<std::endl; 
             }
             catch (...) {
-                std::cout << "errbitch" <<std::endl; //uh oh
+                DebugConsole::print(std::string("Error parsing match ") + "\n", DBGC_YELLOW);
+
                 // toastHandler::add(Toast("fuck. it no workie", LENGTH_NORMAL));
 
             }
@@ -100,13 +101,12 @@ class JsonParser {
                 
                     TEAM_DATAPOINT currentDatapoint;
                
-                    std::cout << "hello3" <<std::endl;
                 
          
                     
                    
                     json element = *it; 
-                    std::cout << *it << std::endl;
+                    // std::cout << *it << std::endl;
                     (!element["nickname"].is_null()) ?  currentDatapoint.teamName = element["nickname"] : currentDatapoint.teamName = "NULL";
                     (!element["team_number"].is_null()) ?  currentDatapoint.teamNum = element["team_number"] : currentDatapoint.teamNum = 0;
                     (!element["website"].is_null()) ?  currentDatapoint.teamDesc = element["website"] : currentDatapoint.teamDesc = "NULL";
@@ -119,10 +119,10 @@ class JsonParser {
                 
                 
                 }
-              std::cout << "hello4777777" <<std::endl; 
             }
             catch (...) {
-                std::cout << "errbitch" <<std::endl; //uh oh
+                DebugConsole::print(std::string("Error parsing teams ") +  "\n", DBGC_YELLOW);
+
                 // toastHandler::add(Toast("fuck. it no workie", LENGTH_NORMAL));
 
             }

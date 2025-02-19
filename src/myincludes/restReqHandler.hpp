@@ -31,6 +31,7 @@ class RestReqHandler {
             CURL* handler = curl_easy_init();
 
             curl_slist* headerList = NULL;
+            output = "";
             if (handler) {
                 std::string url = std::string("https://www.thebluealliance.com/api/v3/teams/" + std::to_string(page));
                 // std::cout << (url.c_str()) << std::endl;
@@ -55,9 +56,11 @@ class RestReqHandler {
                 //     std::cout << str << std::endl;
                 // }
                 // }
+                if (res != CURLcode::CURLE_OK) {
+                    DebugConsole::print(std::string("Error Pulling from api Res: ") + std::to_string((int)res) + "\n", DBGC_YELLOW);
+                }
             }
             curl_easy_cleanup(handler);
-
             // std::cout << output;
             JsonParser parser(output); 
             std::vector<TEAM_DATAPOINT> teams = parser.parseAPI();
@@ -66,16 +69,16 @@ class RestReqHandler {
             
         
 
-            for (auto i = teams.begin(); i != teams.end(); ++i) {
-                if (i.base() != NULL) {
-                    temp = *i.base();
+            // for (auto i = teams.begin(); i != teams.end(); ++i) {
+            //     if (i.base() != NULL) {
+            //         temp = *i.base();
 
-                    std::cout << temp.teamNum << std::endl;
-                }
-                else {
-                std::cout << " it doesn't work, it is null" << std::endl;
-                }   
-            }
+            //         std::cout << temp.teamNum << std::endl;
+            //     }
+            //     else {
+            //     std::cout << " it doesn't work, it is null" << std::endl;
+            //     }   
+            // }
 
             
             database.setteamdat(teams);

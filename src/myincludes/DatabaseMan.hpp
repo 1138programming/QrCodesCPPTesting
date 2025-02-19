@@ -26,9 +26,7 @@ class DatabaseMan {
         
     public:
    
-    DatabaseMan() { 
-        
-     
+    DatabaseMan() {      
 
     }
 
@@ -49,20 +47,20 @@ class DatabaseMan {
         for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
             if (i.base() != NULL) {
                 temp = *i.base();
-                std::cout << "working" <<std::endl;
-                
+               
+
                 // std::cout << "insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");" << std::endl;
                 auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
                 
             }
             else {
-                std::cerr << " it doesn't work, it is null" << std::endl;
-              }   
+                DebugConsole::print(std::string("Error inserting datapoints. Base is null ")  + "\n", DBGC_RED);
+            }   
         }
         }
 
         else {
-            std::cout << "datapoints is null" << std::endl;
+            DebugConsole::print(std::string("Error inserting datapoints. Vector is null ")  + "\n", DBGC_RED);
         }
 
 
@@ -79,21 +77,28 @@ class DatabaseMan {
         for (auto i = teams.begin(); i != teams.end(); ++i) {
             if (i.base() != NULL) {
                 temp2 = *i.base();
-                std::cout << "working" <<std::endl;
-                
-                std::cout << "insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + temp2.teamName + "');" << std::endl;
-                auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + temp2.teamName + "');" , 1); 
-                
+                // std::cout << "insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + temp2.teamName + "');" << std::endl;
+                char* buffer = (char*)malloc(2 * temp2.teamName.length() + 1);
+
+                mysql_real_escape_string(database.getMysql(), buffer, temp2.teamName.c_str(),  temp2.teamName.length());
+
+                auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + std::string(buffer) + "');" , 1); 
+                  free(buffer);
             }
             else {
-                std::cerr << " it doesn't work, it is null" << std::endl;
-            }   
+                DebugConsole::print(std::string("Error inserting teams. Base is null ") + "\n", DBGC_RED);
+                // std::cerr << " it doesn't work, it is null" << std::endl;
+            }
+
         }
         }
 
         else {
-            std::cout << "datapoints is null" << std::endl;
+            DebugConsole::print(std::string("Error inserting teams. Vector is null ") + "\n", DBGC_RED);
+
+            // std::cout << "datapoints is null" << std::endl;
         }
+      
     
     }
 

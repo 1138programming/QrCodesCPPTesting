@@ -33,11 +33,16 @@ class Database {
             printf("Client version: %s\n",mysql_get_client_info()); 
             printf("Server version: %s\n",mysql_get_server_info(&mysql));                          
         }
+        MYSQL* getMysql() {
+            return &this->mysql;
+        }
+        // std::vector<std::vector<std::string>> query(int len, std::string statement, int length) {
 
+        // }
         std::vector<std::vector<std::string>> execQuery(std::string statement, int length) {
             std::string row2;        
             if (mysql_query(&mysql, statement.c_str())) {
-                DebugConsole::print(std::string("Error executing DB query: ") + mysql_error(&mysql) + "\n");
+                DebugConsole::print(std::string("Error executing DB query: ") + mysql_error(&mysql) + "\n", DBGC_YELLOW);
 
 
                 return std::vector<std::vector<std::string>>();
@@ -45,14 +50,14 @@ class Database {
  
             MYSQL_RES *resptr = mysql_use_result(&mysql);
             if (mysql.status == MYSQL_STATUS_USE_RESULT) {
-                DebugConsole::print(std::string("Error bad: ") + mysql_error(&mysql) + " (Can usually safely be ignored)\n", DBGC_YELLOW);
+                DebugConsole::print(std::string("Error: Status Use Result: ") + mysql_error(&mysql) + " (Can usually safely be ignored)\n", DBGC_YELLOW);
             }    
             if (length == 0) {
                 return std::vector<std::vector<std::string>>();
             }
             else {
                 if (resptr == 0) {
-                    DebugConsole::print(std::string("Error result is zero: ") + mysql_error(&mysql) + "\n", DBGC_RED);
+                    DebugConsole::print(std::string("Warn: result is zero: ") + mysql_error(&mysql) + "\n", DBGC_YELLOW);
                 }
                 else {
                     int i, j;
@@ -86,6 +91,7 @@ class Database {
         
         ~Database() {
             mysql_close(&mysql); 
+            
         }
 };
 #endif

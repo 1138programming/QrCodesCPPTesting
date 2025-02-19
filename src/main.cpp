@@ -213,7 +213,7 @@ int main() {
                 }
                 if (AmplifyBlue.isPressed()) {
                     try {
-                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() +",-1,11,'true', -1, 'Blue');", 0);  
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ( 4,-1,11,'true', -1, 'Blue');", 0);  
                         toastHandler::add(Toast("Amplify Blue Started",LENGTH_NORMAL));
 
                     }
