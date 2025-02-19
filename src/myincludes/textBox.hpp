@@ -11,16 +11,26 @@ class TextBox : public Drawable {
         ShouldScale width;
         ShouldScale height;
         raylib::Font font;
-        raylib::Color rectColor, textColor;
+        raylib::Color rectColor, textColor, selectColor;
         ShouldScale textSize;
         ShouldScale spacing;
         char* text;
+        bool selected;
         int sizeLimit = 0;
         int currentChar = 0;
         int lastX, lastY;
 
         void updateText() {
-            if (isHovering()) {
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                if (isHovering()) {
+                    selected = true;
+                }
+                else {
+                    selected = false;
+                }
+            }
+            if (selected) {
+
                 int key = GetCharPressed();
                 if (IsKeyPressed(KEY_BACKSPACE)) {
                     this->currentChar--;
@@ -47,9 +57,27 @@ class TextBox : public Drawable {
             this->font = raylib::Font(font);
             this->textColor = fontColor;
             this->rectColor = rectColor;
+            this->selectColor = raylib::Color(rectColor.r / 2, rectColor.g / 2, rectColor.b / 2);
             this->spacing = spacing;
             this->lastX = 0;
             this->lastY = 0;
+            this->selected = false;
+        }
+        TextBox(ShouldScale width, ShouldScale height, int sizeLimit, ShouldScale spacing,  ShouldScale textSize, Font font, raylib::Color fontColor, raylib::Color rectColor, raylib::Color selectColor) {
+            this->width = width;
+            this->height = height;
+            this->sizeLimit = sizeLimit;
+            this->text = (char*)calloc(this->sizeLimit+1, sizeof(char));
+            this->textSize = textSize;
+            this->font = raylib::Font(font);
+            this->textColor = fontColor;
+            this->rectColor = rectColor;    
+            this->selectColor = selectColor;
+            this->spacing = spacing;
+            this->lastX = 0;
+            this->lastY = 0;
+            this->selected = false;
+        
         }
         void draw(int x, int y) override {
             this->lastX = x;
@@ -58,7 +86,13 @@ class TextBox : public Drawable {
             
             EzText textToDraw(raylib::Text(this->font, std::string(this->text)), this->textColor, this->textSize, this->spacing);
             raylib::Rectangle rect(x, y, this->width, this->height);
-            rect.DrawLines(rectColor);
+
+            if (selected) {
+                rect.DrawLines(selectColor);
+            }    
+            else {
+                rect.DrawLines(rectColor);
+            }       
             textToDraw.draw(x,y);
         }
 
