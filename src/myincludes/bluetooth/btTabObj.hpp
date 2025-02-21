@@ -5,14 +5,36 @@
 #include "../debugConsole.hpp"
 #include "bluetoothTransaction.hpp"
 
+#include <vector>
+#include <optional>
+
 class BtTabObj {
     private:
         std::string macStr;
         bt::SOCKADDR_BTH macAddr;
         bt::SOCKET socket;
         bt::SOCKETCALLTYPE callType;
+        bt::TABTRANSACTION currTrans;
 
         std::string tabScoutingName;
+
+        /*********************************************/
+        /* PRIVATE COMMUNICATION PROTO PRIMATIVES */
+        /*********************************************/
+        std::optional<std::vector<char>> returnEmptyVector() {
+            return std::nullopt;
+        }
+        bt::TRANSACTIONTYPE getTransactionType() {
+            bool success;
+            char* transRes = readAllSocketData(BT_EXPECTED_DATA_INITIAL, success);
+            if (!success) {
+                return bt::TRANS_SOCKET_ERROR;
+            }
+            char transactionType = (*transRes);
+            free(transRes);
+            return (bt::TRANSACTIONTYPE)transactionType;
+        }
+        
     public:
         BtTabObj(bt::SOCKET socket, bt::SOCKADDR_BTH addr, std::string addrStr) {
             this->socket = socket;
@@ -48,7 +70,7 @@ class BtTabObj {
          * 
          * This function just reads all the expected data, because it doesn't really matter if we wait a small amount.
          * @warning If success is false, the returned char* is likely NULL. Don't write/read to/from it.
-         * 
+         * @warning the returned char* needs to be freed (using free())
          */
         char* readAllSocketData(size_t sizeExpected, bool& success) {
             success = true;
@@ -183,7 +205,7 @@ class BtTabObj {
         /*********************************************/
         /**
          * @returns Whether the windows gods tell us if the socket has data to read in a non-blocking manner (includes requests to close socket)
-         * @warning If there has been a non-graceful close, this will @b always return false
+         * @warning If there has been a non-graceful close, this will always return false
          */
         bool readyToRead() {
             bt::TIMEVAL waitTime = {0};
@@ -223,6 +245,50 @@ class BtTabObj {
         /*********************************************/
         /* COMMUNICATION PROTO PRIMATIVES */
         /*********************************************/
+        /**
+         * @brief This function should be called in order for the transaction to be handled by another class.
+         * @returns a ```TABTRANSACTION``` w/ only ```parent```, ```success``` (which will also need to be checked after data is gotten), ```transactionType```, and ```writeTransaction``` params.
+        */
+        bt::TABTRANSACTION* readTransactionData() {
+            this->currTrans.parent = this;
+
+            if (!this->readyToRead() || !this->readyToWrite()) {
+                DebugConsole::println("Tablet not ready to read/write", DBGC_RED);
+                this->currTrans.success = false;
+                this->currTrans.transactionType = bt::TRANS_CLOSE_SOCKET;
+                this->currTrans.writeTransaction = false;
+                return &this->currTrans;
+            }
+
+            this->currTrans.transactionType = this->getTransactionType();
+            if (this->currTrans.transactionType == bt::TRANS_SOCKET_ERROR) {
+                DebugConsole::println("getTransactionType() returned TRANS_SOCKET_ERROR", DBGC_RED);
+                this->currTrans.success = false;
+                this->currTrans.writeTransaction = false;
+                return &this->currTrans;
+            }
+            this->currTrans.writeTransaction = (((char)this->currTrans.transactionType) < 0);
+
+            return &this->currTrans;
+        }
+
+
+        /*********************************************/
+        /* GETTER/SETTER FUNCTIONS*/
+        /*********************************************/
+        std::string getScoutingName() {
+            return this->tabScoutingName;
+        }
+        void setScoutingName(std::string name) {
+            this->tabScoutingName = name;
+        }
+
+        std::string getMacAddrStr() {
+            return this->macStr;
+        }
+        bt::SOCKADDR_BTH getMacAddrStruct() {
+            return this->macAddr;
+        }
 };
 
 #endif

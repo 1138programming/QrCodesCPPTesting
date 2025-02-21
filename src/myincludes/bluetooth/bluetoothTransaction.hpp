@@ -21,7 +21,7 @@ namespace bt {
          * 
          * - If the data is non-async, this will always return true
          * 
-         * It's probably best practice this is not relied on to be true
+         * It's probably best practice this is not relied on to be true (a non-initialized data obj will cause UB)
          */
         bool isReady() {
             switch(data.wait_for(std::chrono::seconds(0))) {
