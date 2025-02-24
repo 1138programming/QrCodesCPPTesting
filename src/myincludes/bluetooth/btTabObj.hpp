@@ -289,6 +289,10 @@ class BtTabObj {
         bt::SOCKADDR_BTH getMacAddrStruct() {
             return this->macAddr;
         }
+
+        bt::SOCKET getWinsockSocket() {
+            return this->socket;
+        }
 };
 
 #endif

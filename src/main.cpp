@@ -1,4 +1,3 @@
-
 #include "include/raylib-cpp.hpp"
 #include "../myincludes/qrcodeScanner.hpp"
 #include "myincludes/allincludes.hpp"
@@ -23,6 +22,7 @@
 #include "myincludes/debugConsole.hpp"
 #include "myincludes/restReqHandler.hpp"
 #include "myincludes/bluetooth/btTabObj.hpp"
+#include "myincludes/bluetooth/bluetoothConductor.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>

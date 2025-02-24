@@ -7,6 +7,7 @@
 #include "../debugConsole.hpp"
 #include "../winsockErrorDesc.hpp"
 #include "btTabObj.hpp"
+#include "bluetoothConductor.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -21,6 +22,7 @@ class Bluetooth {
     private:
         bt::SOCKET listener;
         std::vector<BtTabObj> connectedTablets;
+        BluetoothConductor conductor;
 
         bt::BLUETOOTH_ADDRESS_STRUCT localAddr;
         unsigned int port;
@@ -239,6 +241,39 @@ class Bluetooth {
                     addrStruct.ullLong = peerAddr.btAddr;
                 this->connectedTablets.push_back(BtTabObj(peer, peerAddr, getMacStr(addrStruct)));
             }
+        }
+        void handleReadyConnections() {
+            if (this->connectedTablets.size() == 0) {
+                // nothing to do lol
+                return;
+            }
+
+            for (int i = 0; i < this->connectedTablets.size(); i++) {
+                BtTabObj tabCurr = this->connectedTablets.at(i);
+                if (!tabCurr.readyToRead()) {
+                    continue;
+                }
+                else {
+                    
+                }
+            }
+        }
+
+        /*********************************************/
+        /* GETTER/SETTER-TYPE FUCNTIONS */
+        /*********************************************/
+        /**
+         * @returns whether a socket matching the conditions was successfully erased
+         */
+        bool killSocket(bt::SOCKET deleteSock) {
+            for (int i = 0; i < this->connectedTablets.size(); i++) {
+                bt::SOCKET currSock = this->connectedTablets.at(i).get();
+                if (currAddr.btAddr == macAddr.btAddr) {
+                    this->connectedTablets.erase(this->connectedTablets.begin() + i);
+                    return true;
+                }
+            }
+            return false;
         }
 };
 

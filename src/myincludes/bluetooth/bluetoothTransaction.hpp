@@ -1,11 +1,15 @@
 #ifndef BLUETOOTHTRANSACTION_HPP
 #define BLUETOOTHTRANSACTION_HPP
 
-#include "btTabObj.hpp"
 
 #include <vector>
 #include <future>
+#include <optional>
 #include <chrono>
+
+#include "btTabObj.hpp"
+
+class BtTabObj; // we need to explicitly tell c++ it exists because it is bad stupid language 😡
 
 namespace bt {
     typedef struct {
