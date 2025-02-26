@@ -103,14 +103,12 @@ class BtTabObj {
                     if (currError == WSAEWOULDBLOCK || currError == WSAEINPROGRESS) {
                         continue; // errors when no data or winsock is busy, so just try again lol
                     }
-                    DebugConsole::println("Socket communication error. (closing)", DBGC_YELLOW);
+                    DebugConsole::println(std::string("Socket communication error. (closing) (error=") + std::to_string(currError) + std::string(")"), DBGC_YELLOW);
                     success = false;
                     return NULL;
                 }
-                else {
-                    dataRecvd += currentLenRecvd;
-                    dataPtr += currentLenRecvd;
-                }
+                dataRecvd += currentLenRecvd;
+                dataPtr += currentLenRecvd;
             }
             return dataPtrStart;
         }
