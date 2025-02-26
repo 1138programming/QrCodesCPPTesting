@@ -301,6 +301,7 @@ class Bluetooth {
             this->names.clear();
             for (int i = 0; i < this->connectedTablets.size(); i++) {
                 this->names.push_back(EzText(raylib::Text(this->connectedTablets.at(i).getScoutingName()), RAYWHITE, 25.0_spX, 1.0));
+                this->names.at(i).setCustomOffset(raylib::Vector2(2.0, 0.0));
                 listVector->push_back(&this->names.at(i));
             }
             return &this->nameList;

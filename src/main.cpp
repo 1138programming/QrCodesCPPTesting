@@ -146,7 +146,8 @@ int main() {
         btTestingScene.add(&serverData);
         btTestingScene.add(&disconnectAllTabs);
         btConn.getNameList()->setDisplayPos(BOTTOMCENTERED);
-        btTestingScene.add(btConn.getNameList());
+        VerticalScrollable* nameList = btConn.getNameList();
+        btTestingScene.add(nameList);
 
 
 
@@ -273,6 +274,7 @@ int main() {
                 }
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);
+                nameList = btConn.getNameList();
                 btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));               
             break;
             
