@@ -21,6 +21,7 @@
 #include "myincludes/movementAnimation.hpp"
 #include "myincludes/debugConsole.hpp"
 #include "myincludes/restReqHandler.hpp"
+#include "myincludes/bluetooth/bluetooth.hpp"
 #include "myincludes/bluetooth/btTabObj.hpp"
 #include "myincludes/bluetooth/bluetoothConductor.hpp"
 #include <iostream>
@@ -53,7 +54,7 @@ int main() {
     raylib::Font spaceMono(std::string("resources/SpaceMono-Bold.ttf"));
     Bluetooth btConn;
     Client client;
-    btConn.initAll();
+    btConn.initWinsock();
     btConn.initAccept();
 
     RestReqHandler handler;        
@@ -144,8 +145,8 @@ int main() {
             serverData.setDisplayPos(BOTTOMLEFT);
         btTestingScene.add(&serverData);
         btTestingScene.add(&disconnectAllTabs);
-        btConn.getConnList()->setDisplayPos(BOTTOMCENTERED);
-        btTestingScene.add(btConn.getConnList());
+        btConn.getNameList()->setDisplayPos(BOTTOMCENTERED);
+        btTestingScene.add(btConn.getNameList());
 
 
 
@@ -188,7 +189,7 @@ int main() {
 
         btConn.handleReadyConnections();
         activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
-        btConn.updateConnections();
+        btConn.updateAllBt();
         activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
 
         switch(currentScene) {
@@ -264,7 +265,7 @@ int main() {
 
             case BLUETOOTH:
                 if (disconnectAllTabs.isPressed()) {
-                    btConn.disconnectAll();
+                    btConn.killAllSockets();
                 }
                 if (pong.isPressed()) {
                     std::cout << "hello" << std::endl;

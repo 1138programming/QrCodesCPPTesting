@@ -13,10 +13,11 @@ class BtTabObj {
         std::string macStr;
         bt::SOCKADDR_BTH macAddr;
         bt::SOCKET socket;
-        bt::SOCKETCALLTYPE callType;
+        bt::SOCKETCALLTYPE callType = bt::CALLTYPE_DEFAULT;
         bt::TABTRANSACTION currTrans;
 
-        std::string tabScoutingName;
+        std::string tabScoutingName = "NULL";
+        bool transactionState = false;
 
         /*********************************************/
         /* PRIVATE COMMUNICATION PROTO PRIMATIVES */
@@ -271,6 +272,77 @@ class BtTabObj {
 
             return &this->currTrans;
         }
+        std::optional<std::vector<char>> internalRead(bool& success) {
+            /*
+                Communication will go as follows:
+                    C: 👍 (Trailing ACK)
+                    T: # of bytes to be sent (signed int)
+                    C: 👍 (ACK)
+                    T: all data
+                    C: 👍 (ACK)
+            */
+           success = true;
+           if (!this->sendAck()) {
+                success = false;
+                return std::vector<char>();
+            }
+            
+            // get # of bytes to be sent
+            char* numOfByteDataPtr = readAllSocketData(BT_EXPECTED_DATA_READSIZE, success);
+            if (!success || !this->invertEndianness(numOfByteDataPtr, BT_EXPECTED_DATA_READSIZE)) {
+                sendNack();
+                success = false;
+                return std::vector<char>();
+            }
+            int bytesExpected = ((int*)numOfByteDataPtr)[0];
+            free(numOfByteDataPtr);
+            
+            // ack recvd data size
+            if (!sendAck()) {
+                success = false;
+                return std::vector<char>();
+            }
+            
+            // read # of bytes from socket and return as vector
+            char* messagePtr = readAllSocketData(bytesExpected, success);
+            if (!success) {
+                sendNack();
+                return std::vector<char>(); // (success already false)
+            }
+
+            std::vector<char> messageData;
+            messageData.reserve(bytesExpected);
+            for (int i = 0; i < bytesExpected; i++) {
+                messageData.push_back(messagePtr[i]);
+            }
+            free(messagePtr);
+            return messageData;
+        }
+        void internalWrite(std::vector<char> data, bool& success) {
+            /*
+                Communication will go as follows:
+                    C: # of bytes to be sent (signed int) (trailing from connection number)
+                    T: ACK
+                    C: all data
+                    T: ACK
+            */
+           success = true;
+
+           // send # of bytes to tablet
+           int dataSize = data.size();
+           success = (success && this->sendToSocket((char*)&dataSize, BT_EXPECTED_DATA_READSIZE));
+           // read ack
+           success = (success && readAck());
+           if (!success) {
+            return;
+           }
+           //send full data
+           success = (success && sendToSocket(data.data(), data.size()));
+           // read ack
+           success = (success && readAck());
+
+           return;
+        }
 
 
         /*********************************************/
@@ -290,8 +362,35 @@ class BtTabObj {
             return this->macAddr;
         }
 
+        bt::SOCKETCALLTYPE getCallType() {
+            return this->callType;
+        }
+        void setCallType(bt::SOCKETCALLTYPE type) {
+            this->callType = type;
+        }
+
+        bool undergoingTransaction() {
+            return this->transactionState;
+        }
+        void setTransactionState(bool isUndergoing) {
+            this->transactionState = isUndergoing;
+        }
+
         bt::SOCKET getWinsockSocket() {
             return this->socket;
+        }
+
+
+        /*********************************************/
+        /* DELETION FUNCTIONS*/
+        /*********************************************/
+        /**
+         * @brief Kills internal socket through winsock. Makes basically everything invalid
+         * @warning should only ever be called once
+         * @returns the winsock value returned by closesocket()
+         */
+        int sockSuicide() {
+            return bt::closesocket(this->socket);
         }
 };
 

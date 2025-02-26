@@ -6,6 +6,8 @@
 #include "../verticalScrollable.hpp"
 #include "../debugConsole.hpp"
 #include "../winsockErrorDesc.hpp"
+#include "../verticalScrollable.hpp"
+#include "../ezText.hpp"
 #include "btTabObj.hpp"
 #include "bluetoothConductor.hpp"
 
@@ -22,6 +24,7 @@ class Bluetooth {
     private:
         bt::SOCKET listener;
         std::vector<BtTabObj> connectedTablets;
+        std::vector<bt::TABTRANSACTION*> runningTransactions;
         BluetoothConductor conductor;
 
         bt::BLUETOOTH_ADDRESS_STRUCT localAddr;
@@ -29,6 +32,9 @@ class Bluetooth {
 
         bt::HANDLE btRadio; // init/shutdown vars
         bt::HBLUETOOTH_RADIO_FIND btRadioFindingVal;
+
+        VerticalScrollable nameList = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
+        std::vector<EzText> names;
     public:
         /*********************************************/
         /* HOST/CLIENT DATA HANDLING FUNCTIONS */
@@ -47,7 +53,7 @@ class Bluetooth {
                 }
                 addrBuilder << (int)addr.rgBytes[i] << ":";
             }
-            if (addr.rgBytes[i] <= 0x0f) {
+            if (addr.rgBytes[0] <= 0x0f) {
                 addrBuilder << 0;
             }
             addrBuilder << (int)addr.rgBytes[0]; // outside of loop so we don't have a hanging ":"
@@ -69,12 +75,12 @@ class Bluetooth {
                 str = "";
                 return -1;
             }
-            if (bt::gethostname(hostName, 256) != 0) {
+            if (bt::gethostname(name, 256) != 0) {
                 str = "";
                 return -2;
             }
 
-            (*str) = std::str(name);
+            str = std::string(name);
             free(name);
             return 0;
         }
@@ -118,7 +124,7 @@ class Bluetooth {
                 radioParams.dwSize = sizeof(bt::BLUETOOTH_FIND_RADIO_PARAMS);
 
             this->btRadioFindingVal = bt::BluetoothFindFirstRadio(&radioParams, &this->btRadio);
-            if (this->btFindingVal == NULL) {
+            if (this->btRadioFindingVal == NULL) {
                 DebugConsole::print("No valid bluetooth radio found!", DBGC_RED);
             }
         }
@@ -129,7 +135,7 @@ class Bluetooth {
          */
         void freeRadioHandles() {
             bt::CloseHandle(this->btRadio);
-            bt::BluetoothFindRadioClose(this->btFindingVal);
+            bt::BluetoothFindRadioClose(this->btRadioFindingVal);
         }
 
         /**
@@ -165,7 +171,7 @@ class Bluetooth {
             // create ADDR for BT socket to bind to
             bt::SOCKADDR_BTH listenerAddr = {0};
                 listenerAddr.addressFamily = AF_BTH; // address family for bluetooth
-                listenerAddr.bthAddr = 0; // if 0, it's local MAC addr. Unsure if you can actually change this
+                listenerAddr.btAddr = 0; // if 0, it's local MAC addr. Unsure if you can actually change this
                 listenerAddr.port = BT_PORT_ANY; // let windows decide :D
                 listenerAddr.serviceClassId = MY_GUID; // will be ignored, why not set it
             // bind addr to sock we created earlier
@@ -185,14 +191,16 @@ class Bluetooth {
             // I will try my best to explain these things line-by-line, though some of the things may be past me.
             
             std::string lpszServiceInstanceNameLocal; // get the host name to set as our instance name. I'm like 90% sure windows will override if it is not set to this anyway.
-            checkSuccesWinsock<int>(getHostNameStr(lpszServiceInstanceNameLocal), 0, "Getting host name failed (this shouldn't matter too much)");
+            checkSuccessWinsock<int>(getHostNameStr(lpszServiceInstanceNameLocal), 0, "Getting host name failed (this shouldn't matter too much)");
 
             // this structure is needed for the next structure created
             bt::CSADDR_INFO sdpSockInfo = {0};
                 sdpSockInfo.LocalAddr.iSockaddrLength = sizeof(bt::SOCKADDR_BTH);
                 sdpSockInfo.LocalAddr.lpSockaddr = (bt::LPSOCKADDR)&localSocketName;
+                sdpSockInfo.RemoteAddr.iSockaddrLength = sizeof(bt::SOCKADDR_BTH);
+                sdpSockInfo.RemoteAddr.lpSockaddr = (bt::LPSOCKADDR)&localSocketName;
                 sdpSockInfo.iSocketType = SOCK_STREAM; // BT is a streaming protocol
-                sdpSockIngo.iProtocol = BTHPROTO_RFCOMM; // bluetooth classic (not LE)
+                sdpSockInfo.iProtocol = BTHPROTO_RFCOMM; // bluetooth classic (not LE)
 
             bt::WSAQUERYSETA sdpRegistration = {0};
                 sdpRegistration.dwSize = sizeof(bt::WSAQUERYSETA); // for versioning
@@ -207,12 +215,12 @@ class Bluetooth {
             checkSuccessWinsock<int>(bt::WSASetServiceA(&sdpRegistration, bt::RNRSERVICE_REGISTER, 0), 0, "Failed to register SDP server (cooked).");
 
             //___set port to listen for connections___
-            checkSuccesWinsock<int>(bt::listen(this->listener, 7), 0, "Failed to set socket in listening mode."); // I use 7, as that is the max number of bluetooth connections (there is no possible way we are getting that many in a couple milliseconds/a frame)
+            checkSuccessWinsock<int>(bt::listen(this->listener, 7), 0, "Failed to set socket in listening mode."); // I use 7, as that is the max number of bluetooth connections (there is no possible way we are getting that many in a couple milliseconds/a frame)
 
             // ___(Technically optional) set up port to be non-blocking, as we are using this w/ a UI___
             // set non blocking mode true
             bt::ULONG mode = 1;
-            checkSuccessWinsock<int>(bt::ioctlsocket(this->listener, FIONBIO, &mode), 0, "Failed to set socket to non-blocking mode.")
+            checkSuccessWinsock<int>(bt::ioctlsocket(this->listener, FIONBIO, &mode), 0, "Failed to set socket to non-blocking mode.");
 
             // we can now accept() connections!!!! :DDDDD (we will handle this in a separate function)
             makeDiscoverable(); // yipee!
@@ -228,7 +236,7 @@ class Bluetooth {
         void acceptConn() {
             bt::SOCKADDR_BTH peerAddr = {0};
                 int sizeOfPeerAddr = sizeof(peerAddr);
-            bt::SOCKET peer = bt::accept(this->listener, (bt::sockaddr*)&peerAddr, sizeOfPeerAddr);
+            bt::SOCKET peer = bt::accept(this->listener, (bt::sockaddr*)&peerAddr, &sizeOfPeerAddr);
 
             if (peer != INVALID_SOCKET) {
                 // _this will not get run often, as most of the time there will be nothing in the accept queue_
@@ -249,14 +257,53 @@ class Bluetooth {
             }
 
             for (int i = 0; i < this->connectedTablets.size(); i++) {
-                BtTabObj tabCurr = this->connectedTablets.at(i);
-                if (!tabCurr.readyToRead()) {
+                BtTabObj* tabCurr = &this->connectedTablets.at(i);
+                if (!tabCurr->readyToRead() || tabCurr->undergoingTransaction()) {
                     continue;
                 }
                 else {
-                    
+                    bt::TABTRANSACTION* currTrans = this->conductor.initReadyTransaction(tabCurr->readTransactionData());
+                    if (currTrans->batmanTrans) {
+                        killSocket(currTrans->parent->getWinsockSocket());
+                    }
+                    else if (currTrans->isReady()) {
+                        this->conductor.handleTransResult(currTrans);
+                    }
+                    else {
+                        runningTransactions.push_back(currTrans);
+                        currTrans->parent->setTransactionState(true);
+                    }
                 }
             }
+        }
+        void handleRunningTransactions() {
+            if (this->runningTransactions.size() == 0) {
+                return; // nothing to do lol
+            }
+
+            for (int i = 0; i < this->runningTransactions.size(); i++) {
+                if (this->runningTransactions.at(i)->isReady()) {
+                    this->conductor.handleTransResult(this->runningTransactions.at(i));
+                    this->runningTransactions.at(i)->parent->setTransactionState(false);
+                    this->runningTransactions.erase(this->runningTransactions.begin() + i);
+                }
+            }
+        }
+        void updateAllBt() {
+            acceptConn();
+            handleReadyConnections();
+            handleRunningTransactions();
+        }
+
+        VerticalScrollable* getNameList() {
+            std::vector<Drawable*>* listVector = this->nameList.getInternalVector();
+            listVector->clear();
+            this->names.clear();
+            for (int i = 0; i < this->connectedTablets.size(); i++) {
+                this->names.push_back(EzText(raylib::Text(this->connectedTablets.at(i).getScoutingName()), RAYWHITE, 25.0_spX, 1.0));
+                listVector->push_back(&this->names.at(i));
+            }
+            return &this->nameList;
         }
 
         /*********************************************/
@@ -267,13 +314,30 @@ class Bluetooth {
          */
         bool killSocket(bt::SOCKET deleteSock) {
             for (int i = 0; i < this->connectedTablets.size(); i++) {
-                bt::SOCKET currSock = this->connectedTablets.at(i).get();
-                if (currAddr.btAddr == macAddr.btAddr) {
+                bt::SOCKET currSock = this->connectedTablets.at(i).getWinsockSocket();
+                if (currSock == deleteSock) {
+                    this->connectedTablets.at(i).sockSuicide();
                     this->connectedTablets.erase(this->connectedTablets.begin() + i);
                     return true;
                 }
             }
             return false;
+        }
+        void killAllSockets() {
+            for (int i = 0; i < this->connectedTablets.size(); i++) {
+                this->connectedTablets.at(i).sockSuicide();
+            }
+            this->connectedTablets.clear();
+        }
+
+        std::string getLocalMacStr() {
+            return getMacStr(this->localAddr);
+        }
+        int getLocalPort() {
+            return this->port;
+        }
+        int getNumConnections() {
+            return this->connectedTablets.size();
         }
 };
 

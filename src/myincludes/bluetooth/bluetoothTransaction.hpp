@@ -16,8 +16,9 @@ namespace bt {
         BtTabObj* parent;
         bt::TRANSACTIONTYPE transactionType;
         std::future<std::optional<std::vector<char>>> data;
-        bool success;
-        bool writeTransaction; // if not, it's a read transaction. (This could be inferred from TRANSACTIONTYPE, but this is a nice way to package it)
+        bool batmanTrans = false; // true if the parent was killed in the middle of a transaction
+        bool success = true;
+        bool writeTransaction = false; // if not, it's a read transaction. (This could be inferred from TRANSACTIONTYPE, but this is a nice way to package it)
         /**
          * @returns Whether the future object is ready to be called/whether the data is ready. There are a couple of special cases:
          * 
