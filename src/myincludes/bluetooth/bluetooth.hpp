@@ -245,8 +245,6 @@ class Bluetooth {
                 checkSuccessWinsock<int>(bt::ioctlsocket(peer, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking.");
 
                 // add the socket to our tablet list
-                bt::BLUETOOTH_ADDRESS_STRUCT addrStruct = {0};
-                    addrStruct.ullLong = peerAddr.btAddr;
                 this->connectedTablets.push_back(BtTabObj(peer, peerAddr, getMacStr(addrStruct)));
             }
         }
