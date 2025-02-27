@@ -16,6 +16,8 @@ namespace bt {
     
     #include "bthSocketCallingType.hpp"
     #include "bluetoothTransactionType.hpp"
+    #include "bluetooth/bluetoothTransactionType.hpp"
+    // #include "debugConsole.hpp"
 
     #define BT_EXPECTED_DATA_INITIAL (sizeof(char))
     #define BT_EXPECTED_DATA_READSIZE (sizeof(int))
@@ -28,13 +30,17 @@ namespace bt {
 
 }
 
-//includes on timeout
+//includes on timeout >:C
 #include "btReadResult.hpp"
+#include "winsockErrorDesc.hpp"
 
 template<typename T> void checkSuccessWinsock(T val, T target, std::string errorMessage) {
     if (val != target) {
-        std::cerr << "ERROR: " << errorMessage << std::endl;
-        std::cerr << "WSAGetLastError code: " << bt::WSAGetLastError() << std::endl;
+        int errorCode = bt::WSAGetLastError();
+        std::cout << std::string("ERROR: ") + errorMessage + std::string(" Reason:") << std::endl;
+        // bt::DebugConsole::println(std::string("ERROR: ") + errorMesage + std::string(" Reason:"), DBGC_RED);
+        std::cout << std::to_string(errorCode) + std::string(" (") + WinsockErrorDesc::get(errorCode).errorName + std::string(")") << std::endl;
+        // bt::DebugConsole::println(std::to_string(errorCode) + std::string(" (") + WinsockErrorDesc::get(errorCode).errorName + std::string(")"), DBGC_RED);
     }
 }
 

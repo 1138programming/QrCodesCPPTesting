@@ -1,4 +1,3 @@
-
 #include "include/raylib-cpp.hpp"
 #include "../myincludes/qrcodeScanner.hpp"
 #include "myincludes/allincludes.hpp"
@@ -17,11 +16,14 @@
 #include "myincludes/toggle.hpp"
 #include "myincludes/verticalScrollable.hpp"
 #include "myincludes/timer.hpp"
-#include "myincludes/winsockErrorDesc.hpp"
+#include "myincludes/WinsockErrorDesc.hpp"
 #include "myincludes/bthSocketHandler.hpp"
 #include "myincludes/movementAnimation.hpp"
 #include "myincludes/debugConsole.hpp"
 #include "myincludes/restReqHandler.hpp"
+#include "myincludes/bluetooth/bluetooth.hpp"
+#include "myincludes/bluetooth/btTabObj.hpp"
+#include "myincludes/bluetooth/bluetoothConductor.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -52,10 +54,8 @@ int main() {
     raylib::Font spaceMono(std::string("resources/SpaceMono-Bold.ttf"));
     Bluetooth btConn;
     Client client;
-    btConn.initAll();
+    btConn.initWinsock();
     btConn.initAccept();
-
-    std::cout << "Test" << std::endl;
 
     RestReqHandler handler;        
 
@@ -145,8 +145,9 @@ int main() {
             serverData.setDisplayPos(BOTTOMLEFT);
         btTestingScene.add(&serverData);
         btTestingScene.add(&disconnectAllTabs);
-        btConn.getConnList()->setDisplayPos(BOTTOMCENTERED);
-        btTestingScene.add(btConn.getConnList());
+        btConn.getNameList()->setDisplayPos(BOTTOMCENTERED);
+        VerticalScrollable* nameList = btConn.getNameList();
+        btTestingScene.add(nameList);
 
 
 
@@ -163,7 +164,7 @@ int main() {
             }
         }
         if (IsKeyPressed(KEY_E)) {
-            toastHandler::add(Toast(winsockErrorDesc::get(6).errorNameDesc,TOASTLENGTHS::LENGTH_LONG));
+            toastHandler::add(Toast(WinsockErrorDesc::get(6).errorNameDesc,TOASTLENGTHS::LENGTH_LONG));
         }
 
         if (mainTab.isPressed()) {
@@ -189,7 +190,7 @@ int main() {
 
         btConn.handleReadyConnections();
         activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
-        btConn.updateConnections();
+        btConn.updateAllBt();
         activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
 
         switch(currentScene) {
@@ -271,7 +272,7 @@ int main() {
 
             case BLUETOOTH:
                 if (disconnectAllTabs.isPressed()) {
-                    btConn.disconnectAll();
+                    btConn.killAllSockets();
                 }
                 if (pong.isPressed()) {
                     std::cout << "hello" << std::endl;
@@ -279,6 +280,7 @@ int main() {
                 }
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);
+                nameList = btConn.getNameList();
                 btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));               
             break;
             
@@ -312,6 +314,6 @@ int main() {
         window.EndDrawing();
             
     }
-    winsockErrorDesc::destroy();
+    WinsockErrorDesc::destroy();
     return 0;
 }

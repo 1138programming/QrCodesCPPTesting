@@ -1,11 +1,11 @@
-#ifndef WINSOCKERRORDESC_HPP
-#define WINSOCKERRORDESC_HPP
+#ifndef WinsockErrorDesc_HPP
+#define WinsockErrorDesc_HPP
 
 #include <unordered_map>
 #include "winsockErrorDescStruct.hpp"
 
-class winsockErrorDesc {
-    private:
+class WinsockErrorDesc {
+    public:
         static void initVector() {
             errorCodes.clear();
             
@@ -105,23 +105,23 @@ class winsockErrorDesc {
             errorCodes.insert({11030, (WINSOCKERRORDESCSTRUCT){"WSA_QOS_ESHAPERATEOBJ", "Invalid QoS shaping rate object.", "An invalid shaping rate object was found in the QoS provider-specific buffer."}});
             errorCodes.insert({11031, (WINSOCKERRORDESCSTRUCT){"WSA_QOS_RESERVED_PETYPE", "Reserved policy QoS element type.", "A reserved policy element was found in the QoS provider-specific buffer."}});
         }
-    public:
+
         static std::unordered_map<int,WINSOCKERRORDESCSTRUCT> errorCodes;
         static bool init;
         static WINSOCKERRORDESCSTRUCT get(int errorCode) {
             // if not init, init it
-            if (winsockErrorDesc::init == false) {
-                winsockErrorDesc::initVector();
+            if (WinsockErrorDesc::init == false) {
+                WinsockErrorDesc::initVector();
             }
-            WINSOCKERRORDESCSTRUCT valCopy = winsockErrorDesc::errorCodes.at(errorCode);
+            WINSOCKERRORDESCSTRUCT valCopy = WinsockErrorDesc::errorCodes.at(errorCode);
             return valCopy;
         }
         static void destroy() {
-            winsockErrorDesc::errorCodes.clear();
+            WinsockErrorDesc::errorCodes.clear();
         }
 };
 
-bool winsockErrorDesc::init = false;
-std::unordered_map<int,WINSOCKERRORDESCSTRUCT> winsockErrorDesc::errorCodes = std::unordered_map<int,WINSOCKERRORDESCSTRUCT>();
+bool WinsockErrorDesc::init = false;
+std::unordered_map<int,WINSOCKERRORDESCSTRUCT> WinsockErrorDesc::errorCodes = std::unordered_map<int,WINSOCKERRORDESCSTRUCT>();
 
 #endif

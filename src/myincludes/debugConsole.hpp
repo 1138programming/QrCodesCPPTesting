@@ -12,13 +12,19 @@ class DebugConsole {
         static void print(std::string message) {
             print(message, DBGC_DEFAULT);
         }
+        static void println(std::string message) {
+            print(message + std::string("\n"), DBGC_DEFAULT);
+        }
 
         static void print(std::string message, DEBUGCOLORS color) {
             bt::HANDLE stdOut;
             stdOut = bt::GetStdHandle(STD_OUTPUT_HANDLE);
 
-            bt::DWORD request = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // we want to check if color is supported
-            if (!bt::GetConsoleMode(stdOut, &request)) {
+            bt::DWORD mode = 0x0;
+            bt::GetConsoleMode(stdOut, &mode); // gets current console mode
+
+            mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING; // we want to check if color is supported
+            if (!bt::SetConsoleMode(stdOut, mode)) {
                 std::cout << message;
             }
             else {
@@ -58,6 +64,9 @@ class DebugConsole {
                 };
                 std::cout << message << "\033[0m";
             }
+        }
+        static void println(std::string message, DEBUGCOLORS color) {
+            print(message + std::string("\n"), color);
         }
 
         static void print(const std::type_info& callerClass, std::string message){ 
