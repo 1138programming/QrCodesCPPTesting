@@ -41,6 +41,7 @@ class BtTabObj {
             this->socket = socket;
             this->macAddr = addr;
             this->macStr = addrStr;
+            this->tabScoutingName = addrStr;
 
             this->callType = bt::CALLTYPE_DEFAULT;
         }
