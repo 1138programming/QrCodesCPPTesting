@@ -83,7 +83,7 @@ class BtTabObj {
             }
 
             char* dataPtr = (char*)malloc(sizeExpected); // create buffer & check success
-            if (dataPtr = NULL) {
+            if (dataPtr == NULL) {
                 success = false;
                 return NULL;
             }
