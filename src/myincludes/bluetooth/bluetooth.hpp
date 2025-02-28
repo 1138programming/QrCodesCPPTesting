@@ -27,7 +27,7 @@ class Bluetooth {
         std::vector<bt::TABTRANSACTION*> runningTransactions;
         BluetoothConductor conductor;
 
-        bt::BLUETOOTH_ADDRESS_STRUCT localAddr;
+        bt::BLUETOOTH_ADDRESS localAddr;
         unsigned int port;
 
         bt::HANDLE btRadio; // init/shutdown vars
@@ -43,7 +43,7 @@ class Bluetooth {
         /**
          * @returns The given mac address in string form (xx:xx:xx:xx:xx:xx) (xx in hex)
          */
-        std::string getMacStr(bt::BLUETOOTH_ADDRESS_STRUCT addr) {
+        std::string getMacStr(bt::BLUETOOTH_ADDRESS addr) {
             std::ostringstream addrBuilder;
 
             addrBuilder << std::hex;
@@ -246,7 +246,7 @@ class Bluetooth {
                 checkSuccessWinsock<int>(bt::ioctlsocket(peer, FIONBIO, &mode), 0, "Failed to make new connected port non-blocking.");
 
                 // add the socket to our tablet list
-                bt::BLUETOOTH_ADDRESS_STRUCT addrStruct = {0};
+                bt::BLUETOOTH_ADDRESS addrStruct = {0};
                     addrStruct.ullLong = peerAddr.btAddr;
                 this->connectedTablets.push_back(BtTabObj(peer, peerAddr, getMacStr(addrStruct)));
             }
