@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <sstream>
 #include <format>
 
 class Database {
@@ -39,6 +40,31 @@ class Database {
         // std::vector<std::vector<std::string>> query(int len, std::string statement, int length) {
 
         // }
+
+
+        //std::vector<std::vector<std::string>> query(const char* queryStatement, ...) {
+        void query(const char* queryStatement, ...) {
+            va_list queryArgs;
+            va_start(queryArgs, queryStatement);
+
+            std::stringstream fullQuery;
+            while ((*queryStatement) != '\0') {
+                if ((*queryStatement) == '?') {
+                    char* currQuery = va_arg(queryArgs, char*);
+                    if (currQuery != NULL) {
+                        int currQueryLen = strlen(currQuery);
+                        char* currQueryEscaped = (char*)malloc((currQueryLen*2)+1);
+                        mysql_real_escape_string(&this->mysql, currQueryEscaped, currQuery, currQueryLen);
+                        fullQuery << currQueryEscaped;
+                    }
+                }
+                else {
+                    fullQuery << (*queryStatement);
+                }
+                queryStatement++;
+            }
+            DebugConsole::println(fullQuery.str(), DBGC_BLUE);
+        }
         std::vector<std::vector<std::string>> execQuery(std::string statement, int length) {
             std::string row2;        
             if (mysql_query(&mysql, statement.c_str())) {

@@ -47,7 +47,7 @@ int main() {
         window.SetConfigFlags(FLAG_MSAA_4X_HINT);
         window.SetIcon(raylib::Image("resources/eagleEngineeringLogoLowRes.png"));
     Pong pongame = Pong(&window);
-    window.SetTargetFPS(60);
+    window.SetTargetFPS(1000000);
 
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
     raylib::Font comicSans(std::string("resources/ComicMono.ttf"));
@@ -61,6 +61,8 @@ int main() {
 
     SCENES currentScene = SCANNING;
     Database database;
+        database.query("Hello?", ", world!");
+        database.query("select * from matchtransaction where id=?", "1");
     // set up display + constant scene stuff
     SizeScaling::init();
     // set up tabs at top of screen
