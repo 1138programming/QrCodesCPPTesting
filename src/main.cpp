@@ -47,7 +47,7 @@ int main() {
         window.SetConfigFlags(FLAG_MSAA_4X_HINT);
         window.SetIcon(raylib::Image("resources/eagleEngineeringLogoLowRes.png"));
     Pong pongame = Pong(&window);
-    window.SetTargetFPS(1000000);
+    window.SetTargetFPS(60);
 
     raylib::Font spaceCadet(std::string("resources/SM.TTF"));
     raylib::Font comicSans(std::string("resources/ComicMono.ttf"));
@@ -61,8 +61,12 @@ int main() {
 
     SCENES currentScene = SCANNING;
     Database database;
-        database.query("Hello?", ", world!");
-        database.query("select * from matchtransaction where id=?", "1");
+        std::vector<std::vector<std::string>> result = database.query("select * from scouter where scouterid between ? and ?", "1", "29");
+        for (auto i : result) {
+            for (auto j : i) {
+                DebugConsole::println(j, DBGC_BLUE);
+            }
+        }
     // set up display + constant scene stuff
     SizeScaling::init();
     // set up tabs at top of screen
@@ -152,8 +156,17 @@ int main() {
         btTestingScene.add(nameList);
 
 
-
+    bool windowHighFPS = true;
     while(!window.ShouldClose()) {
+        if (window.IsFocused() && !windowHighFPS) {
+            window.SetTargetFPS(60);
+            windowHighFPS = true;
+        }
+        else if (!window.IsFocused() && windowHighFPS){
+            window.SetTargetFPS(10);
+            windowHighFPS = false;
+        }
+
         // make application fullscreen on f11 press (and set resolution)
         if (IsKeyPressed(KEY_F11)) {
             if (!window.IsFullscreen()) {

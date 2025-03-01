@@ -37,13 +37,9 @@ class Database {
         MYSQL* getMysql() {
             return &this->mysql;
         }
-        // std::vector<std::vector<std::string>> query(int len, std::string statement, int length) {
 
-        // }
-
-
-        //std::vector<std::vector<std::string>> query(const char* queryStatement, ...) {
-        void query(const char* queryStatement, ...) {
+        std::vector<std::vector<std::string>> query(const char* queryStatement, ...) {
+            // query escaping + setup
             va_list queryArgs;
             va_start(queryArgs, queryStatement);
 
@@ -53,9 +49,10 @@ class Database {
                     char* currQuery = va_arg(queryArgs, char*);
                     if (currQuery != NULL) {
                         int currQueryLen = strlen(currQuery);
-                        char* currQueryEscaped = (char*)malloc((currQueryLen*2)+1);
+                        char* currQueryEscaped = (char*)malloc((currQueryLen*2)+1); // len reccomended by mysql docs
                         mysql_real_escape_string(&this->mysql, currQueryEscaped, currQuery, currQueryLen);
                         fullQuery << currQueryEscaped;
+                        free(currQueryEscaped);
                     }
                 }
                 else {
@@ -63,13 +60,45 @@ class Database {
                 }
                 queryStatement++;
             }
-            DebugConsole::println(fullQuery.str(), DBGC_BLUE);
+            
+            // actually query the db
+            if (mysql_query(&this->mysql, fullQuery.str().c_str())) {
+                // error case
+                DebugConsole::print(std::string("Error executing DB query: ") + mysql_error(&mysql) + "\n", DBGC_YELLOW);
+                return std::vector<std::vector<std::string>>();
+            }
+
+            MYSQL_RES* result = mysql_use_result(&mysql);
+            int resFieldLen = mysql_field_count(&this->mysql);
+            if (result == NULL) {
+                if (resFieldLen >= 1) {
+                    DebugConsole::println(std::string("Result error: ") + mysql_error(&this->mysql) + std::string(" (result not returned)"), DBGC_YELLOW);
+                }
+                mysql_free_result(result);
+                return std::vector<std::vector<std::string>>();
+            }
+
+            std::vector<std::vector<std::string>> resultVector;
+            for (int currentRow = 0; (row = mysql_fetch_row(result)) != NULL; currentRow++) {
+                resultVector.push_back(std::vector<std::string>()); // push empty vector
+
+                for (int i = 0; i < mysql_num_fields(result); i++) {
+                    if (row[i] == NULL) {
+                        resultVector.at(currentRow).push_back(std::string("NULL"));
+                    }
+                    else {
+                        resultVector.at(currentRow).push_back(std::string(row[i]));
+                    }
+                }
+            }
+            mysql_free_result(result);
+            return resultVector;
         }
+
         std::vector<std::vector<std::string>> execQuery(std::string statement, int length) {
             std::string row2;        
             if (mysql_query(&mysql, statement.c_str())) {
                 DebugConsole::print(std::string("Error executing DB query: ") + mysql_error(&mysql) + "\n", DBGC_YELLOW);
-
 
                 return std::vector<std::vector<std::string>>();
             }
@@ -95,7 +124,7 @@ class Database {
                     while ((row = mysql_fetch_row(resptr)) != NULL) {
                         vector.push_back(std::vector<std::string>());              
                 
-                            for (int j=0; j < length; j++) {
+                            for (j = 0; j < length; j++) {
                                 //    std::cout << std::string(row[j]) << std::endl;
                                 //    std::cout << "jjj" << std::endl;
                                 if (row[j] != NULL) {
