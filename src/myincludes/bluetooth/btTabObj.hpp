@@ -317,7 +317,7 @@ class BtTabObj {
             free(messagePtr);
             return messageData;
         }
-        void internalWrite(std::vector<char> data, bool& success) {
+        std::optional<std::vector<char>> internalWrite(std::vector<char> data, bool& success) {
             /*
                 Communication will go as follows:
                     C: # of bytes to be sent (signed int) (trailing from connection number)
@@ -333,14 +333,14 @@ class BtTabObj {
            // read ack
            success = (success && readAck());
            if (!success) {
-            return;
+            return std::optional<std::vector<char>>();
            }
            //send full data
            success = (success && sendToSocket(data.data(), data.size()));
            // read ack
            success = (success && readAck());
 
-           return;
+           return std::optional<std::vector<char>>();
         }
 
 
