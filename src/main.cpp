@@ -58,15 +58,10 @@ int main() {
     btConn.initAccept();
 
     RestReqHandler handler;        
+        handler.getteamdata(0);
 
     SCENES currentScene = SCANNING;
     Database database;
-        std::vector<std::vector<std::string>> result = database.query("select * from scouter where scouterid between ? and ?", "1", "29");
-        for (auto i : result) {
-            for (auto j : i) {
-                DebugConsole::println(j, DBGC_BLUE);
-            }
-        }
     // set up display + constant scene stuff
     SizeScaling::init();
     // set up tabs at top of screen

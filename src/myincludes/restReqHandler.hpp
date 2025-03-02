@@ -6,93 +6,76 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <functional>
 
 
-static std::string output;
 class RestReqHandler {
     private:
-        static size_t readHandler(char* ptr, size_t size, size_t numElements, void* ourPtr) {
-
-            
-            std::string temp = std::string(ptr, size * numElements);
-            output.append(temp);
-            
-
-
-           
-            return size * numElements;
-
-        }
-        DatabaseMan database = * new DatabaseMan();
-  
-    public:
+    DatabaseMan* database = new DatabaseMan();
+    
+    static size_t readHandler(char* ptr, size_t size, size_t numElements, void* ourPtr) {
+        RestReqHandler* self = (RestReqHandler*)ourPtr;
+        std::string temp = std::string(ptr, size * numElements);
+        self->output.append(temp);
         
-        void getteamdata(int page) {
+        return size * numElements;
+    }
+    public:
+        std::string output; // don't access- it's usually junk data
+        /**
+         * @brief appends the ```request``` string to after the /v3/ in the link, using the api key given in /src/resources/tbaKey.env
+         */
+        std::string makeTBAReq(std::string request) {
             CURL* handler = curl_easy_init();
 
             curl_slist* headerList = NULL;
-            output = "";
+            this->output.clear();
             if (handler) {
-                std::string url = std::string("https://www.thebluealliance.com/api/v3/teams/" + std::to_string(page));
-                // std::cout << (url.c_str()) << std::endl;
-                curl_easy_setopt(handler, CURLOPT_URL, &(url.c_str()[0]));
+                std::string url = std::string("https://www.thebluealliance.com/api/v3/") + request;
+                curl_easy_setopt(handler, CURLOPT_URL, url.c_str());
                 curl_easy_setopt(handler, CURLOPT_SSL_VERIFYPEER, false);
-                // curl_easy_setopt(handler, CURLOPT_URL, "http://eu.httpbin.org/ip");
 
-                headerList = curl_slist_append(headerList, "X-TBA-Auth-Key: IOB4YXM4T4wE485Kspo8exJBnjhCVoS5bMKxPhcGIrlDA2dIb3iAyNhX76YLRJB0");
-
-                // curl_easy_setopt(handler, CURLOPT_HTTPHEADER, headerList);
+                // read header file and set header
+                std::ifstream headerFile("resources/tbaKey.env");
+                if (!headerFile.good()) {
+                    DebugConsole::println("ERROR: Unable to make TBA Request. Please add a TBA api key into /resources/tbaKey.env to use TBA.", DBGC_RED);
+                    return std::string();
+                }
+                std::string tbaKey;
+                    std::getline(headerFile, tbaKey);
+                std::string header = std::string("X-TBA-Auth-Key: ") + tbaKey;
+                headerList = curl_slist_append(headerList, header.c_str());
                 curl_easy_setopt(handler, CURLOPT_HTTPHEADER, headerList);
                 curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, readHandler);
-               
+                curl_easy_setopt(handler, CURLOPT_WRITEDATA, this);
 
+                std::cout << "test" << std::endl;
+                //perform query
                 CURLcode res = curl_easy_perform(handler); 
-                std::cout << "res: " << res << std::endl;
-                // if (res == CURLE_OK) {
-                // char* Far;
-                // res = curl_easy_getinfo(handler, CURLINFO_CONTENT_TYPE, &Far);
-                // if (res == CURLE_OK) {
-                //     std::string str(Far);
-                //     std::cout << str << std::endl;
-                // }
-                // }
                 if (res != CURLcode::CURLE_OK) {
                     DebugConsole::print(std::string("Error Pulling from api Res: ") + std::to_string((int)res) + "\n", DBGC_YELLOW);
                 }
             }
             curl_easy_cleanup(handler);
-            // std::cout << output;
-            JsonParser parser(output); 
+
+            return output;
+        }
+        void getteamdata(int page) {
+            std::string pageData = makeTBAReq(std::string("teams/") + std::to_string(page));
+
+            JsonParser parser(pageData); 
             std::vector<TEAM_DATAPOINT> teams = parser.parseAPI();
-            TEAM_DATAPOINT temp;
 
-            
-        
-
-            // for (auto i = teams.begin(); i != teams.end(); ++i) {
-            //     if (i.base() != NULL) {
-            //         temp = *i.base();
-
-            //         std::cout << temp.teamNum << std::endl;
-            //     }
-            //     else {
-            //     std::cout << " it doesn't work, it is null" << std::endl;
-            //     }   
-            // }
-
-            
-            database.setteamdat(teams);
-            database.addTeams();
-
-
-        
+            database->setteamdat(teams);
+            database->addTeams();        
         }
         void deleteteams() {
-            database.clearTeams();
+            database->clearTeams();
         }
 
         ~RestReqHandler() {
-            delete &database;
+            delete database;
         }
 };
 

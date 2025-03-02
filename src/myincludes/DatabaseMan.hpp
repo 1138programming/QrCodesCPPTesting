@@ -74,32 +74,19 @@ class DatabaseMan {
     }
     void addTeams() {
         if (!teams.empty()) {
-        for (auto i = teams.begin(); i != teams.end(); ++i) {
-            if (i.base() != NULL) {
-                temp2 = *i.base();
-                // std::cout << "insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + temp2.teamName + "');" << std::endl;
-                char* buffer = (char*)malloc(2 * temp2.teamName.length() + 1);
-
-                mysql_real_escape_string(database.getMysql(), buffer, temp2.teamName.c_str(),  temp2.teamName.length());
-
-                auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + std::string(buffer) + "');" , 1); 
-                  free(buffer);
+            for (auto i = teams.begin(); i != teams.end(); ++i) {
+                if (i.base() != NULL) {
+                    temp2 = *i.base();
+                    auto insertRes = database.query("insert into team(TeamId, TeamNumber, TeamDesc) values(?, ?, ?)", temp2.teamNum, temp2.teamNum, temp2.teamName);
+                }
+                else {
+                    DebugConsole::print(std::string("Error inserting teams. Base is null ") + "\n", DBGC_RED);
+                }
             }
-            else {
-                DebugConsole::print(std::string("Error inserting teams. Base is null ") + "\n", DBGC_RED);
-                // std::cerr << " it doesn't work, it is null" << std::endl;
-            }
-
         }
-        }
-
         else {
             DebugConsole::print(std::string("Error inserting teams. Vector is null ") + "\n", DBGC_RED);
-
-            // std::cout << "datapoints is null" << std::endl;
         }
-      
-    
     }
 
 
