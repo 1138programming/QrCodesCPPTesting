@@ -279,6 +279,7 @@ class BtTabObj {
                     T: all data
                     C: 👍 (ACK)
             */
+           DebugConsole::println("Writing to tablet", DBGC_GREEN, DBGL_DEVEL);
            success = true;
            if (!this->sendAck()) {
                 success = false;
@@ -324,25 +325,27 @@ class BtTabObj {
                     C: all data
                     T: ACK
             */
+           DebugConsole::println(std::string("Writing to tablet"), DBGC_GREEN, DBGL_DEVEL);
+
            success = true;
 
            // send # of bytes to tablet
            int dataSize = data.size();
            success = (success && this->sendToSocket((char*)&dataSize, BT_EXPECTED_DATA_READSIZE));
-           DebugConsole::println(std::string("Data Size: ") + std::to_string(dataSize), DBGC_BLUE);
+           DebugConsole::println(std::string("Data Size: ") + std::to_string(dataSize), DBGC_BLUE, DBGL_DEVEL);
            // read ack
            success = (success && readAck());
            if (!success) {
-               DebugConsole::println(std::string("No ack success :C"), DBGC_BLUE);
+               DebugConsole::println(std::string("No ack success :C"), DBGC_BLUE, DBGL_DEVEL);
                return std::optional<std::vector<char>>();
             }
-            DebugConsole::println(std::string("Read Ack"), DBGC_BLUE);
+            DebugConsole::println(std::string("Read Ack"), DBGC_BLUE, DBGL_DEVEL);
             //send full data
             success = (success && sendToSocket(data.data(), data.size()));
-            DebugConsole::print(std::string("Data sent"), DBGC_BLUE);
+            DebugConsole::println(std::string("Data sent"), DBGC_BLUE, DBGL_DEVEL);
             // read ack
             success = (success && readAck());
-            DebugConsole::print(std::string("Read Ack"), DBGC_BLUE);
+            DebugConsole::println(std::string("Read Ack"), DBGC_BLUE, DBGL_DEVEL);
 
            return std::optional<std::vector<char>>();
         }

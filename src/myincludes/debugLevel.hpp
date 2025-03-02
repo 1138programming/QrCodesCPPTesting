@@ -1,0 +1,17 @@
+#ifndef DEBUG_LEVEL_HPP
+#define DEBUG_LEVEL_HPP
+
+#define DEBUG_LEVEL DBGL_ALL
+
+typedef enum {
+    DBGL_ALL,
+    DBGL_DEVEL,
+    DBGL_INFO,
+    DBGL_WARNING,
+    DBGL_ERROR,
+    DBGL_CRASH,
+    DBGL_ESSENTIAL,
+    DBGL_NONE
+} DEBUGGINGLEVEL;
+
+#endif

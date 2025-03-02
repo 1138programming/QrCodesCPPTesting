@@ -2,6 +2,7 @@
 #define DEBUGCONSOLE_HPP
 
 #include "debugConsoleColors.hpp"
+#include "debugLevel.hpp"
 #include "btIncludes.hpp" // just use this header for simplicity sake
 
 #include <iostream>
@@ -9,14 +10,37 @@
 
 class DebugConsole {
     public:
-        static void print(std::string message) {
-            print(message, DBGC_DEFAULT);
-        }
-        static void println(std::string message) {
-            print(message + std::string("\n"), DBGC_DEFAULT);
+        static bool debugLevelAllowed(DEBUGGINGLEVEL debugLevel) {
+            return (((int)debugLevel) >= ((int)DEBUG_LEVEL));
         }
 
+        static void print(std::string message) {
+            print(message, DBGC_DEFAULT, DBGL_ESSENTIAL);
+        }
+        static void print(std::string message, DEBUGGINGLEVEL debugLevel) {
+            print(message, DBGC_DEFAULT, debugLevel);
+        }
         static void print(std::string message, DEBUGCOLORS color) {
+            print(message, color, DBGL_ESSENTIAL);
+        }
+
+        static void println(std::string message) {
+            print(message + std::string("\n"), DBGC_DEFAULT, DBGL_ESSENTIAL);
+        }
+        static void println(std::string message, DEBUGGINGLEVEL debugLevel) {
+            print(message + std::string("\n"), DBGC_DEFAULT, debugLevel);
+        }        
+        static void println(std::string message, DEBUGCOLORS color) {
+            print(message + std::string("\n"), color, DBGL_ESSENTIAL);
+        }
+        static void println(std::string message, DEBUGCOLORS color, DEBUGGINGLEVEL debugLevel) {
+            print(message + std::string("\n"), color, debugLevel);
+        }
+
+        static void print(std::string message, DEBUGCOLORS color, DEBUGGINGLEVEL debugLevel) {
+            if (((int)debugLevel) < ((int)DEBUG_LEVEL)) {
+                return;
+            }
             bt::HANDLE stdOut;
             stdOut = bt::GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -64,9 +88,6 @@ class DebugConsole {
                 };
                 std::cout << message << "\033[0m";
             }
-        }
-        static void println(std::string message, DEBUGCOLORS color) {
-            print(message + std::string("\n"), color);
         }
 
         static void print(const std::type_info& callerClass, std::string message){ 

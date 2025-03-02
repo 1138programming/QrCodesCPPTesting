@@ -43,7 +43,7 @@ class BluetoothConductor {
                     }
                     
                     int murmurRes = murmurHash(teamDataVec);
-                    DebugConsole::println(std::string("Hash sent: ") + std::to_string(murmurRes));
+                    DebugConsole::println(std::string("Sending Hash: ") + std::to_string(murmurRes), DBGL_DEVEL);
 
                     std::vector<char> murmurHashData;
                     for (int i = 0; i < BT_HASH_SIZE; i++) {
