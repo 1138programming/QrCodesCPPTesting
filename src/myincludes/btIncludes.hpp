@@ -25,6 +25,8 @@ namespace bt {
     #define BT_TAB_ACK_SIZE (sizeof(char) * 3)
     #define BT_TAB_NACK_SIZE (sizeof(char) * 3)
 
+    #define BT_HASH_SIZE (sizeof(int))
+
     //(https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/BluetoothSocket.java;l=1310;drc=fa6448d21951a20245782a33efc67740dd09b244;bpv=1;bpt=1) sendSocketAcceptSignal() method
     static int ANDROID_SOCK_ACCEPT_SIGNAL_SIZE = (sizeof(char) * 4);
 

@@ -4,9 +4,11 @@
 #include "btTabObj.hpp"
 #include "../jsonParser.hpp"
 #include "../DatabaseMan.hpp"
+#include "../murmurHash2Neutral.hpp"
 
 #include <vector>
 #include <optional>
+#include <fstream>
 
 class BluetoothConductor {
     private:
@@ -20,21 +22,37 @@ class BluetoothConductor {
         void handleWriteTransactions(bt::TABTRANSACTION* trans, std::launch policy) {
             switch (trans->transactionType) {
                 case bt::TRANS_SEND_LOCAL_DB: {
+                    std::string teamListFile = readWholeFile("resources/csv/teamCompList.csv");
+                    std::vector<char> teamDataVec;
+                    for (char i : teamListFile) {
+                        teamDataVec.push_back(i);
+                    }
                     // TODO: IMPLEMENT
                     trans->success = true;
                     trans->batmanTrans = false;
                     trans->writeTransaction = true;
 
-                    trans->data = std::async(policy, this->returnEmptyVector, this);
+                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, teamDataVec, std::ref(trans->success));
                     break;
                 }
                 case bt::TRANS_SEND_LOCAL_DB_HASH: {
-                    // TODO: IMPLEMENT
+                    std::string teamListFile = readWholeFile("resources/csv/teamCompList.csv");
+                    std::vector<char> teamDataVec;
+                    for (char i : teamListFile) {
+                        teamDataVec.push_back(i);
+                    }
+                    
+                    int murmurRes = murmurHash(teamDataVec);
+
+                    std::vector<char> murmurHashData;
+                    for (int i = 0; i < BT_HASH_SIZE; i++) {
+                        murmurHashData.push_back(((char*)&murmurRes)[i]);
+                    }
                     trans->success = true;
                     trans->batmanTrans = false;
                     trans->writeTransaction = true;
 
-                    trans->data = std::async(policy, this->returnEmptyVector, this);
+                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, murmurHashData, std::ref(trans->success));
                     break;
                 }
             }

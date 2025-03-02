@@ -266,8 +266,8 @@ int main() {
                 if (tournamentSubmit.isPressed()) {
                     JsonParser teamsParser(handler.makeTBAReq(std::string("event/") + tournamentMatch.getText() + std::string("/teams")));
                     std::vector<TEAM_DATAPOINT> teamsList = teamsParser.parseTeams();
-                    std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
                     if (teamsList.size() >= 1) {
+                        std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
                         compTeamsFile << std::to_string(teamsList[0].teamNum);
                         for (int i = 1; i < teamsList.size(); i++) {
                             compTeamsFile << "," << std::to_string(teamsList[i].teamNum);

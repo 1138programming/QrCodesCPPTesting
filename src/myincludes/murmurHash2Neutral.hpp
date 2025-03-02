@@ -1,6 +1,19 @@
 #ifndef MURMURHASH2NEUTRAL_HPP
 #define MURMURHASH2NEUTRAL_HPP
 
+#include <string>
+#include <fstream>
+#include <sstream>
+
+std::string readWholeFile(std::string fileName) {
+    std::stringstream fileContents;
+    std::ifstream file(fileName);
+
+    fileContents << file.rdbuf();
+
+    return fileContents.str();
+}
+
 int murmurHash(std::vector<char> data) {
     const int multVal = 0x5bd1e995;
     const int rotate = 24;
