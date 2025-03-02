@@ -39,45 +39,37 @@ class DatabaseMan {
     }
 
 
-  
-
-
     void addMatchDatapoints() {
         if (!datapoints.empty()) {
-        for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
-            if (i.base() != NULL) {
-                temp = *i.base();
-               
-
-                // std::cout << "insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");" << std::endl;
-                auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
+            for (auto i = datapoints.begin(); i != datapoints.end(); ++i) {
+                if (i.base() != NULL) {
+                    temp = *i.base();
                 
+                    auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
+                    
+                }
+                else {
+                    DebugConsole::print(std::string("Error inserting datapoints. Base is null ")  + "\n", DBGC_RED);
+                }   
             }
-            else {
-                DebugConsole::print(std::string("Error inserting datapoints. Base is null ")  + "\n", DBGC_RED);
-            }   
         }
-        }
-
         else {
             DebugConsole::print(std::string("Error inserting datapoints. Vector is null ")  + "\n", DBGC_RED);
         }
-
-
-         
-  
-
     }
 
     void clearTeams() {
-        auto deleteRes = database.execQuery("delete from team",1);
+        auto deleteRes = database.execQuery("delete from team", 1);
     }
     void addTeams() {
         if (!teams.empty()) {
             for (auto i = teams.begin(); i != teams.end(); ++i) {
                 if (i.base() != NULL) {
                     temp2 = *i.base();
-                    auto insertRes = database.query("insert into team(TeamId, TeamNumber, TeamDesc) values(?, ?, ?)", temp2.teamNum, temp2.teamNum, temp2.teamName);
+                    // auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + std::string(buffer) + "');" , 0);
+                    
+                    std::string teamNum = std::to_string(temp2.teamNum);
+                    auto insertRes = database.query("insert into team(TeamId, TeamNumber, TeamDesc) values(?, ?, '?')", teamNum.c_str(), teamNum.c_str(), temp2.teamName.c_str());
                 }
                 else {
                     DebugConsole::print(std::string("Error inserting teams. Base is null ") + "\n", DBGC_RED);

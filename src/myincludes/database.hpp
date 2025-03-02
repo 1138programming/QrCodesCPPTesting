@@ -60,7 +60,6 @@ class Database {
                 }
                 queryStatement++;
             }
-            
             // actually query the db
             if (mysql_query(&this->mysql, fullQuery.str().c_str())) {
                 // error case

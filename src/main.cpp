@@ -58,7 +58,6 @@ int main() {
     btConn.initAccept();
 
     RestReqHandler handler;        
-        handler.getteamdata(0);
 
     SCENES currentScene = SCANNING;
     Database database;
