@@ -50,7 +50,6 @@ class RestReqHandler {
                 curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, readHandler);
                 curl_easy_setopt(handler, CURLOPT_WRITEDATA, this);
 
-                std::cout << "test" << std::endl;
                 //perform query
                 CURLcode res = curl_easy_perform(handler); 
                 if (res != CURLcode::CURLE_OK) {
