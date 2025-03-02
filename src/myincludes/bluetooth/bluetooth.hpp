@@ -192,7 +192,7 @@ class Bluetooth {
             
             std::string lpszServiceInstanceNameLocal; // get the host name to set as our instance name. I'm like 90% sure windows will override if it is not set to this anyway.
             checkSuccessWinsock<int>(getHostNameStr(lpszServiceInstanceNameLocal), 0, "Getting host name failed (this shouldn't matter too much)");
-            std::cout << "Using Hostname:" << lpszServiceInstanceNameLocal << std::endl;
+            DebugConsole::println(std::string("Using Hostname: ") + lpszServiceInstanceNameLocal, DBGC_DEFAULT);
 
             // this structure is needed for the next structure created
             bt::CSADDR_INFO sdpSockInfo = {0};

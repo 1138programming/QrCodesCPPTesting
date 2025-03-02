@@ -46,6 +46,7 @@ int main() {
         window.SetConfigFlags(FLAG_VSYNC_HINT);
         window.SetConfigFlags(FLAG_MSAA_4X_HINT);
         window.SetIcon(raylib::Image("resources/eagleEngineeringLogoLowRes.png"));
+        SetTraceLogLevel(LOG_WARNING);
     Pong pongame = Pong(&window);
     window.SetTargetFPS(60);
 
@@ -115,7 +116,7 @@ int main() {
         TextBox MatchBox(100.0_spX, 20.0_spY, 10, 0.0, 15.0_spD, spaceMono, WHITE, WHITE);
 
         Button submit (100.0_spX,50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
-        DrawableList dataList(VERTICAL,10);  
+        DrawableList dataList(VERTICAL, 10);  
             dataList.add(&teamdata);    
             dataList.add(&TeamBox);
          
@@ -125,10 +126,18 @@ int main() {
             dataList.add(&gap);
             dataList.add(&submit);
             dataList.setDisplayPos(CENTERLEFT);
+        
+        TextBox tournamentMatch(150.0_spX, 30.0_spY, 15, 0.0, 25.0_spD, spaceMono, WHITE, WHITE);
+        Button tournamentSubmit(150.0_spX, 50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
+        DrawableList getMatchList(VERTICAL, 10);
+            getMatchList.add(&tournamentMatch);
+            getMatchList.add(&tournamentSubmit);
+            getMatchList.setDisplayPos(CENTERED);
 
 
         dataVisualizationScreen.add(&DB)
-            .add(&dataList);
+            .add(&dataList)
+            .add(&getMatchList);
             
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
@@ -211,21 +220,14 @@ int main() {
                 // } 
                 if (rest.isPressed()) {
                     handler.deleteteams();
-                    for (int i = 0; i < 20; i++)    {
+                    for (int i = 0; i < 20; i++) {
                         handler.getteamdata(i);
-                        
-                    }
-                    
-               
-
-                    
-                   
+                    }              
                 }
                 if (AmplifyBlue.isPressed()) {
                     try {
                         auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ( 4,-1,11,'true', -1, 'Blue');", 0);  
                         toastHandler::add(Toast("Amplify Blue Started",LENGTH_NORMAL));
-
                     }
                     catch (...) {
                         toastHandler::add(Toast("error",LENGTH_NORMAL));
@@ -260,6 +262,20 @@ int main() {
                         }
                         std::cout << std::endl;
                     }                    
+                }
+                if (tournamentSubmit.isPressed()) {
+                    JsonParser teamsParser(handler.makeTBAReq(std::string("event/") + tournamentMatch.getText() + std::string("/teams")));
+                    std::vector<TEAM_DATAPOINT> teamsList = teamsParser.parseTeams();
+                    std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
+                    if (teamsList.size() >= 1) {
+                        compTeamsFile << std::to_string(teamsList[0].teamNum);
+                        for (int i = 1; i < teamsList.size(); i++) {
+                            compTeamsFile << "," << std::to_string(teamsList[i].teamNum);
+                        }
+                    }
+                    else {
+                        toastHandler::add(Toast("Invalid Comp ID", LENGTH_NORMAL));
+                    }
                 }
 
                 teamdata.setText("Team Data:" + TeamBox.getText());

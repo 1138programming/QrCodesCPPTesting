@@ -64,7 +64,7 @@ class RestReqHandler {
             std::string pageData = makeTBAReq(std::string("teams/") + std::to_string(page));
 
             JsonParser parser(pageData); 
-            std::vector<TEAM_DATAPOINT> teams = parser.parseAPI();
+            std::vector<TEAM_DATAPOINT> teams = parser.parseTeams();
 
             database->setteamdat(teams);
             database->addTeams();        
