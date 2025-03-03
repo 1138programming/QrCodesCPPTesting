@@ -22,17 +22,14 @@ class BluetoothConductor {
         void handleWriteTransactions(bt::TABTRANSACTION* trans, std::launch policy) {
             switch (trans->transactionType) {
                 case bt::TRANS_SEND_LOCAL_DB: {
-                    std::string dbFileStr = readWholeFile("resources/csv/teamCompList.csv");
-                    std::vector<char> teamDataVec;
-                    for (char i : dbFileStr) {
-                        teamDataVec.push_back(i);
-                    }
-                    // TODO: IMPLEMENT
-                    trans->success = true;
+                    std::string dbFileStr = readWholeFile("resources/csv/scouterList.csv");
+                    dbFileStr.append("\n");
+                    dbFileStr.append(readWholeFile("resources/csv/teamCompList.csv"));
+
                     trans->batmanTrans = false;
                     trans->writeTransaction = true;
 
-                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, teamDataVec, std::ref(trans->success));
+                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, dbFileStr, std::ref(trans->success));
                     break;
                 }
                 case bt::TRANS_SEND_LOCAL_DB_HASH: {
