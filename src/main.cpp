@@ -127,11 +127,13 @@ int main() {
             dataList.add(&submit);
             dataList.setDisplayPos(CENTERLEFT);
         
-        TextBox tournamentMatch(150.0_spX, 30.0_spY, 15, 0.0, 25.0_spD, spaceMono, WHITE, WHITE);
-        Button tournamentSubmit(150.0_spX, 50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
+        TextBox tournamentMatch(250.0_spX, 30.0_spY, 15, 0.0, 25.0_spD, spaceMono, WHITE, WHITE);
+        Button tournamentSubmit(250.0_spX, 50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
+        Button scouterUpdate(250.0_spX, 40.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Update Scouter List"), RAYWHITE, 10.0_spD, 0.0));
         DrawableList getMatchList(VERTICAL, 10);
             getMatchList.add(&tournamentMatch);
             getMatchList.add(&tournamentSubmit);
+            getMatchList.add(&scouterUpdate);
             getMatchList.setDisplayPos(CENTERED);
 
 
@@ -275,6 +277,20 @@ int main() {
                     }
                     else {
                         toastHandler::add(Toast("Invalid Comp ID", LENGTH_NORMAL));
+                    }
+                }
+                if (scouterUpdate.isPressed()) {
+                    auto result = database.query("select scouterfirstname, scouterlastname, scouterid from scouter where scouterid>=0");
+                    std::cout << result.size() << ", " << result[0].size();
+                    if (result.size() > 0 && result[0].size() == 3) {
+                        std::ofstream scouterFile("resources/csv/scouterList.csv");
+                        scouterFile << result[0][0] << " " << result[0][1] << ":" << result[0][2];
+                        for (int i = 1; i < result.size(); i++) {
+                            scouterFile << "," << result[i][0] << " " << result[i][1] << ":" << result[i][2];
+                        }
+                    }
+                    else {
+                        toastHandler::add(Toast("Scouter DB Error", LENGTH_NORMAL));
                     }
                 }
 

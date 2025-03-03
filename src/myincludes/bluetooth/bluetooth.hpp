@@ -263,7 +263,7 @@ class Bluetooth {
                     continue;
                 }
                 else {
-                    std::cout << "#" << i << ":" << std::endl;
+                    DebugConsole::println(std::string("Tablet #") + std::to_string(i) << std::string(" transaction:"), DBGL_DEVEL);
                     bt::TABTRANSACTION* currTrans = this->conductor.initReadyTransaction(tabCurr->readTransactionData());
                     if (currTrans->batmanTrans) {
                         killSocket(currTrans->parent->getWinsockSocket());

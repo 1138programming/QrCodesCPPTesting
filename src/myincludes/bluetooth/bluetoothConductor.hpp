@@ -22,9 +22,9 @@ class BluetoothConductor {
         void handleWriteTransactions(bt::TABTRANSACTION* trans, std::launch policy) {
             switch (trans->transactionType) {
                 case bt::TRANS_SEND_LOCAL_DB: {
-                    std::string teamListFile = readWholeFile("resources/csv/teamCompList.csv");
+                    std::string dbFileStr = readWholeFile("resources/csv/teamCompList.csv");
                     std::vector<char> teamDataVec;
-                    for (char i : teamListFile) {
+                    for (char i : dbFileStr) {
                         teamDataVec.push_back(i);
                     }
                     // TODO: IMPLEMENT
@@ -36,20 +36,21 @@ class BluetoothConductor {
                     break;
                 }
                 case bt::TRANS_SEND_LOCAL_DB_HASH: {
-                    std::string teamListFile = readWholeFile("resources/csv/teamCompList.csv");
-                    std::vector<char> teamDataVec;
-                    for (char i : teamListFile) {
-                        teamDataVec.push_back(i);
+                    std::string dbFileStr = readWholeFile("resources/csv/scouterList.csv");
+                    dbFileStr.append("\n");
+                    dbFileStr.append(readWholeFile("resources/csv/teamCompList.csv"));
+                    std::vector<char> dbFileVec;
+                    for (char i : dbFileStr) {
+                        dbFileVec.push_back(i);
                     }
                     
-                    int murmurRes = murmurHash(teamDataVec);
+                    int murmurRes = murmurHash(dbFileVec);
                     DebugConsole::println(std::string("Sending Hash: ") + std::to_string(murmurRes), DBGL_DEVEL);
 
                     std::vector<char> murmurHashData;
                     for (int i = 0; i < BT_HASH_SIZE; i++) {
                         murmurHashData.push_back(((char*)&murmurRes)[i]);
                     }
-                    trans->success = true;
                     trans->batmanTrans = false;
                     trans->writeTransaction = true;
 
@@ -95,6 +96,7 @@ class BluetoothConductor {
                 trans->parent->sockSuicide();
                 return trans;
             }
+            DebugConsole::println(std::string("Got Transaction Code: ") + std::to_string(trans->transactionType), DBGC_BLUE, DBGL_DEVEL);
             // read/write handling
             if (trans->writeTransaction) {
                 this->handleWriteTransactions(trans, policy);
