@@ -4,6 +4,7 @@
 #include "../btIncludes.hpp"
 #include "../debugConsole.hpp"
 #include "bluetoothTransaction.hpp"
+#include "../../include/raylib.hpp"
 
 #include <vector>
 #include <optional>
@@ -71,11 +72,15 @@ class BtTabObj {
          * @brief Windows returns data in parts (so that you can access it faster if you needed to).
          * 
          * This function just reads all the expected data, because it doesn't really matter if we wait a small amount.
+         * 
+         * This function has a timeout of 5s of no recvd data
          * @warning If success is false, the returned char* is likely NULL. Don't write/read to/from it.
          * @warning the returned char* needs to be freed (using free())
          */
         char* readAllSocketData(size_t sizeExpected, bool& success) {
             success = true;
+            double timeoutTime = (GetTime() + 5.0);
+            
             // return nothing if no data expected (obv)
             if (sizeExpected < 1) {
                 success = true;
@@ -92,6 +97,13 @@ class BtTabObj {
             size_t dataRecvd = 0;
             while (dataRecvd < sizeExpected) {
                 size_t currentLenRecvd = bt::recv(this->socket, dataPtr, sizeExpected-dataRecvd, 0);
+                if (currentLenRecvd > 0) {
+                    timeoutTime = (GetTime() + 5.0);
+                }
+                if (GetTime() > timeoutTime) {
+                    success = false;
+                    return NULL;
+                }
                 // Windows detected a graceful close 🥰
                 if (currentLenRecvd == 0) {
                     DebugConsole::println("BLUETOOTH SOCKET CLOSED: the tablet's fault", DBGC_YELLOW);
@@ -101,8 +113,9 @@ class BtTabObj {
                 // Error handling (only some are actually a problem)
                 if (currentLenRecvd == SOCKET_ERROR) {
                     int currError = bt::WSAGetLastError();
+                     // errors when no data or winsock is busy, so just try again lol
                     if (currError == WSAEWOULDBLOCK || currError == WSAEINPROGRESS) {
-                        continue; // errors when no data or winsock is busy, so just try again lol
+                        continue;
                     }
                     DebugConsole::println(std::string("Socket communication error. (closing) (error=") + std::to_string(currError) + std::string(")"), DBGC_YELLOW);
                     success = false;
