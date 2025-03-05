@@ -26,10 +26,14 @@ class BluetoothConductor {
                     dbFileStr.append("\n");
                     dbFileStr.append(readWholeFile("resources/csv/teamCompList.csv"));
 
+                    std::vector<char> dbFileArr;
+                    for(char i : dbFileStr) {
+                        dbFileArr.push_back(i);
+                    }
                     trans->batmanTrans = false;
                     trans->writeTransaction = true;
 
-                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, dbFileStr, std::ref(trans->success));
+                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, dbFileArr, std::ref(trans->success));
                     break;
                 }
                 case bt::TRANS_SEND_LOCAL_DB_HASH: {
