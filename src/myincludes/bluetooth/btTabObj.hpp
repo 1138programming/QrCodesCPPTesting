@@ -301,7 +301,7 @@ class BtTabObj {
             
             // get # of bytes to be sent
             char* numOfByteDataPtr = readAllSocketData(BT_EXPECTED_DATA_READSIZE, success);
-            if (!success || !this->invertEndianness(numOfByteDataPtr, BT_EXPECTED_DATA_READSIZE)) {
+            if (!success) {
                 sendNack();
                 success = false;
                 return std::vector<char>();
