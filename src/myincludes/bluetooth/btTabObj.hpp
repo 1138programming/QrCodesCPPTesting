@@ -97,10 +97,11 @@ class BtTabObj {
             size_t dataRecvd = 0;
             while (dataRecvd < sizeExpected) {
                 size_t currentLenRecvd = bt::recv(this->socket, dataPtr, sizeExpected-dataRecvd, 0);
-                if (currentLenRecvd > 0) {
+                if (currentLenRecvd > 0 && currentLenRecvd != SOCKET_ERROR) {
                     timeoutTime = (GetTime() + 5.0);
                 }
                 if (GetTime() > timeoutTime) {
+                    DebugConsole::println("Communication with tab timed out.", DBGC_RED, DBGL_ERROR);
                     success = false;
                     return NULL;
                 }

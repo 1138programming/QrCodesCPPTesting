@@ -346,6 +346,7 @@ int main() {
         window.EndDrawing();
             
     }
+    btConn.killAllSockets();
     WinsockErrorDesc::destroy();
     return 0;
 }

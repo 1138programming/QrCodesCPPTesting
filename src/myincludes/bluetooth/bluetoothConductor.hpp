@@ -115,6 +115,7 @@ class BluetoothConductor {
         }
 
         void handleTransResult(bt::TABTRANSACTION* trans) {
+            DebugConsole::println("Transaction result being handled", DBGC_BLUE, DBGL_DEVEL);
             if (trans->writeTransaction) {
                 return;
             }
