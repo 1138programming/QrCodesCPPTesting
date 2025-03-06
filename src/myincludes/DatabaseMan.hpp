@@ -50,7 +50,7 @@ class DatabaseMan {
                
 
                 // std::cout << "insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.datapointValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");" << std::endl;
-                auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");", 1); 
+                auto notUsed = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID, DCTimestamp) values (" + temp.matchID + "," + temp.scouterID + "," + temp.datapointID + ",'" + temp.DCValue + "'," +  temp.teamID + ",'" + temp.AllianceId + "'," + temp.DCTimestamp + ");"); 
                 
             }
             else {
@@ -70,7 +70,7 @@ class DatabaseMan {
     }
 
     void clearTeams() {
-        auto deleteRes = database.execQuery("delete from team",1);
+        auto deleteRes = database.execQuery("delete from team");
     }
     void addTeams() {
         if (!teams.empty()) {
@@ -82,7 +82,7 @@ class DatabaseMan {
 
                 mysql_real_escape_string(database.getMysql(), buffer, temp2.teamName.c_str(),  temp2.teamName.length());
 
-                auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + std::string(buffer) + "');" , 1); 
+                auto insertRes = database.execQuery("insert into team (TeamId, TeamNumber, TeamDesc) values ('" + std::to_string(temp2.teamNum) + "','" + std::to_string(temp2.teamNum) +"','" + std::string(buffer) + "');" ); 
                   free(buffer);
             }
             else {

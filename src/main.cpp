@@ -200,7 +200,8 @@ int main() {
                 //     qrScanner.update();
                 // } 
                 if (rest.isPressed()) {
-                    handler.deleteteams();
+                    // auto deleteRes = database.execQuery("delete from team");
+
                     for (int i = 0; i < 20; i++)    {
                         handler.getteamdata(i);
                         
@@ -213,7 +214,7 @@ int main() {
                 }
                 if (AmplifyBlue.isPressed()) {
                     try {
-                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ( 4,-1,11,'true', -1, 'Blue');", 0);  
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ( 4,-1,11,'true', -1, 'Blue');");  
                         toastHandler::add(Toast("Amplify Blue Started",LENGTH_NORMAL));
 
                     }
@@ -224,7 +225,7 @@ int main() {
                 }
                 if (AmplifyRed.isPressed()) {
                     try {
-                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() + ",-1,11,'true', -1, 'Red');", 0);  
+                        auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ("+ MatchBoxMain.getText() + ",-1,11,'true', -1, 'Red');");  
                         toastHandler::add(Toast("Amplify Red Started",LENGTH_NORMAL));
                     }
                     catch (...) {
@@ -242,7 +243,7 @@ int main() {
 
             case DATABASE:
                  if(DB.isPressed()) {
-                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
+                    auto vector = database.execQuery("select TeamId,TeamNumber,TeamDesc from team;");
                     std::cout << "hhh" << std::endl;
                     for (auto i : vector) {
                         for (std::string j : i) {
@@ -255,7 +256,7 @@ int main() {
                 teamdata.setText("Team Data:" + TeamBox.getText());
                 matchdata.setText("Match Data:" + MatchBox.getText());
                 if(submit.isPressed()) {
-                    auto vector = database.execQuery("select * from matchtransaction where TeamId =" + TeamBox.getText() + " && MatchId = "+ MatchBox.getText() +";", 8);
+                    auto vector = database.execQuery("select * from matchtransaction where TeamId =" + TeamBox.getText() + " && MatchId = "+ MatchBox.getText() +";");
                     for (auto i : vector) {
                         for (std::string j : i) {
                             std::cout << j << std::endl;

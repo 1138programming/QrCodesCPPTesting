@@ -39,20 +39,23 @@ class Database {
         // std::vector<std::vector<std::string>> query(int len, std::string statement, int length) {
 
         // }
-        std::vector<std::vector<std::string>> execQuery(std::string statement, int length) {
-            std::string row2;        
+        std::vector<std::vector<std::string>> execQuery(std::string statement) {
+
+            std::string row2; 
             if (mysql_query(&mysql, statement.c_str())) {
                 DebugConsole::print(std::string("Error executing DB query: ") + mysql_error(&mysql) + "\n", DBGC_YELLOW);
 
 
                 return std::vector<std::vector<std::string>>();
             }
+      
+
  
             MYSQL_RES *resptr = mysql_use_result(&mysql);
             if (mysql.status == MYSQL_STATUS_USE_RESULT) {
                 DebugConsole::print(std::string("Error: Status Use Result: ") + mysql_error(&mysql) + " (Can usually safely be ignored)\n", DBGC_YELLOW);
             }    
-            if (length == 0) {
+            if (mysql_field_count(&mysql) == 0) {
                 return std::vector<std::vector<std::string>>();
             }
             else {
@@ -69,7 +72,7 @@ class Database {
                     while ((row = mysql_fetch_row(resptr)) != NULL) {
                         vector.push_back(std::vector<std::string>());              
                 
-                            for (int j=0; j < length; j++) {
+                            for (int j=0; j < mysql_field_count(&mysql); j++) {
                                 //    std::cout << std::string(row[j]) << std::endl;
                                 //    std::cout << "jjj" << std::endl;
                                 if (row[j] != NULL) {
