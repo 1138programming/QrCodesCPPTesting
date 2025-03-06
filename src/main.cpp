@@ -268,17 +268,35 @@ int main() {
                             database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(7) + ",'0');", 0);
                             database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(8) + ",'0');", 0);
                         }
+                    }                  
+                }
+                if (tournamentSubmit.isPressed()) {
+                    JsonParser teamsParser(handler.makeTBAReq(std::string("event/") + tournamentMatch.getText() + std::string("/teams")));
+                    std::vector<TEAM_DATAPOINT> teamsList = teamsParser.parseTeams();
+                    if (teamsList.size() >= 1) {
+                        std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
+                        compTeamsFile << std::to_string(teamsList[0].teamNum);
+                        for (int i = 1; i < teamsList.size(); i++) {
+                            compTeamsFile << "," << std::to_string(teamsList[i].teamNum);
+                        }
                     }
-
-
-                    // auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
-                    // std::cout << "hhh" << std::endl;
-                    // for (auto i : vector) {
-                    //     for (std::string j : i) {
-                    //         std::cout << j << std::endl;
-                    //     }
-                    //     std::cout << std::endl;
-                    // }                    
+                    else {
+                        toastHandler::add(Toast("Invalid Comp ID", LENGTH_NORMAL));
+                    }
+                }
+                if (scouterUpdate.isPressed()) {
+                    auto result = database.query("select scouterfirstname, scouterlastname, scouterid from scouter where scouterid>=0");
+                    if (result.size() > 0 && result[0].size() == 3) {
+                        std::cout << result.size() << ", " << result[0].size();
+                        std::ofstream scouterFile("resources/csv/scouterList.csv");
+                        scouterFile << result[0][0] << " " << result[0][1] << ":" << result[0][2];
+                        for (int i = 1; i < result.size(); i++) {
+                            scouterFile << "," << result[i][0] << " " << result[i][1] << ":" << result[i][2];
+                        }
+                    }
+                    else {
+                        toastHandler::add(Toast("Scouter DB Error", LENGTH_NORMAL));
+                    }            
                 }
 
                 teamdata.setText("Team Data:" + TeamBox.getText());
