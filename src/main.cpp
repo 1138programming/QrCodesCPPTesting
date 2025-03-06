@@ -87,12 +87,15 @@ int main() {
         Button AmplifyRed(300.0_spX,100.0_spY, RAYWHITE, RED, DARKGRAY, EzText(raylib::Text(spaceCadet, "AmplifyRed"), RAYWHITE, 12.0_spD, 0.0));
         Button pong(10.0, 10.0, raylib::Color(0,0,0,0), raylib::Color(0,0,0,0), GRAY, EzText(raylib::Text(spaceCadet, "_"), RAYWHITE, 5.0_spD, 0.0));
         Button pongback(100.0, 100.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Back"), RAYWHITE, 10.0_spD, 0.0));
+        Button pongreset(100.0, 100.0, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Reset"), RAYWHITE, 10.0_spD, 0.0));
+
         Button rest(100.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "rest"), RAYWHITE, 10.0_spD, 0.0));
 
         goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
         pongback.setDisplayPos(BOTTOMRIGHT);
+        pongreset.setDisplayPos(TOPRIGHT);
         AmplifyBlue.setDisplayPos(CENTERLEFT);
         AmplifyRed.setDisplayPos(CENTERRIGHT);
         TextBox MatchBoxMain(100.0_spX, 50.0_spY, 10, 0.0, 15.0_spD, spaceMono, WHITE, WHITE);
@@ -103,9 +106,9 @@ int main() {
         scannerScreen.add(&MatchBoxMain);
         scannerScreen.add(&AmplifyBlue);
         scannerScreen.add(&AmplifyRed);
-        scannerScreen.add(&rest);
     
         pongscreen.add(&pongback);
+        pongscreen.add(&pongreset);
 
     // __  Database Scene __
         Empty dataVisualizationScreen(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));
@@ -139,7 +142,7 @@ int main() {
 
         dataVisualizationScreen.add(&DB)
             .add(&dataList)
-            .add(&getMatchList);
+            .add(&getMatchList).add(&rest);
             
     // __ BT Scene __
         Empty btTestingScene(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight()));       
@@ -256,42 +259,26 @@ int main() {
 
             case DATABASE:
                  if(DB.isPressed()) {
-                    auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
-                    std::cout << "hhh" << std::endl;
-                    for (auto i : vector) {
-                        for (std::string j : i) {
-                            std::cout << j << std::endl;
-                        }
-                        std::cout << std::endl;
-                    }                    
-                }
-                if (tournamentSubmit.isPressed()) {
-                    JsonParser teamsParser(handler.makeTBAReq(std::string("event/") + tournamentMatch.getText() + std::string("/teams")));
-                    std::vector<TEAM_DATAPOINT> teamsList = teamsParser.parseTeams();
-                    if (teamsList.size() >= 1) {
-                        std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
-                        compTeamsFile << std::to_string(teamsList[0].teamNum);
-                        for (int i = 1; i < teamsList.size(); i++) {
-                            compTeamsFile << "," << std::to_string(teamsList[i].teamNum);
+                    for (int i =0; i<6; i++) {
+                        for  (int j =0; j<45; j++) {
+                            database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(1) + ",'1');", 0);
+                            database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(4) + ",'1');", 0);
+                            database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(5) + ",'1');", 0);
+                            database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(6) + ",'0');", 0);
+                            database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(7) + ",'0');", 0);
+                            database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(8) + ",'0');", 0);
                         }
                     }
-                    else {
-                        toastHandler::add(Toast("Invalid Comp ID", LENGTH_NORMAL));
-                    }
-                }
-                if (scouterUpdate.isPressed()) {
-                    auto result = database.query("select scouterfirstname, scouterlastname, scouterid from scouter where scouterid>=0");
-                    std::cout << result.size() << ", " << result[0].size();
-                    if (result.size() > 0 && result[0].size() == 3) {
-                        std::ofstream scouterFile("resources/csv/scouterList.csv");
-                        scouterFile << result[0][0] << " " << result[0][1] << ":" << result[0][2];
-                        for (int i = 1; i < result.size(); i++) {
-                            scouterFile << "," << result[i][0] << " " << result[i][1] << ":" << result[i][2];
-                        }
-                    }
-                    else {
-                        toastHandler::add(Toast("Scouter DB Error", LENGTH_NORMAL));
-                    }
+
+
+                    // auto vector = database.execQuery("select DatapointID,DCValue,DCTimestamp from matchtransaction;", 3);
+                    // std::cout << "hhh" << std::endl;
+                    // for (auto i : vector) {
+                    //     for (std::string j : i) {
+                    //         std::cout << j << std::endl;
+                    //     }
+                    //     std::cout << std::endl;
+                    // }                    
                 }
 
                 teamdata.setText("Team Data:" + TeamBox.getText());
@@ -342,6 +329,10 @@ int main() {
                     databaseTab.enable();
                     bluetoothTab.disable();
                 }
+                if (pongreset.isPressed()) {
+                   pongame.reset();
+                }
+                
                 pongscreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
             break;
         }

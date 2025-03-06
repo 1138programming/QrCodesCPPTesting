@@ -46,6 +46,14 @@ class Pong {
         float div = RAND_MAX / range;
         return min + (rand() / div);
     }
+    void reset() {
+        Ballpos =  raylib::Vector2(640,310);
+        Ballspeed = raylib::Vector2(8,1.5);
+
+        Paddle1pos = raylib::Vector2(1080,400);
+ 
+        Paddle2pos = raylib::Vector2(200,400);
+    }
 
 
     void run() {
