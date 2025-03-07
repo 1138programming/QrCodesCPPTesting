@@ -17,7 +17,7 @@ class BtTabObj {
         bt::SOCKETCALLTYPE callType = bt::CALLTYPE_DEFAULT;
         bt::TABTRANSACTION currTrans;
 
-        std::string tabScoutingName = "NULL";
+        std::string tabScoutingName = std::string("NULL");
         bool transactionState = false;
 
         /*********************************************/

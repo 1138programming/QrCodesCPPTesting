@@ -137,9 +137,9 @@ class BluetoothConductor {
                     break;
                 }
                 case bt::TRANS_RECV_TABLET_INFO: {
-                    std::vector<char> tabletScoutingInfoVec = trans->data.get().value();
-                    if (trans->success) {
-                        std::string tabletScoutingInfo = std::string(tabletScoutingInfoVec.begin(), tabletScoutingInfoVec.end());
+                    std::optional<std::vector<char>> tabletScoutingInfoVec = trans->data.get();
+                    if (trans->success && tabletScoutingInfoVec.has_value()) {
+                        std::string tabletScoutingInfo = std::string(tabletScoutingInfoVec.value().begin(),  tabletScoutingInfoVec.value().end());
                         trans->parent->setScoutingName(tabletScoutingInfo);
                     }
                     break;
