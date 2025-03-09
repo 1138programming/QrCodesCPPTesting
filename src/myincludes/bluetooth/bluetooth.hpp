@@ -34,7 +34,7 @@ class Bluetooth {
         bt::HBLUETOOTH_RADIO_FIND btRadioFindingVal;
 
         VerticalScrollable nameList = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
-        std::vector<EzText> names;
+        std::vector<EzText*> names;
     public:
         /*********************************************/
         /* HOST/CLIENT DATA HANDLING FUNCTIONS */
@@ -299,12 +299,15 @@ class Bluetooth {
 
         VerticalScrollable* getNameList() {
             std::vector<Drawable*>* listVector = this->nameList.getInternalVector();
+            for (EzText* i : this->names) {
+                delete i;
+            }
             listVector->clear();
             this->names.clear();
             for (int i = 0; i < this->connectedTablets.size(); i++) {
-                this->names.push_back(EzText(raylib::Text(this->connectedTablets.at(i).getScoutingName()), RAYWHITE, 25.0_spX, 1.0));
-                this->names.at(i).setCustomOffset(raylib::Vector2(2.0, 0.0));
-                listVector->push_back(&this->names.at(i));
+                this->names.push_back(new EzText(raylib::Text(this->connectedTablets.at(i).getScoutingName()), RAYWHITE, 25.0_spX, 1.0));
+                this->names.at(i)->setCustomOffset(raylib::Vector2(2.0, 0.0));
+                listVector->push_back(this->names.at(i));
             }
             return &this->nameList;
         }

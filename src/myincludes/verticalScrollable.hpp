@@ -52,7 +52,12 @@ class VerticalScrollable : public Drawable {
             BeginScissorMode(x, y, this->width, this->height);
                 double currentY = y+this->scrollPx;
                 for (Drawable* i : this->thingsToDraw) {
-                    i->draw(x, currentY);
+                    try {
+                        i->draw(x, currentY);
+                    }
+                    catch (...) {
+                        DebugConsole::println(std::string("Current Line: ") + std::to_string((size_t)i));
+                    }
                     currentY += i->getHeight();
                 }
             EndScissorMode();

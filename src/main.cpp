@@ -211,7 +211,6 @@ int main() {
             bluetoothTab.disable();
         }
 
-        btConn.handleReadyConnections();
         activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));
         btConn.updateAllBt();
         activeConnections.setText("Connections: " + std::to_string(btConn.getNumConnections()));

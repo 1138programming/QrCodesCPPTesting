@@ -43,6 +43,7 @@ class BtTabObj {
             this->macAddr = addr;
             this->macStr = addrStr;
             this->tabScoutingName = addrStr;
+            std::cout << addrStr << std::endl;
 
             this->callType = bt::CALLTYPE_DEFAULT;
         }
@@ -293,12 +294,13 @@ class BtTabObj {
                     T: all data
                     C: 👍 (ACK)
             */
-           DebugConsole::println("Writing to tablet", DBGC_GREEN, DBGL_DEVEL);
+           DebugConsole::println("Reading from tablet", DBGC_GREEN, DBGL_DEVEL);
            success = true;
            if (!this->sendAck()) {
-                success = false;
-                return std::vector<char>();
+               success = false;
+               return std::vector<char>();
             }
+            DebugConsole::println("Ack'd tabTrans", DBGC_BLUE, DBGL_DEVEL);
             
             // get # of bytes to be sent
             char* numOfByteDataPtr = readAllSocketData(BT_EXPECTED_DATA_READSIZE, success);
@@ -308,6 +310,7 @@ class BtTabObj {
                 return std::vector<char>();
             }
             int bytesExpected = ((int*)numOfByteDataPtr)[0];
+            DebugConsole::println(std::string("Num Bytes Expected: ") + std::to_string(bytesExpected), DBGC_BLUE, DBGL_DEVEL);
             free(numOfByteDataPtr);
             
             // ack recvd data size
@@ -315,6 +318,7 @@ class BtTabObj {
                 success = false;
                 return std::vector<char>();
             }
+            DebugConsole::println(std::string("Ack recvd size correctly"), DBGC_BLUE, DBGL_DEVEL);
             
             // read # of bytes from socket and return as vector
             char* messagePtr = readAllSocketData(bytesExpected, success);
@@ -322,13 +326,14 @@ class BtTabObj {
                 sendNack();
                 return std::vector<char>(); // (success already false)
             }
-
+            
             std::vector<char> messageData;
             messageData.reserve(bytesExpected);
             for (int i = 0; i < bytesExpected; i++) {
                 messageData.push_back(messagePtr[i]);
             }
             free(messagePtr);
+            DebugConsole::println(std::string("Got message data"), DBGC_BLUE, DBGL_DEVEL);
             return messageData;
         }
         std::optional<std::vector<char>> internalWrite(std::vector<char> data, bool& success) {

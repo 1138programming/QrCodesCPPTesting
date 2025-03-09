@@ -116,6 +116,8 @@ class TextBox : public Drawable {
 
         ~TextBox() {
             free(this->text);
+            font.GetTexture().Unload();
+            font.Unload();
         }
 };
 
