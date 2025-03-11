@@ -15,6 +15,7 @@ class JsonParser {
         json data;
     public:
         JsonParser(std::string datan) {
+       
             try {
                 this->data = json::parse(datan);
                 toastHandler::add(Toast("JSON parsed", LENGTH_NORMAL));
@@ -89,6 +90,33 @@ class JsonParser {
              
             return Teamsdata;
         }
+        std::vector<MATCHLIST_DATAPOINT> parseMatchList() {
+            std::vector<MATCHLIST_DATAPOINT> MatchlistData = std::vector<MATCHLIST_DATAPOINT>();  
+            try {
+                int i = 0;
+                for (auto it = this->data.begin(); it != this->data.end() ; ++it) { 
+                
+                    MATCHLIST_DATAPOINT currentDatapoint; 
+                    
+                    json element = *it;
+
+                    currentDatapoint.MatchId = i;
+                    (!element["key"].is_null()) ?  currentDatapoint.BAmatchId = element["key"] : currentDatapoint.BAmatchId = "NULL";
+                    (!element["comp_level"].is_null()) ?  currentDatapoint.MatchDesc = element["comp_level"] : currentDatapoint.MatchDesc = "NULL";
+                    
+                    MatchlistData.push_back(currentDatapoint);  
+                    i++;
+                }
+            }
+            catch (...) {
+                DebugConsole::print(std::string("Error parsing teams ") +  "\n", DBGC_YELLOW);
+                // toastHandler::add(Toast("fuck. it no workie", LENGTH_NORMAL));
+            }
+            // std::cout << (datapoints.begin().base())->datapointID <<std::endl; 
+             
+            return MatchlistData;
+        }
+
 };
 
 #endif

@@ -222,12 +222,7 @@ int main() {
                 // if (goated.isPressed()) {
                 //     qrScanner.update();
                 // } 
-                if (rest.isPressed()) {
-                    handler.deleteteams();
-                    for (int i = 0; i < 20; i++) {
-                        handler.getteamdata(i);
-                    }              
-                }
+   
                 if (AmplifyBlue.isPressed()) {
                     try {
                         auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ( 4,-1,11,'true', -1, 'Blue');", 0);  
@@ -257,9 +252,15 @@ int main() {
             break;
 
             case DATABASE:
+            if (rest.isPressed()) {
+                handler.deleteteams();
+                for (int i = 0; i < 23; i++) {
+                    handler.getteamdata(i);
+                }              
+            }
                  if(DB.isPressed()) {
-                    for (int i =0; i<6; i++) {
-                        for  (int j =0; j<45; j++) {
+                    for (int i =1; i<7; i++) {
+                        for  (int j =1; j<46; j++) {
                             database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(1) + ",'1');", 0);
                             database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(4) + ",'1');", 0);
                             database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DatapointID,  DCValue, TeamID, AllianceID) values (" + std::to_string(i) + "," + std::to_string(-1) + "," + std::to_string(j) + ",'" + "event" + "'," +  std::to_string(5) + ",'1');", 0);
@@ -270,18 +271,23 @@ int main() {
                     }                  
                 }
                 if (tournamentSubmit.isPressed()) {
-                    JsonParser teamsParser(handler.makeTBAReq(std::string("event/") + tournamentMatch.getText() + std::string("/teams")));
-                    std::vector<TEAM_DATAPOINT> teamsList = teamsParser.parseTeams();
-                    if (teamsList.size() >= 1) {
-                        std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
-                        compTeamsFile << std::to_string(teamsList[0].teamNum);
-                        for (int i = 1; i < teamsList.size(); i++) {
-                            compTeamsFile << "," << std::to_string(teamsList[i].teamNum);
-                        }
+
+                    handler.getteamsatcomphdata(tournamentMatch.getText());
+                    // handler.getmatchdata(tournamentMatch.getText());
+                    int a =100;
+                    int b =200;
+                    int c = 250;
+
+                    for (int i=0;i<a;i++) {
+                        database.execQuery("insert into scmatch ( MatchId, BAmatchId, Description) values (" + std::to_string(i) + ",'Practice" +  "','Practice');", 0); 
                     }
-                    else {
-                        toastHandler::add(Toast("Invalid Comp ID", LENGTH_NORMAL));
+                    for (int j=a;j<b;j++) {
+                        database.execQuery("insert into scmatch ( MatchId, BAmatchId, Description) values (" + std::to_string(j) + ",'Qual" +  "','Qual');", 0); 
                     }
+                    for (int k=b;k<c;k++) {
+                        database.execQuery("insert into scmatch ( MatchId, BAmatchId, Description) values (" + std::to_string(k) + ",'Playoff" +  "','Playoff');", 0); 
+                    }
+                    
                 }
                 if (scouterUpdate.isPressed()) {
                     auto result = database.query("select scouterfirstname, scouterlastname, scouterid from scouter where scouterid>=0");
@@ -309,10 +315,12 @@ int main() {
                         std::cout << std::endl;
                     }
                 }
+              
                 window.BeginDrawing();
                     window.ClearBackground(BLACK);
                     texture.draw(0,0);
                     dataVisualizationScreen.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));
+                
             break;
 
             case BLUETOOTH:

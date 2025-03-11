@@ -18,8 +18,11 @@ class DatabaseMan {
         Database database;
         std::vector<MATCH_DATAPOINT> datapoints;
         std::vector<TEAM_DATAPOINT> teams;
+        std::vector<MATCHLIST_DATAPOINT> matchs;
+
         MATCH_DATAPOINT temp;
         TEAM_DATAPOINT temp2;
+        MATCHLIST_DATAPOINT temp3;
 
         std::string resultstr;
         
@@ -36,6 +39,9 @@ class DatabaseMan {
 
     void setteamdat(std::vector<TEAM_DATAPOINT> teamsn) {
         this->teams = teamsn;
+    }
+    void setmatchlistdat(std::vector<MATCHLIST_DATAPOINT> matchsn) {
+        this->matchs = matchsn;
     }
 
 
@@ -80,6 +86,26 @@ class DatabaseMan {
             DebugConsole::print(std::string("Error inserting teams. Vector is null ") + "\n", DBGC_RED);
         }
     }
+
+    void addMatchList() {
+        if (!matchs.empty()) {
+            for (auto i = matchs.begin(); i != matchs.end(); ++i) {
+                if (i.base() != NULL) {
+                    temp3 = *i.base();
+                
+                    auto notUsed = database.execQuery("insert into scmatch ( MatchId, BAmatchId, Description) values (" + std::to_string(temp3.MatchId) + ",'" + temp3.BAmatchId + "','" + temp3.MatchDesc + "');", 0); 
+                    
+                }
+                else {
+                    DebugConsole::print(std::string("Error inserting datapoints. Base is null ")  + "\n", DBGC_RED);
+                }   
+            }
+        }
+        else {
+            DebugConsole::print(std::string("Error inserting datapoints. Vector is null ")  + "\n", DBGC_RED);
+        }
+    }
+
 
 
          

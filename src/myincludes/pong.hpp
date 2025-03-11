@@ -10,6 +10,8 @@
 #include <time.h>
 #include "../include/raylib-cpp.hpp"
 #include "../myincludes/allincludes.hpp"
+#include "../myincludes/shouldScale.hpp"
+
 
 
 class Pong {
@@ -47,18 +49,26 @@ class Pong {
         return min + (rand() / div);
     }
     void reset() {
-        Ballpos =  raylib::Vector2(640,310);
+        ShouldScale *ballx = new ShouldScale((float) 640.0, true, XDEPENDENT);
+        ShouldScale *bally = new ShouldScale((float) 310.0, true, YDEPENDENT);
+
+        ShouldScale *paddle1x = new ShouldScale((float) 1080.0, true, XDEPENDENT);
+        ShouldScale *paddle1y = new ShouldScale((float) 400.0, true, YDEPENDENT);
+
+        ShouldScale *paddle2x = new ShouldScale((float) 200.0, true, XDEPENDENT);
+        ShouldScale *paddle2y = new ShouldScale((float) 400.0, true, YDEPENDENT);
+
+
+        Ballpos =  raylib::Vector2((float)ballx->getData(),(float)bally->getData());
         Ballspeed = raylib::Vector2(8,1.5);
 
-        Paddle1pos = raylib::Vector2(1080,400);
+        Paddle1pos = raylib::Vector2((float)paddle1x->getData(),(float)paddle1y->getData());
  
-        Paddle2pos = raylib::Vector2(200,400);
+        Paddle2pos = raylib::Vector2((float)paddle2x->getData(),(float)paddle2y->getData());
     }
 
 
-    void run() {
-
-    }
+  
 
     void update() {
         adjustedframetime = 50 * GetFrameTime();

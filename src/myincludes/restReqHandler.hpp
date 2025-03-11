@@ -69,6 +69,31 @@ class RestReqHandler {
             database->setteamdat(teams);
             database->addTeams();        
         }
+        void getmatchdata(std::string eventkey) {
+            std::string pageData = makeTBAReq(std::string("event/") + eventkey + std::string("/matches"));
+            std::ofstream compTeamsFile("resources/csv/matchesList.csv");
+            compTeamsFile << pageData;
+
+            JsonParser parser(pageData); 
+            std::vector<MATCHLIST_DATAPOINT> matchs = parser.parseMatchList();
+
+            database->setmatchlistdat(matchs);
+            database->addMatchList();        
+        }
+        void getteamsatcomphdata(std::string eventkey) {
+            JsonParser teamsParser(makeTBAReq(std::string("event/") + eventkey + std::string("/teams")));
+                    std::vector<TEAM_DATAPOINT> teamsList = teamsParser.parseTeams();
+                    if (teamsList.size() >= 1) {
+                        std::ofstream compTeamsFile("resources/csv/teamCompList.csv");
+                        compTeamsFile << std::to_string(teamsList[0].teamNum);
+                        for (int i = 1; i < teamsList.size(); i++) {
+                            compTeamsFile << "," << std::to_string(teamsList[i].teamNum);
+                        }
+                    }
+                    else {
+                        toastHandler::add(Toast("Invalid Comp ID", LENGTH_NORMAL));
+                    }       
+        }
         void deleteteams() {
             database->clearTeams();
         }
