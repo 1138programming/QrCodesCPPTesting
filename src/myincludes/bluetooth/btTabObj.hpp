@@ -80,7 +80,7 @@ class BtTabObj {
          */
         char* readAllSocketData(size_t sizeExpected, bool& success) {
             success = true;
-            double timeoutTime = (GetTime() + 5.0);
+            double timeoutTime = (GetTime() + 10.0);
             
             // return nothing if no data expected (obv)
             if (sizeExpected < 1) {
@@ -99,7 +99,7 @@ class BtTabObj {
             while (dataRecvd < sizeExpected) {
                 size_t currentLenRecvd = bt::recv(this->socket, dataPtr, sizeExpected-dataRecvd, 0);
                 if (currentLenRecvd > 0 && currentLenRecvd != SOCKET_ERROR) {
-                    timeoutTime = (GetTime() + 5.0);
+                    timeoutTime = (GetTime() + 10.0);
                 }
                 if (GetTime() > timeoutTime) {
                     DebugConsole::println("Communication with tab timed out.", DBGC_RED, DBGL_ERROR);
