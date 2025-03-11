@@ -34,7 +34,7 @@ class Bluetooth {
         bt::HBLUETOOTH_RADIO_FIND btRadioFindingVal;
 
         VerticalScrollable nameList = VerticalScrollable(600.0_spX, 200.0_spY, WHITE, 3.0);
-        std::vector<EzText*> names;
+        std::vector<EzText> names;
     public:
         /*********************************************/
         /* HOST/CLIENT DATA HANDLING FUNCTIONS */
@@ -125,7 +125,7 @@ class Bluetooth {
 
             this->btRadioFindingVal = bt::BluetoothFindFirstRadio(&radioParams, &this->btRadio);
             if (this->btRadioFindingVal == NULL) {
-                DebugConsole::print("No valid bluetooth radio found!", DBGC_RED);
+                DebugConsole::println("No valid bluetooth radio found!", DBGC_RED, DBGL_ERROR);
             }
         }
         /**
@@ -299,15 +299,13 @@ class Bluetooth {
 
         VerticalScrollable* getNameList() {
             std::vector<Drawable*>* listVector = this->nameList.getInternalVector();
-            for (EzText* i : this->names) {
-                delete i;
-            }
             listVector->clear();
             this->names.clear();
+            this->names.reserve(this->connectedTablets.size());
             for (int i = 0; i < this->connectedTablets.size(); i++) {
-                this->names.push_back(new EzText(raylib::Text(this->connectedTablets.at(i).getScoutingName()), RAYWHITE, 25.0_spX, 1.0));
-                this->names.at(i)->setCustomOffset(raylib::Vector2(2.0, 0.0));
-                listVector->push_back(this->names.at(i));
+                this->names.emplace_back(raylib::Text(this->connectedTablets.at(i).getScoutingName()), RAYWHITE, 25.0_spX, 1.0);
+                this->names.at(i).setCustomOffset(raylib::Vector2(2.0, 0.0));
+                listVector->push_back(&this->names.at(i));
             }
             return &this->nameList;
         }
@@ -345,6 +343,18 @@ class Bluetooth {
         int getNumConnections() {
             return this->connectedTablets.size();
         }
+
+        // #include <cstdlib> 
+        // #include <ctime>
+        // void fakeSock() {
+        //     srand(time(0));
+        //     bt::SOCKADDR_BTH sockAddrNull;
+        //     this->connectedTablets.emplace_back(bt::socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM), sockAddrNull, std::string("Nothing"));
+        // }
+        // void changeName() {
+        //     for (auto& i : this->connectedTablets)
+        //     i.setScoutingName(std::to_string(rand()));
+        // }
 };
 
 #endif
