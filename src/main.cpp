@@ -24,6 +24,7 @@
 #include "myincludes/bluetooth/bluetooth.hpp"
 #include "myincludes/bluetooth/btTabObj.hpp"
 #include "myincludes/bluetooth/bluetoothConductor.hpp"
+#include "include/libusb.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -38,6 +39,13 @@ int main() {
     std::string resultstr;
    
     DebugConsole::print("Welcome to the main computer!\n", DBGC_BLUE);
+    libusb_init_context(NULL, NULL, 0);
+    libusb_device** connectedDevs;
+    ssize_t arrSize = libusb_get_device_list(NULL, &connectedDevs);
+    for (int i = 0; i < arrSize; i++) {
+        DebugConsole::println(std::string("USB DEVICE FOUND: ") + std::to_string(libusb_get_device_address(connectedDevs[i])));
+    }
+
      
     // DrawableGraph<double, double> graph(200, 200, 400.0_spX, 400.0_spY);
 
