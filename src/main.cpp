@@ -29,6 +29,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
+#include <format>
 
 
 
@@ -44,6 +45,10 @@ int main() {
     ssize_t arrSize = libusb_get_device_list(NULL, &connectedDevs);
     for (int i = 0; i < arrSize; i++) {
         DebugConsole::println(std::string("USB DEVICE FOUND: ") + std::to_string(libusb_get_device_address(connectedDevs[i])));
+        libusb_device_descriptor desc;
+        libusb_get_device_descriptor(connectedDevs[i], &desc);
+        // https://devicehunt.com/search/type/usb/vendor/04E8/device/any
+        DebugConsole::println(std::format("USB DEVICE VENDOR ID: {:#4x}; USB PRODUCT ID: {:#4x}", desc.idVendor, desc.iProduct));
     }
 
      

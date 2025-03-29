@@ -9,10 +9,10 @@ NAME = game.exe
 #compiler flags:
 #	-g = debugging info
 #	-Wall = all warnings
-CPPFLAGS = $(MAINFILE) -o $(NAME) -O0 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -lmariadb -lws2_32 -lbthprops -lcurl-x64 -lusb-1.0
-NOWARN = $(MAINFILE) -o $(NAME) -O0 -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -lmariadb -lws2_32 -lbthprops -lcurl-x64 -lusb-1.0
+CPPFLAGS = $(MAINFILE) -o $(NAME) -O0 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -lmariadb -lws2_32 -lbthprops -lcurl-x64 -lusb-1.0 --std=gnu++20
+NOWARN = $(MAINFILE) -o $(NAME) -O0 -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -lmariadb -lws2_32 -lbthprops -lcurl-x64 -lusb-1.0 --std=gnu++20
 DEBUG = -g -DDEBUG
-O3 = $(MAINFILE) -o $(NAME) -O3 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -lmariadb -mwindows -lws2_32 -lbthprops -lcurl-x64 -lusb-1.0
+O3 = $(MAINFILE) -o $(NAME) -O3 -Wall -I include/ -lm -L lib/ -lraylib -lopengl32 -lgdi32 -lwinmm -lraylibdll -lmariadb -mwindows -lws2_32 -lbthprops -lcurl-x64 -lusb-1.0 --std=gnu++20
 main:
 	$(CC) $(CPPFLAGS)
 nowarn:
