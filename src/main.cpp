@@ -48,7 +48,23 @@ int main() {
         libusb_device_descriptor desc;
         libusb_get_device_descriptor(connectedDevs[i], &desc);
         // https://devicehunt.com/search/type/usb/vendor/04E8/device/any
-        DebugConsole::println(std::format("USB DEVICE VENDOR ID: {:#4x}; USB PRODUCT ID: {:#4x}", desc.idVendor, desc.iProduct));
+        DebugConsole::println(std::format("USB DEVICE VENDOR ID: {:#4x}; USB PRODUCT ID: {:#4x}", desc.idVendor, desc.idProduct));
+        if (desc.idVendor == 0x04E8) {
+            DebugConsole::println("DEVICE FOUND YAYYYY!!!!", DBGC_BLUE);
+            libusb_device_handle* androidDevice;
+            libusb_open(connectedDevs[i], &androidDevice);
+            unsigned char data = 53;
+            char response[256];
+            uint16_t deviceResponse;
+            int errorCode = libusb_control_transfer(androidDevice, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 0);
+            if (errorCode < 0) {
+                DebugConsole::println(std::format("ERROR :C ({})", libusb_error_name(errorCode)), DBGC_RED);
+            }
+            else {
+                DebugConsole::println(std::format("Response: {}", response));
+            }
+            libusb_close(androidDevice);
+        }
     }
 
      

@@ -4,12 +4,39 @@
 #include "debugConsoleColors.hpp"
 #include "debugLevel.hpp"
 #include "btIncludes.hpp" // just use this header for simplicity sake
+#include "libusb.h"
 
 #include <iostream>
 #include <sstream>
 
 class DebugConsole {
     public:
+        static void libUSBCallback(libusb_context *ctx, enum libusb_log_level level, const char *str) {
+            switch(level) {
+                case LIBUSB_LOG_LEVEL_NONE: {  
+                    break; 
+                }
+
+                case LIBUSB_LOG_LEVEL_ERROR: {
+                    DebugConsole::print(std::string(str), DBGC_RED, DBGL_ERROR);
+                }
+                break;
+                
+                case LIBUSB_LOG_LEVEL_WARNING: {
+                    DebugConsole::print(std::string(str), DBGC_YELLOW, DBGL_WARNING);
+                }
+                break;
+
+                case LIBUSB_LOG_LEVEL_INFO: {
+                    DebugConsole::print(std::string(str), DBGC_BLUE, DBGL_INFO);
+                }
+
+                case LIBUSB_LOG_LEVEL_DEBUG: {
+                    DebugConsole::print(std::string(str), DBGC_BLUE, DBGL_DEVEL);
+                }
+            }
+        }
+
         static bool debugLevelAllowed(DEBUGGINGLEVEL debugLevel) {
             return (((int)debugLevel) >= ((int)DEBUG_LEVEL));
         }
