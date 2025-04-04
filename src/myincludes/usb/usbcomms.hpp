@@ -4,10 +4,19 @@
 #include "../libusb.h"
 #include "../debugConsole.hpp"
 
+// should only be initialized once per context (basically only once ever)
 class USBComms {
         /*********************************************/
         /* INITIALIZING / FREEING FUNCTIONS */
         /*********************************************/
+        static int hotplugCallback(libusb_context *ctx, libusb_device *device, libusb_hotplug_event event, void *userData) {
+            USBComms* self = (USBComms*)userData;
+
+            self->handleTabDevices(device);
+
+            return 0; // if we return anything other than 0, we are de-registered
+        }
+
         void handleTabDevices(libusb_device* device) {
             libusb_device_descriptor deviceDesc;
             libusb_get_device_descriptor(device, &deviceDesc);
@@ -59,6 +68,7 @@ class USBComms {
         void initUSBComms() {
             libusb_init_context(NULL, NULL, 0);
             libusb_set_log_cb(NULL, DebugConsole::libUSBCallback, LIBUSB_LOG_CB_GLOBAL);
+            libusb_hotplug_register_callback(NULL, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, 0, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, USBComms::hotplugCallback, this, NULL);
 
             scanDevices();
         }
