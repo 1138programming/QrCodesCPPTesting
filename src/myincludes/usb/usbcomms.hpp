@@ -20,7 +20,6 @@ class USBComms {
         void handleTabDevices(libusb_device* device) {
             libusb_device_descriptor deviceDesc;
             libusb_get_device_descriptor(device, &deviceDesc);
-            deviceDesc.iSerialNumber
 
             // https://devicehunt.com/search/type/usb/vendor/04E8/device/any (Samsung)
             if (deviceDesc.idVendor == 0x4E8) {
