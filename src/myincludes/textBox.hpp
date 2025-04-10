@@ -54,7 +54,7 @@ class TextBox : public Drawable {
             this->sizeLimit = sizeLimit;
             this->text = (char*)calloc(this->sizeLimit+1, sizeof(char));
             this->textSize = textSize;
-            this->font = raylib::Font(font);
+            this->font = raylib::Font(font.baseSize, font.glyphCount, font.glyphPadding, font.texture);
             this->textColor = fontColor;
             this->rectColor = rectColor;
             this->selectColor = raylib::Color(rectColor.r / 2, rectColor.g / 2, rectColor.b / 2);
@@ -69,7 +69,7 @@ class TextBox : public Drawable {
             this->sizeLimit = sizeLimit;
             this->text = (char*)calloc(this->sizeLimit+1, sizeof(char));
             this->textSize = textSize;
-            this->font = raylib::Font(font);
+            this->font = raylib::Font(font.baseSize, font.glyphCount, font.glyphPadding, font.texture);
             this->textColor = fontColor;
             this->rectColor = rectColor;    
             this->selectColor = selectColor;
@@ -116,8 +116,6 @@ class TextBox : public Drawable {
 
         ~TextBox() {
             free(this->text);
-            font.GetTexture().Unload();
-            font.Unload();
         }
 };
 

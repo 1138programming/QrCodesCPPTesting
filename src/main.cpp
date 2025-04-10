@@ -24,6 +24,7 @@
 #include "myincludes/bluetooth/bluetooth.hpp"
 #include "myincludes/bluetooth/btTabObj.hpp"
 #include "myincludes/bluetooth/bluetoothConductor.hpp"
+#include "myincludes/usb/usbcomms.hpp"
 #include "include/libusb.h"
 #include <iostream>
 #include <fstream>
@@ -56,7 +57,7 @@ int main() {
             unsigned char data = 53;
             char response[256];
             uint16_t deviceResponse;
-            int errorCode = libusb_control_transfer(androidDevice, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 0);
+            int errorCode = libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_OUT | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 0);
             if (errorCode < 0) {
                 DebugConsole::println(std::format("ERROR :C ({})", libusb_error_name(errorCode)), DBGC_RED);
             }

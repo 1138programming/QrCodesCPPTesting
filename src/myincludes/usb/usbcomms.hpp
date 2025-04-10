@@ -1,7 +1,8 @@
 #ifndef USBCOMMS_HPP
 #define USBCOMMS_HPP
 
-#include "../libusb.h"
+#define ENABLE_DEBUG_LOGGING
+#include "../../include/libusb.h"
 #include "../debugConsole.hpp"
 
 // should only be initialized once per context (basically only once ever)
@@ -28,9 +29,9 @@ class USBComms {
                 libusb_device_handle* androidDevice;
                 libusb_open(device, &androidDevice);
                 
-                int errorCode = libusb_control_transfer(androidDevice, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 5000);
+                int errorCode = libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_OUT | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 5000);
                 if (errorCode < 0) {
-                    DebugConsole::println(std::format("Samsung Device Doesn't support AOA(?). Error type: {}", libusb_strerror(errorCode)), DBGC_YELLOW, DBGL_WARNING)
+                    DebugConsole::println(std::format("Samsung Device Doesn't support AOA(?). Error type: {}", libusb_strerror(errorCode)), DBGC_YELLOW, DBGL_WARNING);
                 }
                 else {
                     DebugConsole::println("Samsung device put into AOA mode", DBGC_DEFAULT, DBGL_DEVEL);
@@ -41,9 +42,9 @@ class USBComms {
             else if (deviceDesc.idProduct >= 0x2D00 && deviceDesc.idProduct <= 0x2D05) {
                 DebugConsole::println("USB: Found AOA device", DBGC_DEFAULT, DBGL_DEVEL);
                 libusb_device_handle* androidAOADevice;
-                libusb_open(androidAOADevice);
+                libusb_open(device, &androidAOADevice);
 
-                libusb_bulk_transfer(androidAOADevice, 0, "HI!", 4, NULL, 5000);
+                libusb_bulk_transfer(androidAOADevice, 0, (unsigned char*)"HI!", 4, NULL, 5000);
 
                 libusb_close(androidAOADevice);
             }
