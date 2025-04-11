@@ -41,33 +41,6 @@ int main() {
     std::string resultstr;
    
     DebugConsole::print("Welcome to the main computer!\n", DBGC_BLUE);
-    libusb_init_context(NULL, NULL, 0);
-    libusb_device** connectedDevs;
-    ssize_t arrSize = libusb_get_device_list(NULL, &connectedDevs);
-    for (int i = 0; i < arrSize; i++) {
-        DebugConsole::println(std::string("USB DEVICE FOUND: ") + std::to_string(libusb_get_device_address(connectedDevs[i])));
-        libusb_device_descriptor desc;
-        libusb_get_device_descriptor(connectedDevs[i], &desc);
-        // https://devicehunt.com/search/type/usb/vendor/04E8/device/any
-        DebugConsole::println(std::format("USB DEVICE VENDOR ID: {:#4x}; USB PRODUCT ID: {:#4x}", desc.idVendor, desc.idProduct));
-        if (desc.idVendor == 0x04E8) {
-            DebugConsole::println("DEVICE FOUND YAYYYY!!!!", DBGC_BLUE);
-            libusb_device_handle* androidDevice;
-            libusb_open(connectedDevs[i], &androidDevice);
-            unsigned char data = 53;
-            char response[256];
-            uint16_t deviceResponse;
-            int errorCode = libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_OUT | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 0);
-            if (errorCode < 0) {
-                DebugConsole::println(std::format("ERROR :C ({})", libusb_error_name(errorCode)), DBGC_RED);
-            }
-            else {
-                DebugConsole::println(std::format("Response: {}", response));
-            }
-            libusb_close(androidDevice);
-        }
-    }
-
      
     // DrawableGraph<double, double> graph(200, 200, 400.0_spX, 400.0_spY);
 
@@ -87,6 +60,14 @@ int main() {
     Client client;
     btConn.initWinsock();
     btConn.initAccept();
+    
+    std::stringstream usbData;
+        usbData << "[" << btConn.getLocalPort() <<
+        ";" << btConn.getLocalMacStr() << "]";
+    DebugConsole::println(std::format("String Data: {}", usbData.str()), DBGC_DEFAULT, DBGL_DEVEL);
+
+    USBComms usbConn(usbData.str());
+    usbConn.initUSBComms();
 
     RestReqHandler handler;        
 
@@ -121,6 +102,9 @@ int main() {
 
         Button rest(100.0_spX, 100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "rest"), RAYWHITE, 10.0_spD, 0.0));
 
+        Button rescanUSB(300.0_spX,100.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Rescan USB Devices"), RAYWHITE, 12.0_spD, 0.0));
+            rescanUSB.setDisplayPos(TOPLEFT);
+
         goated.setDisplayPos(BOTTOMCENTERED);
         DB.setDisplayPos(BOTTOMLEFT);
         pong.setDisplayPos(TOPRIGHT);
@@ -136,6 +120,7 @@ int main() {
         scannerScreen.add(&MatchBoxMain);
         scannerScreen.add(&AmplifyBlue);
         scannerScreen.add(&AmplifyRed);
+        scannerScreen.add(&rescanUSB);
     
         pongscreen.add(&pongback);
         pongscreen.add(&pongreset);
@@ -252,7 +237,9 @@ int main() {
                 // if (goated.isPressed()) {
                 //     qrScanner.update();
                 // } 
-   
+                if (rescanUSB.isPressed()) {
+                    usbConn.scanDevices();
+                }
                 if (AmplifyBlue.isPressed()) {
                     try {
                         auto res = database.execQuery("insert into matchtransaction ( MatchId, ScouterID, DataPointID,  DCValue, TeamID,AllianceID) values ( 4,-1,11,'true', -1, 'Blue');", 0);  
@@ -403,5 +390,6 @@ int main() {
     }
     btConn.killAllSockets();
     WinsockErrorDesc::destroy();
+    usbConn.cleanupUSBComms();
     return 0;
 }

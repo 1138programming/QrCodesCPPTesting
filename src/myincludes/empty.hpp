@@ -5,7 +5,7 @@
 #include "drawable.hpp"
 #include "shouldScale.hpp"
 
-class Empty : public Drawable{
+class Empty : public Drawable {
     private:
         std::vector<Drawable*> thingsToDraw;
         ShouldScale x, y, width, height;
