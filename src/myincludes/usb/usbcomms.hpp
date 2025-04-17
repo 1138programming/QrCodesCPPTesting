@@ -35,18 +35,22 @@ class USBComms {
                     DebugConsole::println("USB: Found Samsung device", DBGC_DEFAULT, DBGL_DEVEL);
                     
                     libusb_device_handle* androidDevice;
-                    libusb_open(device, &androidDevice);
+                    int errorCode = libusb_open(device, &androidDevice);
+                    if (errorCode != 0) {
+                        DebugConsole::println(std::format("Device not conneted; error: {}", libusb_strerror(errorCode)), DBGC_RED, DBGL_ERROR);
+                        return;
+                    }
                     
-                    int16_t aoaVerNum = 0;
-                    int errorCode = libusb_control_transfer(androidDevice, LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR, 51, 0, 0, (unsigned char*)&aoaVerNum, sizeof(aoaVerNum), 5000);
+                    uint16_t aoaVerNum = 0;
+                    errorCode = libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_IN | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 51, 0, 0, (unsigned char*)&aoaVerNum, sizeof(aoaVerNum), 5000);
                     if (errorCode < 0) {
                         DebugConsole::println(std::format("Samsung Device Doesn't support AOA(?). Error type: {}", libusb_strerror(errorCode)), DBGC_YELLOW, DBGL_WARNING);
                     }
                     else {
                         DebugConsole::println(std::format("Samsung device supports AOA ver: {}. Bytes transferred: {}", aoaVerNum, errorCode), DBGC_DEFAULT, DBGL_DEVEL);
                     }
-
-                    errorCode = libusb_control_transfer(androidDevice, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 5000);
+                    
+                    errorCode = libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_OUT | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 53, 0, 0, NULL, 0, 5000);
                     if (errorCode < 0) {
                         DebugConsole::println(std::format("Samsung Device Doesn't support AOA(?). Error type: {}", libusb_strerror(errorCode)), DBGC_YELLOW, DBGL_WARNING);
                     }
@@ -67,7 +71,7 @@ class USBComms {
                         deviceConfigs->interface[0].altsetting->endpoint;
                     }
 
-                    libusb_bulk_transfer(androidAOADevice, 0, (unsigned char*)this->dataToSend.data(), dataToSend.size(), NULL, 5000);
+                    libusb_bulk_transfer(androidAOADevice, 1, (unsigned char*)this->dataToSend.data(), dataToSend.size(), NULL, 5000);
 
                     libusb_close(androidAOADevice);
                 }
