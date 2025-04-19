@@ -27,6 +27,12 @@ typedef struct {
 
 } MATCHLIST_DATAPOINT;
 
+typedef struct {
+    int matchNum;
+    int blueTeams[3];
+    int redTeams[3];
+} MATCHTEAMS_DATAPOINT;
+
 
 
 #endif

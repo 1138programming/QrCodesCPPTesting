@@ -12,7 +12,7 @@ class EzText : public Drawable {
         ShouldScale textSize, spacing;
     public:
         EzText() {
-            this->text = raylib::Text(GetFontDefault(),"");
+            this->text = raylib::Text(GetFontDefault(), "");
             this->drawColor = WHITE;
             this->spacing = ShouldScale(0, false, NODEPENDENCY);
             this->textSize = ShouldScale(10.0, false, NODEPENDENCY);
@@ -32,8 +32,10 @@ class EzText : public Drawable {
         void draw(int x, int y) override {
             this->text.fontSize = this->textSize.getData();
             this->text.spacing = this->spacing.getData();
+            std::string textCurr = this->text.text;
 
-            this->text.Draw(this->text.font, this->text.GetText(), raylib::Vector2(x + this->customTransformation.x, y + this->customTransformation.y), text.GetFontSize(), this->spacing, this->drawColor);
+            DrawText(textCurr.c_str(), x, y, this->text.fontSize, this->drawColor);
+            //this->text.Draw(this->text.font, textCurr, raylib::Vector2(x + this->customTransformation.x, y + this->customTransformation.y), text.GetFontSize(), this->spacing, this->drawColor);
         }
 
         // accessors / mutators

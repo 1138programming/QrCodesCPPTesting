@@ -146,11 +146,13 @@ int main() {
             dataList.setDisplayPos(CENTERLEFT);
         
         TextBox tournamentMatch(250.0_spX, 30.0_spY, 15, 0.0, 25.0_spD, spaceMono, WHITE, WHITE);
-        Button tournamentSubmit(250.0_spX, 50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Submit"), RAYWHITE, 10.0_spD, 0.0));
+        Button tournamentSubmit(250.0_spX, 50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Update Team List"), RAYWHITE, 10.0_spD, 0.0));
+        Button teamMatchListSubmit(250.0_spX, 50.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Update Team Match List"), RAYWHITE, 10.0_spD, 0.0));
         Button scouterUpdate(250.0_spX, 40.0_spY, RAYWHITE, BLACK, DARKGRAY, EzText(raylib::Text(spaceCadet, "Update Scouter List"), RAYWHITE, 10.0_spD, 0.0));
         DrawableList getMatchList(VERTICAL, 10);
             getMatchList.add(&tournamentMatch);
             getMatchList.add(&tournamentSubmit);
+            getMatchList.add(&teamMatchListSubmit);
             getMatchList.add(&scouterUpdate);
             getMatchList.setDisplayPos(CENTERED);
 
@@ -315,10 +317,23 @@ int main() {
                         for (int i = 1; i < result.size(); i++) {
                             scouterFile << "," << result[i][0] << " " << result[i][1] << ":" << result[i][2];
                         }
+                        scouterFile.close();
                     }
                     else {
                         toastHandler::add(Toast("Scouter DB Error", LENGTH_NORMAL));
                     }            
+                }
+                if(teamMatchListSubmit.isPressed()) {
+                    JsonParser teamMatchData(handler.makeTBAReq(std::format("event/{}/matches/simple", tournamentMatch.getText())));
+                    
+                    std::vector<MATCHTEAMS_DATAPOINT> matchTeams = teamMatchData.parseMatchTeams();
+                    std::ofstream scouterFile("resources/csv/teamMatchList.csv");
+                    for (MATCHTEAMS_DATAPOINT i : matchTeams) {
+                        scouterFile << i.matchNum << ',' << i.blueTeams[0]  << ',' << i.blueTeams[1]
+                        << ',' << i.blueTeams[2]  << ',' << i.redTeams[0] << ',' << i.redTeams[1]
+                        << ',' << i.redTeams[2] << "\n";
+                    }
+                    scouterFile.close();
                 }
 
                 teamdata.setText("Team Data:" + TeamBox.getText());

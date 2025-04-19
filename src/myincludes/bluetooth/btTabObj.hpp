@@ -20,6 +20,9 @@ class BtTabObj {
         std::string tabScoutingName = std::string("NULL");
         bool transactionState = false;
 
+        int currSentMatch = 0;
+        int currSentTeam = 0;
+
         /*********************************************/
         /* PRIVATE COMMUNICATION PROTO PRIMATIVES */
         /*********************************************/
@@ -403,6 +406,20 @@ class BtTabObj {
 
         bt::SOCKET getWinsockSocket() {
             return this->socket;
+        }
+
+        int getCurrTeam() {
+            return this->currSentTeam;
+        }
+        void setCurrTeam(int currTeam) {
+            this->currSentTeam = currTeam;
+        }
+
+        int getCurrMatch() {
+            return this->currSentMatch;
+        }
+        void setCurrMatch(int match) {
+            this->currSentMatch = match;
         }
 
 

@@ -16,7 +16,7 @@ class TextBox : public Drawable {
         ShouldScale spacing;
         char* text;
         bool selected;
-        int sizeLimit = 0;
+        int sizeLimit = 15;
         int currentChar = 0;
         int lastX, lastY;
 
@@ -30,7 +30,6 @@ class TextBox : public Drawable {
                 }
             }
             if (selected) {
-
                 int key = GetCharPressed();
                 if (IsKeyPressed(KEY_BACKSPACE)) {
                     this->currentChar--;
@@ -63,7 +62,7 @@ class TextBox : public Drawable {
             this->lastY = 0;
             this->selected = false;
         }
-        TextBox(ShouldScale width, ShouldScale height, int sizeLimit, ShouldScale spacing,  ShouldScale textSize, Font font, raylib::Color fontColor, raylib::Color rectColor, raylib::Color selectColor) {
+        TextBox(ShouldScale width, ShouldScale height, int sizeLimit, ShouldScale spacing, ShouldScale textSize, Font font, raylib::Color fontColor, raylib::Color rectColor, raylib::Color selectColor) {
             this->width = width;
             this->height = height;
             this->sizeLimit = sizeLimit;
@@ -77,7 +76,6 @@ class TextBox : public Drawable {
             this->lastX = 0;
             this->lastY = 0;
             this->selected = false;
-        
         }
         void draw(int x, int y) override {
             this->lastX = x;

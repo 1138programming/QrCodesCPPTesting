@@ -58,6 +58,9 @@ class BluetoothConductor {
                     trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, murmurHashData, std::ref(trans->success));
                     break;
                 }
+                case bt::TRANS_SEND_NEXT_TEAM: {
+                    
+                }
             }
         }
     public:
@@ -143,6 +146,14 @@ class BluetoothConductor {
                         trans->parent->setScoutingName(tabletScoutingInfo);
                     }
                     break;
+                }
+                case bt::TRANS_RECV_PREVIOUS_TEAM: {
+                    std::optional<std::vector<char>> tabCurrMatchAndTeam = trans->data.get();
+                    if (trans->success && tabCurrMatchAndTeam.has_value()) {
+                        int* dataPtr = (int*)tabCurrMatchAndTeam.value().data();
+                        trans->parent->setCurrMatch(dataPtr[0]);
+                        trans->parent->setCurrTeam(dataPtr[1]);
+                    }
                 }
             }
         }

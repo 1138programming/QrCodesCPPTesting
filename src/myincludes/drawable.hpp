@@ -37,6 +37,8 @@ class Drawable {
         // accessors
         virtual ShouldScale getWidth() { return 0.0; }
         virtual ShouldScale getHeight() { return 0.0; }
+
+        virtual ~Drawable() {}
 };
 
 #endif
