@@ -15,7 +15,9 @@ class JsonParser {
         json data;
 
         int jsonFrcNumToInt(json data) {
-            return std::stoi(data.dump(-1, ' ', true).substr(3));
+            std::string dataDump = data.dump(-1, ' ', true);
+            dataDump = dataDump.substr(4, dataDump.length()-5);
+            return std::stoi(dataDump);
         }
     public:
         JsonParser(std::string datan) {
@@ -124,10 +126,9 @@ class JsonParser {
             std::vector<MATCHTEAMS_DATAPOINT> matchTeams;
             for (auto it = this->data.begin(); it != this->data.end(); ++it) {
                 MATCHTEAMS_DATAPOINT curr = { 0 };
-
+                
                 json element = *it;
-                if (element["comp_level"].is_null() || element["comp_level"].dump(-1, ' ', true) != "qm") {
-                    matchTeams.push_back(curr);
+                if (element["comp_level"].is_null() || element["comp_level"].dump(-1, ' ', true) != "\"qm\"") {
                     continue;
                 }
 
@@ -136,11 +137,12 @@ class JsonParser {
                 }
 
                 for (int i = 0; i < 3; i++) {
-                    (!element["red"]["team_keys"].at(i).is_null()) ? curr.redTeams[i] = jsonFrcNumToInt(element["red"]["team_keys"].at(i)) : curr.redTeams[i] = 0;
+                    (!element["alliances"]["blue"]["team_keys"][i].is_null()) ? curr.blueTeams[i] = jsonFrcNumToInt(element["alliances"]["blue"]["team_keys"][i]) : curr.blueTeams[i] = 0;
                 }
                 for (int i = 0; i < 3; i++) {
-                    (!element["blue"]["team_keys"].at(i).is_null()) ? curr.redTeams[i] = jsonFrcNumToInt(element["red"]["team_keys"].at(i)) : curr.redTeams[i] = 0;
+                    (!element["alliances"]["red"]["team_keys"][i].is_null()) ? curr.redTeams[i] = jsonFrcNumToInt(element["alliances"]["red"]["team_keys"][i]) : curr.redTeams[i] = 0;
                 }
+
                 matchTeams.push_back(curr);
             }
             return matchTeams;
