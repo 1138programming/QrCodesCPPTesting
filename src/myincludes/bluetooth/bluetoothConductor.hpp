@@ -13,6 +13,20 @@
 class BluetoothConductor {
     private:
         /*********************************************/
+        /* HELPFUL FUNCTIONS IDK */
+        /*********************************************/
+        std::vector<std::string> splitStr(std::string str, std::string delim) {
+            std::vector<std::string> retVal;
+            size_t curr = 0, prev = 0;
+            while ((curr = str.find(delim, prev = curr)) != std::string::npos) {
+                retVal.push_back(str.substr(prev, curr));
+                curr += delim.length();
+            }
+            return retVal;
+        }
+
+        
+        /*********************************************/
         /* PRIVATE COMMUNICATION PROTO FUNCs */
         /*********************************************/
         std::optional<std::vector<char>> returnEmptyVector() {
@@ -59,7 +73,15 @@ class BluetoothConductor {
                     break;
                 }
                 case bt::TRANS_SEND_NEXT_TEAM: {
-                    
+                    int nextTeam = -1;
+                    std::ifstream teamMatchListFile("resources/csv/teamMatchList.csv");
+
+                    if (teamMatchListFile.is_open()) {
+                        while (std::getline(teamMatchListFile)) {
+                            
+                        }
+                    }
+                    break;
                 }
             }
         }
