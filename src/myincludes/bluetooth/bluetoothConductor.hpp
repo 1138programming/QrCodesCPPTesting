@@ -72,15 +72,51 @@ class BluetoothConductor {
                     trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, murmurHashData, std::ref(trans->success));
                     break;
                 }
+
+                // TODO: CODE CLEANUP && ERROR CHECKING!!!!!
                 case bt::TRANS_SEND_NEXT_TEAM: {
                     int nextTeam = -1;
                     std::ifstream teamMatchListFile("resources/csv/teamMatchList.csv");
 
+                    std::string currLine;
+                    bool foundTeam = false;
+                    int teamRow = -1;
                     if (teamMatchListFile.is_open()) {
-                        while (std::getline(teamMatchListFile)) {
-                            
+                        while (std::getline(teamMatchListFile, &currLine)) {
+                            std::vector<std::string> matchNTeams = splitStr(currLine, ",");
+                            if(std::stoi(matchNTeams[0]) != trans->parent->getCurrMatch()) {
+                                continue;
+                            }
+                            for (int i = 1; i < matchNTeams.size(); i++) {
+                                if(std::stoi(matchNTeams[i]) == trans->parent->getCurrTeam()) {
+                                    teamRow = i;
+                                    break; // out of for loop not switch
+                                }
+                            }
+                        }
+                        teamMatchListFile.clear();
+                        teamMatchListFile.seekg(teamMatchListFile.beg);
+
+                        if (!foundTeam) {
+                            DebugConsole::println(std::string("ERROR: Next team not found in file..."), DBGC_YELLOW, DBGL_WARNING);
+                            break; // out of switch
+                        }
+                        while (std::getLine(teamMatchListFile, &currLine)) {
+                            std::vector<std::string> matchNTeams = splitStr(currLine, ",");
+                            if (std::stoi(matchNTeams[0]) != (trans->parent->getCurrMatch() + 1)) {
+                                continue;
+                            }
+                            nextTeam = std::stoi(matchNTeams[teamRow]);
+                            break;
                         }
                     }
+
+                    std::vector<char> teamInt;
+                    for (int i = 0; i < sizeof(nextTeam); i++) {
+                        teamInt.push_back(((char*)&nextTeam)[i]);
+                    }
+                    
+                    trans->data = std::async(policy, trans->parent->internalWrite, teamInt, std::ref(trans->success));
                     break;
                 }
             }
