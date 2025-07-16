@@ -82,7 +82,7 @@ class BluetoothConductor {
                     bool foundTeam = false;
                     int teamRow = -1;
                     if (teamMatchListFile.is_open()) {
-                        while (std::getline(teamMatchListFile, &currLine)) {
+                        while (std::getline(teamMatchListFile, currLine)) {
                             std::vector<std::string> matchNTeams = splitStr(currLine, ",");
                             if(std::stoi(matchNTeams[0]) != trans->parent->getCurrMatch()) {
                                 continue;
@@ -101,7 +101,7 @@ class BluetoothConductor {
                             DebugConsole::println(std::string("ERROR: Next team not found in file..."), DBGC_YELLOW, DBGL_WARNING);
                             break; // out of switch
                         }
-                        while (std::getLine(teamMatchListFile, &currLine)) {
+                        while (std::getline(teamMatchListFile, currLine)) {
                             std::vector<std::string> matchNTeams = splitStr(currLine, ",");
                             if (std::stoi(matchNTeams[0]) != (trans->parent->getCurrMatch() + 1)) {
                                 continue;
@@ -115,8 +115,8 @@ class BluetoothConductor {
                     for (int i = 0; i < sizeof(nextTeam); i++) {
                         teamInt.push_back(((char*)&nextTeam)[i]);
                     }
-                    
-                    trans->data = std::async(policy, trans->parent->internalWrite, teamInt, std::ref(trans->success));
+
+                    trans->data = std::async(policy, trans->parent->internalWrite, trans->parent, teamInt, std::ref(trans->success));
                     break;
                 }
             }
