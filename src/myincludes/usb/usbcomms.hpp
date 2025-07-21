@@ -37,7 +37,7 @@ class USBComms {
                     libusb_device_handle* androidDevice;
                     int errorCode = libusb_open(device, &androidDevice);
                     if (errorCode != 0) {
-                        DebugConsole::println(std::format("Device not conneted; error: {}", libusb_strerror(errorCode)), DBGC_RED, DBGL_ERROR);
+                        DebugConsole::println(std::format("Device not connected; error: {}", libusb_strerror(errorCode)), DBGC_RED, DBGL_ERROR);
                         return;
                     }
                     
@@ -59,20 +59,31 @@ class USBComms {
                     }
                     libusb_close(androidDevice);
                 }
+
                 // AOA codes (https://source.android.com/docs/core/interaction/accessories/aoa2)
                 else if (deviceDesc.idProduct >= 0x2D00 && deviceDesc.idProduct <= 0x2D05) {
                     DebugConsole::println("USB: Found AOA device", DBGC_GREEN, DBGL_DEVEL);
                     libusb_device_handle* androidAOADevice;
                     libusb_open(device, &androidAOADevice);
 
-                    libusb_config_descriptor* deviceConfigs;
-                    for (int i = 0; i < deviceDesc.bNumConfigurations; i++) {
-                        libusb_get_config_descriptor(device, i, &deviceConfigs);
-                        deviceConfigs->interface[0].altsetting->endpoint;
+                    int errorCode = libusb_claim_interface(androidAOADevice, 0);
+                    if (errorCode != 0) {
+                        DebugConsole::println(std::format("Failed to claim device's interface; Error: {}", errorCode));
+                        libusb_close(androidAOADevice);
+                        return;
+                    }
+                    
+                    libusb_config_descriptor* config;
+                    libusb_get_active_config_descriptor(device, &config);
+                    
+                    std::string message("reboot");
+                    errorCode = libusb_bulk_transfer(androidAOADevice, config->interface[1].altsetting->endpoint[0].bEndpointAddress, (unsigned char*)message.c_str(), message.length(), NULL, 0);
+                    if (errorCode != 0) {
+                        DebugConsole::println(std::format("Failed to transfer data; Error: {}", errorCode));
                     }
 
-                    libusb_bulk_transfer(androidAOADevice, 1, (unsigned char*)this->dataToSend.data(), dataToSend.size(), NULL, 5000);
 
+                    libusb_release_interface(androidAOADevice, 0);
                     libusb_close(androidAOADevice);
                 }
             }
