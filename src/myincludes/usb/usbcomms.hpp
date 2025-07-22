@@ -41,6 +41,10 @@ class USBComms {
                         return;
                     }
                     
+                    libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_IN | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 52, 0, 0, (unsigned char*)"team1138", strlen("team1138")+1, 5000);
+                    libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_IN | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 52, 0, 1, (unsigned char*)"tab", strlen("tab")+1, 5000);
+                    libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_IN | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 52, 0, 3, (unsigned char*)"1.0", strlen("1.0")+1, 5000);
+
                     uint16_t aoaVerNum = 0;
                     errorCode = libusb_control_transfer(androidDevice, (uint8_t)LIBUSB_ENDPOINT_IN | (uint8_t)LIBUSB_REQUEST_TYPE_VENDOR, 51, 0, 0, (unsigned char*)&aoaVerNum, sizeof(aoaVerNum), 5000);
                     if (errorCode < 0) {
