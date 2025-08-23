@@ -25,6 +25,7 @@
 #include "myincludes/bluetooth/btTabObj.hpp"
 #include "myincludes/bluetooth/bluetoothConductor.hpp"
 #include "include/libusb.h"
+#include "myincludes/qrCodeHandler.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -39,12 +40,12 @@ int main() {
     std::string resultstr;
    
     DebugConsole::print("Welcome to the main computer!\n", DBGC_BLUE);
-    libusb_init_context(NULL, NULL, 0);
-    libusb_device** connectedDevs;
-    ssize_t arrSize = libusb_get_device_list(NULL, &connectedDevs);
-    for (int i = 0; i < arrSize; i++) {
-        DebugConsole::println(std::string("USB DEVICE FOUND: ") + std::to_string(libusb_get_device_address(connectedDevs[i])));
-    }
+    // libusb_init_context(NULL, NULL, 0);
+    // libusb_device** connectedDevs;
+    // ssize_t arrSize = libusb_get_device_list(NULL, &connectedDevs);
+    // for (int i = 0; i < arrSize; i++) {
+    //     DebugConsole::println(std::string("USB DEVICE FOUND: ") + std::to_string(libusb_get_device_address(connectedDevs[i])));
+    // }
 
      
     // DrawableGraph<double, double> graph(200, 200, 400.0_spX, 400.0_spY);
@@ -170,6 +171,10 @@ int main() {
         btConn.getNameList()->setDisplayPos(BOTTOMCENTERED);
         VerticalScrollable* nameList = btConn.getNameList();
         btTestingScene.add(nameList);
+
+        QrCodeHandler qrCode(btConn.getLocalMacStr() + std::string(";") + std::to_string(btConn.getLocalPort()), qrcodegen::QrCode::Ecc::LOW, ShouldScale(220.0, true, DIAGDEPENDENT));
+            qrCode.setDisplayPos(TOPCENTERED);
+        btTestingScene.add(&qrCode);
 
 
     bool windowHighFPS = true;
@@ -342,7 +347,7 @@ int main() {
                 window.BeginDrawing();
                 window.ClearBackground(BLACK);
                 nameList = btConn.getNameList();
-                btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));               
+                btTestingScene.updateAndDraw(raylib::Rectangle(0, GetScreenHeight() * 0.15, GetScreenWidth(), GetScreenHeight() * 0.85));        
             break;
             
             case PONG:

@@ -5,7 +5,7 @@
 #include "shouldScale.hpp"
 #include "drawable.hpp"
 
-class TexturedButton : public Drawable{
+class TexturedButton : public Drawable {
     private:
         raylib::Image initialMainImage, initialHoverImage;
         raylib::Texture2D mainTexture, hoverTexture;
