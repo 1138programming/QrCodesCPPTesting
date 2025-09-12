@@ -172,7 +172,7 @@ int main() {
         VerticalScrollable* nameList = btConn.getNameList();
         btTestingScene.add(nameList);
 
-        QrCodeHandler qrCode(btConn.getLocalMacStr() + std::string(";") + std::to_string(btConn.getLocalPort()), qrcodegen::QrCode::Ecc::LOW, ShouldScale(220.0, true, DIAGDEPENDENT));
+        QrCodeHandler qrCode(btConn.getLocalMacStr() + std::string(";") + std::to_string(btConn.getLocalPort()), qrcodegen::QrCode::Ecc::LOW, ShouldScale(300.0, true, DIAGDEPENDENT));
             qrCode.setDisplayPos(TOPCENTERED);
         btTestingScene.add(&qrCode);
 

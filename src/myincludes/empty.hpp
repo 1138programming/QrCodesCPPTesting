@@ -68,7 +68,7 @@ class Empty : public Drawable{
                         yPos = (this->y + this->height) - current->getHeight();
                         break;
                     case CENTERED:
-                        xPos = this->x + ((this->width/2.0)-(current->getWidth()/2.0));
+                        xPos = this->x + ((this->width/2.0) - (current->getWidth()/2.0));
                         yPos = (this->y + (this->height/2.0)) - current->getHeight()/2.0;
                         break;
                     case CENTERLEFT:
@@ -80,7 +80,7 @@ class Empty : public Drawable{
                         yPos = (this->y + (this->height/2.0)) - current->getHeight()/2.0;
                         break;
                     case TOPCENTERED:
-                        xPos = this->x + ((this->width/2.0) + (current->getWidth()/2.0));
+                        xPos = this->x + ((this->width/2.0) - (current->getWidth()/2.0));
                         yPos = this->y;
                         break;
                     case TOPLEFT:
